@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite auto-import
+frontend-vue-app/src/auto-imports.d.ts
+frontend-vue-app/src/components.d.ts
+
+# Claude Code
+.claude/
+
+# Go cache
+.gocache/
+
+# Backend git (monorepo handles this)
+software engineering-back/.git

@@ -1,0 +1,32 @@
+import request from '@/utils/request'
+import type { LoginParams, RegisterParams, LoginResponse, UserInfo } from '@/types/auth'
+
+// 用户登录
+export function login(data: LoginParams) {
+  return request.post<LoginResponse>('/auth/login', data)
+}
+
+// 用户注册
+export function register(data: RegisterParams) {
+  return request.post('/auth/register', data)
+}
+
+// 刷新 Token
+export function refreshToken(token: string) {
+  return request.post<{ token: string }>('/auth/refresh', { token })
+}
+
+// 获取当前用户信息
+export function getUserProfile() {
+  return request.get<UserInfo>('/users/profile')
+}
+
+// 更新用户信息
+export function updateUserProfile(data: { nickname?: string; avatar?: string }) {
+  return request.put('/users/profile', data)
+}
+
+// 修改密码
+export function changePassword(data: { old_password: string; new_password: string }) {
+  return request.post('/users/password', data)
+}
