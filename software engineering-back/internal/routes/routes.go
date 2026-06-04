@@ -64,48 +64,48 @@ func SetupRoutes(r *gin.Engine) {
 			// Graph
 			graph := protected.Group("/graph")
 			{
-				graph.GET("", stubHandler("获取图谱数据"))
-				graph.POST("/build", stubHandler("从文档构建图谱"))
-				graph.GET("/build/latest", stubHandler("最近构建结果"))
-				graph.GET("/build/history", paginatedStub("构建历史记录"))
+				graph.GET("", controller.GetGraph)
+				graph.POST("/build", controller.BuildGraph)
+				graph.GET("/build/latest", controller.GetLatestBuild)
+				graph.GET("/build/history", controller.ListBuildHistory)
 			}
 
 			// Questions
 			q := protected.Group("/questions")
 			{
-				q.GET("", paginatedStub("题目列表"))
-				q.GET("/:id", stubHandler("题目详情"))
-				q.POST("", stubHandler("新增题目"))
-				q.PUT("/:id", stubHandler("更新题目"))
-				q.DELETE("/:id", stubHandler("删除题目"))
+				q.GET("", controller.ListQuestions)
+				q.GET("/:id", controller.GetQuestion)
+				q.POST("", controller.CreateQuestion)
+				q.PUT("/:id", controller.UpdateQuestion)
+				q.DELETE("/:id", controller.DeleteQuestion)
 			}
 
 			// Quizzes
 			quiz := protected.Group("/quizzes")
 			{
-				quiz.POST("/submit", stubHandler("提交答题"))
-				quiz.GET("/history", paginatedStub("答题历史"))
-				quiz.GET("/:id", stubHandler("答题详情"))
+				quiz.POST("/submit", controller.SubmitQuiz)
+				quiz.GET("/history", controller.ListQuizHistory)
+				quiz.GET("/:id", controller.GetQuizDetail)
 			}
 
 			// Ask (Q&A)
 			ask := protected.Group("/ask")
 			{
-				ask.POST("/sessions", stubHandler("新建问答会话"))
-				ask.GET("/sessions", paginatedStub("会话列表"))
-				ask.GET("/sessions/:id/messages", paginatedStub("会话消息列表"))
-				ask.POST("", stubHandler("提问"))
-				ask.GET("/history", paginatedStub("问答历史"))
+				ask.POST("/sessions", controller.CreateSession)
+				ask.GET("/sessions", controller.ListSessions)
+				ask.GET("/sessions/:id/messages", controller.ListSessionMessages)
+				ask.POST("", controller.AskQuestion)
+				ask.GET("/history", controller.ListAskHistory)
 			}
 
 			// Analytics
 			analytics := protected.Group("/analytics")
 			{
-				analytics.GET("/overview", stubHandler("总览统计"))
-				analytics.GET("/hot-knowledge-points", stubHandler("热门知识点"))
-				analytics.GET("/knowledge-mastery", stubHandler("知识点掌握度"))
-				analytics.GET("/weak-points", stubHandler("薄弱知识点"))
-				analytics.GET("/trends", stubHandler("趋势数据"))
+				analytics.GET("/overview", controller.GetOverview)
+				analytics.GET("/hot-knowledge-points", controller.GetHotKnowledgePoints)
+				analytics.GET("/knowledge-mastery", controller.GetKnowledgeMastery)
+				analytics.GET("/weak-points", controller.GetWeakPoints)
+				analytics.GET("/trends", controller.GetTrends)
 			}
 		}
 	}
