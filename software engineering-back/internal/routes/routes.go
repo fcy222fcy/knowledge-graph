@@ -30,10 +30,10 @@ func SetupRoutes(r *gin.Engine) {
 			// Users
 			users := protected.Group("/users")
 			{
-				users.GET("/profile", stubHandler("获取当前用户信息"))
-				users.PUT("/profile", stubHandler("更新用户信息"))
-				users.POST("/password", stubHandler("修改密码"))
-				users.GET("/list", paginatedStub("用户列表"))
+				users.GET("/profile", controller.GetProfile)
+				users.PUT("/profile", controller.UpdateProfile)
+				users.POST("/password", controller.ChangePassword)
+				users.GET("/list", controller.ListUsers)
 			}
 
 			// Documents
