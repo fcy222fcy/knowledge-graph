@@ -1,6 +1,0 @@
-=== RUN   TestBuildGraphFromDocumentRejectsEmptyContent
---- PASS: TestBuildGraphFromDocumentRejectsEmptyContent (0.00s)
-=== RUN   TestBuildGraphFromDocumentCreatesKnowledgeAndSkipsDuplicates
---- PASS: TestBuildGraphFromDocumentCreatesKnowledgeAndSkipsDuplicates (0.00s)
-PASS
-ok  	software_engineering/internal/service	0.053s
