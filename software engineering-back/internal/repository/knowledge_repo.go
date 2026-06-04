@@ -1,12 +1,21 @@
 package repository
 
 import (
+	"log"
+
 	"software_engineering/internal/database"
 	"software_engineering/internal/model/entity"
 )
 
 func CreateKnowledgePoint(kp *entity.KnowledgePoint) error {
-	return database.DB.Create(kp).Error
+	if err := database.DB.Create(kp).Error; err != nil {
+		return err
+	}
+	// Dual-write: sync to Neo4j (best effort)
+	if err := CreateKnowledgePointInNeo4j(kp); err != nil {
+		log.Printf("warning: neo4j dual-write failed for knowledge point %d: %v", kp.ID, err)
+	}
+	return nil
 }
 
 func FindKnowledgePointByID(id uint) (*entity.KnowledgePoint, error) {
@@ -20,7 +29,14 @@ func UpdateKnowledgePoint(kp *entity.KnowledgePoint) error {
 }
 
 func DeleteKnowledgePoint(id uint) error {
-	return database.DB.Delete(&entity.KnowledgePoint{}, id).Error
+	if err := database.DB.Delete(&entity.KnowledgePoint{}, id).Error; err != nil {
+		return err
+	}
+	// Dual-write: sync delete to Neo4j (best effort)
+	if err := DeleteKnowledgePointFromNeo4j(id); err != nil {
+		log.Printf("warning: neo4j dual-delete failed for knowledge point %d: %v", id, err)
+	}
+	return nil
 }
 
 func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]entity.KnowledgePoint, int64, error) {
@@ -39,7 +55,14 @@ func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]ent
 }
 
 func CreateRelation(rel *entity.KnowledgeRelation) error {
-	return database.DB.Create(rel).Error
+	if err := database.DB.Create(rel).Error; err != nil {
+		return err
+	}
+	// Dual-write: sync to Neo4j (best effort)
+	if err := CreateRelationInNeo4j(rel); err != nil {
+		log.Printf("warning: neo4j dual-write failed for relation %d: %v", rel.ID, err)
+	}
+	return nil
 }
 
 func FindRelationByID(id uint) (*entity.KnowledgeRelation, error) {
@@ -53,7 +76,14 @@ func UpdateRelation(rel *entity.KnowledgeRelation) error {
 }
 
 func DeleteRelation(id uint) error {
-	return database.DB.Delete(&entity.KnowledgeRelation{}, id).Error
+	if err := database.DB.Delete(&entity.KnowledgeRelation{}, id).Error; err != nil {
+		return err
+	}
+	// Dual-write: sync delete to Neo4j (best effort)
+	if err := DeleteRelationFromNeo4j(id); err != nil {
+		log.Printf("warning: neo4j dual-delete failed for relation %d: %v", id, err)
+	}
+	return nil
 }
 
 func ListRelations(page, size int, pointID uint) ([]entity.KnowledgeRelation, int64, error) {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"software_engineering/internal/database"
 	"software_engineering/internal/model/entity"
+	"software_engineering/internal/repository"
 )
 
 func SeedAll() {
@@ -52,6 +53,13 @@ func seedKnowledgePoints() {
 		return
 	}
 
+	// Sync knowledge points to Neo4j
+	for i := range points {
+		if err := repository.CreateKnowledgePointInNeo4j(&points[i]); err != nil {
+			log.Printf("warning: neo4j seed knowledge point %q failed: %v", points[i].Name, err)
+		}
+	}
+
 	relations := []entity.KnowledgeRelation{
 		{SourceID: 1, TargetID: 2, RelationType: "DEPENDS_ON", Description: "需求分析是软件测试的前置环节"},
 		{SourceID: 1, TargetID: 4, RelationType: "DEPENDS_ON", Description: "需求分析完成后进入编码实现"},
@@ -63,6 +71,14 @@ func seedKnowledgePoints() {
 		log.Printf("seed knowledge relations failed: %v", err)
 		return
 	}
+
+	// Sync relations to Neo4j
+	for i := range relations {
+		if err := repository.CreateRelationInNeo4j(&relations[i]); err != nil {
+			log.Printf("warning: neo4j seed relation %d->%d failed: %v", relations[i].SourceID, relations[i].TargetID, err)
+		}
+	}
+
 	log.Println("seeded 5 knowledge points and 4 relations")
 }
 

@@ -21,6 +21,10 @@ func main() {
 	// Connect to database
 	database.Connect()
 
+	// Connect to Neo4j (graceful degradation on failure)
+	database.ConnectNeo4j()
+	defer database.CloseNeo4j()
+
 	// AutoMigrate tables
 	database.AutoMigrate()
 
