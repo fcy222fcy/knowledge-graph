@@ -40,7 +40,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="register-btn" @click="handleRegister">
+          <el-button type="primary" class="register-btn" :loading="loading" @click="handleRegister">
             注册
           </el-button>
         </el-form-item>
@@ -57,9 +57,11 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { register } from '@/services/auth'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
+const loading = ref(false)
 
 const registerForm = reactive({
   username: '',
@@ -92,11 +94,22 @@ const rules: FormRules = {
 const handleRegister = async () => {
   if (!formRef.value) return
 
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate(async (valid) => {
     if (valid) {
-      // TODO: 调用注册 API
-      ElMessage.success('注册成功，请登录')
-      router.push('/login')
+      loading.value = true
+      try {
+        await register({
+          username: registerForm.username,
+          email: registerForm.email,
+          password: registerForm.password
+        })
+        ElMessage.success('注册成功，请登录')
+        router.push('/login')
+      } catch (error) {
+        console.error('注册失败:', error)
+      } finally {
+        loading.value = false
+      }
     }
   })
 }

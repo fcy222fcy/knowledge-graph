@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE智图问答 - MVP版本</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --primary-dark: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.15);
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-hover: #f1f5f9;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --emerald: #10b981;
+            --emerald-light: #d1fae5;
+            --amber: #f59e0b;
+            --amber-light: #fef3c7;
+            --rose: #f43f5e;
+            --rose-light: #ffe4e6;
+            --violet: #8b5cf6;
+            --violet-light: #ede9fe;
+            --cyan: #06b6d4;
+            --cyan-light: #cffafe;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ===== 登录/注册页 ===== */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景装饰动画 */
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .auth-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px, 40px 40px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, -2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        /* 装饰性浮动元素 */
+        .auth-decor {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        .auth-decor-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .auth-decor-2 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            bottom: -80px;
+            left: -80px;
+            animation-delay: 2s;
+        }
+
+        .auth-decor-3 {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f59e0b, #f43f5e);
+            top: 50%;
+            left: 10%;
+            animation-delay: 4s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.1); opacity: 0.15; }
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(255, 255, 255, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 40px;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .auth-logo {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35),
+                        0 0 0 4px rgba(37, 99, 235, 0.1);
+            position: relative;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        .auth-logo::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6, #06b6d4);
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(8px);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes glow {
+            from { opacity: 0.3; }
+            to { opacity: 0.6; }
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+        }
+
+        .form-input-wrapper {
+            position: relative;
+        }
+
+        .form-input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            background: var(--bg);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: white;
+        }
+
+        .form-input:focus + .form-input-icon,
+        .form-input:focus ~ .form-input-icon {
+            color: var(--primary);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .auth-footer a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .auth-footer a:hover {
+            color: var(--primary-dark);
+        }
+
+        .auth-footer a:hover::after {
+            width: 100%;
+        }
+
+        /* 记住密码和忘记密码 */
+        .auth-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .auth-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .auth-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .auth-forgot {
+            font-size: 13px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .auth-forgot:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* 密码显示/隐藏按钮 */
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* 社交登录按钮（预留） */
+        .social-login {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* 加载状态 */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 表单验证状态 */
+        .form-input.error {
+            border-color: var(--rose);
+        }
+
+        .form-input.success {
+            border-color: var(--emerald);
+        }
+
+        .form-error {
+            font-size: 12px;
+            color: var(--rose);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-input.error ~ .form-error {
+            display: block;
+        }
+
+        /* ===== 主布局 ===== */
+        .app-layout {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-layout.active {
+            display: flex;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 14px;
+            font-weight: 450;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .user-card:hover {
+            background: var(--bg-hover);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 主内容 */
+        .main {
+            margin-left: 220px;
+            flex: 1;
+            min-height: 100vh;
+            padding: 28px;
+        }
+
+        /* 页面容器 */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 首页样式 ===== */
+        .welcome-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .welcome-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .welcome-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        .today-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            min-width: 280px;
+        }
+
+        .today-header {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .today-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .today-stat {
+            text-align: center;
+        }
+
+        .today-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .today-unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .today-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .search-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .feature-icon.blue { background: var(--primary-light); }
+        .feature-icon.green { background: var(--emerald-light); }
+        .feature-icon.amber { background: var(--amber-light); }
+        .feature-icon.violet { background: var(--violet-light); }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-action {
+            font-size: 13px;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .card-body {
+            padding: 20px 24px;
+        }
+
+        .question-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+        }
+
+        .question-item:hover {
+            padding-left: 8px;
+        }
+
+        .question-text {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .question-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ===== 知识图谱样式 ===== */
+        .graph-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .graph-controls {
+            display: flex;
+            gap: 12px;
+            padding: 16px 24px;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .graph-search {
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            width: 200px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .graph-search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .graph-select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .graph-body {
+            display: grid;
+            grid-template-columns: 1fr 180px;
+        }
+
+        .graph-canvas {
+            height: 500px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            position: relative;
+        }
+
+        .graph-canvas::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.5;
+        }
+
+        .kg-node {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .kg-node:hover {
+            transform: scale(1.35);
+            z-index: 10;
+        }
+
+        .kg-node.lg { width: 56px; height: 56px; font-size: 13px; font-weight: 600; }
+        .kg-node.md { width: 42px; height: 42px; font-size: 11px; }
+        .kg-node.sm { width: 32px; height: 32px; font-size: 10px; }
+
+        .kg-node.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); }
+        .kg-node.green { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); }
+        .kg-node.amber { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); }
+        .kg-node.rose { background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35); }
+        .kg-node.violet { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35); }
+
+        .graph-legend {
+            padding: 20px;
+            border-left: 1px solid var(--border-light);
+            background: var(--bg-card);
+        }
+
+        .legend-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* ===== 问答中心样式 ===== */
+        .qa-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 20px;
+            height: calc(100vh - 56px);
+        }
+
+        .qa-sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qa-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .qa-sidebar-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .btn-new-chat {
+            font-size: 13px;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .qa-history {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .qa-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+
+        .qa-history-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .qa-history-item.active {
+            background: var(--primary-light);
+        }
+
+        .qa-history-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .qa-history-item.active .qa-history-text {
+            color: var(--primary);
+        }
+
+        .qa-main {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qa-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .qa-question-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .qa-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .qa-answer {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .qa-answer-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .qa-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .qa-answer-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .qa-answer-text {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .compare-table th {
+            background: var(--bg-card);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .qa-source {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .qa-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .qa-tag {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .qa-tag:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .qa-input-area {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .qa-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .qa-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .btn-send {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .btn-send:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ===== 资料管理样式 ===== */
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-upload {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .file-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .file-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .file-table th,
+        .file-table td {
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .file-table th {
+            background: var(--bg);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .file-table td {
+            font-size: 14px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .file-icon.pdf { background: #fee2e2; }
+        .file-icon.pptx { background: #fef3c7; }
+        .file-icon.md { background: #d1fae5; }
+        .file-icon.docx { background: #dbeafe; }
+
+        .file-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .file-status.parsed { background: var(--emerald-light); color: var(--emerald); }
+        .file-status.parsing { background: var(--amber-light); color: var(--amber); }
+
+        .file-action {
+            color: var(--rose);
+            cursor: pointer;
+        }
+
+        /* ===== 分析统计样式 ===== */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 200px;
+            padding-top: 20px;
+        }
+
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 40px;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .bar.qa { background: linear-gradient(180deg, var(--primary), #3b82f6); }
+        .bar.study { background: linear-gradient(180deg, var(--emerald), #34d399); }
+
+        .bar-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .bar-value {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ===== Toast提示 ===== */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            background: var(--emerald);
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <!-- ===== 登录页 ===== -->
+    <div id="auth-login" class="auth-container">
+        <!-- 装饰元素 -->
+        <div class="auth-decor auth-decor-1"></div>
+        <div class="auth-decor auth-decor-2"></div>
+        <div class="auth-decor auth-decor-3"></div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">SE</div>
+                <h1 class="auth-title">欢迎回来</h1>
+                <p class="auth-subtitle">登录 SE智图问答，继续你的学习之旅</p>
+            </div>
+            <form class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="请输入用户名" value="zhangsan">
+                        <span class="form-input-icon">👤</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" placeholder="请输入密码" value="123456">
+                        <span class="form-input-icon">🔒</span>
+                        <button type="button" class="password-toggle">👁️</button>
+                    </div>
+                </div>
+                <div class="auth-options">
+                    <label class="auth-checkbox">
+                        <input type="checkbox" checked> 记住我
+                    </label>
+                    <a class="auth-forgot" onclick="showToast('请联系管理员重置密码')">忘记密码？</a>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px">
+                    🚀 登录
+                </button>
+            </form>
+            <div class="auth-divider">或</div>
+            <div class="auth-footer">
+                还没有账号？<a onclick="showPage('auth-register')">立即注册</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 注册页 ===== -->
+    <div id="auth-register" class="auth-container" style="display:none">
+        <!-- 装饰元素 -->
+        <div class="auth-decor auth-decor-1"></div>
+        <div class="auth-decor auth-decor-2"></div>
+        <div class="auth-decor auth-decor-3"></div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">SE</div>
+                <h1 class="auth-title">创建账号</h1>
+                <p class="auth-subtitle">加入 SE智图问答，开启智能学习</p>
+            </div>
+            <form class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="请输入用户名">
+                        <span class="form-input-icon">👤</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">邮箱</label>
+                    <div class="form-input-wrapper">
+                        <input type="email" class="form-input" placeholder="请输入邮箱">
+                        <span class="form-input-icon">📧</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" placeholder="请输入密码">
+                        <span class="form-input-icon">🔒</span>
+                        <button type="button" class="password-toggle">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">确认密码</label>
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" placeholder="请再次输入密码">
+                        <span class="form-input-icon">🔒</span>
+                        <button type="button" class="password-toggle">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px">
+                    ✨ 注册
+                </button>
+            </form>
+            <div class="auth-divider">或</div>
+            <div class="auth-footer">
+                已有账号？<a onclick="showPage('auth-login')">立即登录</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 主应用布局 ===== -->
+    <div id="app-layout" class="app-layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-mark">SE</div>
+                    <div class="logo-text">SE智图问答</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-item active" onclick="switchPage('home', this)">
+                    <span class="nav-icon">🏠</span>
+                    <span>首页</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('graph', this)">
+                    <span class="nav-icon">🧠</span>
+                    <span>知识图谱</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('qa', this)">
+                    <span class="nav-icon">💬</span>
+                    <span>问答中心</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('files', this)">
+                    <span class="nav-icon">📁</span>
+                    <span>资料管理</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('stats', this)">
+                    <span class="nav-icon">📊</span>
+                    <span>分析统计</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="handleLogout()">
+                    <div class="user-avatar">张</div>
+                    <div class="user-info">
+                        <div class="user-name">张同学</div>
+                        <div class="user-role">软件工程专业</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main">
+            <!-- 首页 -->
+            <div id="page-home" class="page active">
+                <div class="welcome-card">
+                    <div class="welcome-top">
+                        <div>
+                            <h1 class="welcome-title">你好，张同学 👋</h1>
+                            <p class="welcome-subtitle">欢迎使用基于知识图谱的软件工程课程问答平台</p>
+                        </div>
+                        <div class="today-card">
+                            <div class="today-header">📊 今日学习</div>
+                            <div class="today-grid">
+                                <div class="today-stat">
+                                    <div class="today-value">1.5 <span class="today-unit">h</span></div>
+                                    <div class="today-label">学习时长</div>
+                                </div>
+                                <div class="today-stat">
+                                    <div class="today-value">12 <span class="today-unit">次</span></div>
+                                    <div class="today-label">提问次数</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-wrapper">
+                        <input class="search-input" placeholder="请输入你的问题，例如：什么是面向对象设计？">
+                        <button class="btn btn-primary" onclick="goToQA()">智能问答</button>
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card" onclick="switchPage('qa', document.querySelectorAll('.nav-item')[2])">
+                        <div class="feature-icon blue">💬</div>
+                        <div class="feature-title">智能问答</div>
+                        <div class="feature-desc">基于知识图谱的智能问答</div>
+                    </div>
+                    <div class="feature-card" onclick="switchPage('graph', document.querySelectorAll('.nav-item')[1])">
+                        <div class="feature-icon green">🧠</div>
+                        <div class="feature-title">知识图谱</div>
+                        <div class="feature-desc">构建化知识图谱网络</div>
+                    </div>
+                    <div class="feature-card" onclick="switchPage('files', document.querySelectorAll('.nav-item')[3])">
+                        <div class="feature-icon amber">📤</div>
+                        <div class="feature-title">资料上传</div>
+                        <div class="feature-desc">上传课程资料构建图谱</div>
+                    </div>
+                    <div class="feature-card" onclick="switchPage('stats', document.querySelectorAll('.nav-item')[4])">
+                        <div class="feature-icon violet">📊</div>
+                        <div class="feature-title">学习统计</div>
+                        <div class="feature-desc">查看学习数据统计</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">最近提问</span>
+                            <span class="card-action" onclick="switchPage('qa', document.querySelectorAll('.nav-item')[2])">更多 →</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="question-list">
+                                <div class="question-item">
+                                    <span class="question-text">什么是软件工程？</span>
+                                    <span class="question-time">05-22 14:30</span>
+                                </div>
+                                <div class="question-item">
+                                    <span class="question-text">瀑布模型的优缺点是什么？</span>
+                                    <span class="question-time">05-22 14:20</span>
+                                </div>
+                                <div class="question-item">
+                                    <span class="question-text">黑盒测试和白盒测试的区别？</span>
+                                    <span class="question-time">05-22 14:15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">热门知识点</span>
+                            <span class="card-action" onclick="switchPage('graph', document.querySelectorAll('.nav-item')[1])">查看图谱 →</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="question-list">
+                                <div class="question-item">
+                                    <span class="question-text">软件生命周期</span>
+                                    <span class="question-time">352次</span>
+                                </div>
+                                <div class="question-item">
+                                    <span class="question-text">需求分析</span>
+                                    <span class="question-time">298次</span>
+                                </div>
+                                <div class="question-item">
+                                    <span class="question-text">软件设计</span>
+                                    <span class="question-time">286次</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识图谱 -->
+            <div id="page-graph" class="page">
+                <div class="graph-card">
+                    <div class="card-header">
+                        <span class="card-title">知识图谱</span>
+                    </div>
+                    <div class="graph-controls">
+                        <input class="graph-search" placeholder="🔍 搜索知识点...">
+                        <select class="graph-select">
+                            <option>关系类型：全部</option>
+                            <option>包含关系</option>
+                            <option>依赖关系</option>
+                        </select>
+                        <select class="graph-select">
+                            <option>布局方式：力导向布局</option>
+                            <option>层级布局</option>
+                            <option>环形布局</option>
+                        </select>
+                        <button class="btn btn-ghost" style="padding:10px 16px;font-size:13px">重置布局</button>
+                    </div>
+                    <div class="graph-body">
+                        <div class="graph-canvas">
+                            <div class="kg-node lg blue" style="top:45%;left:50%;transform:translate(-50%,-50%)">软件工程</div>
+                            <div class="kg-node md green" style="top:22%;left:28%">需求分析</div>
+                            <div class="kg-node md amber" style="top:22%;right:28%">软件设计</div>
+                            <div class="kg-node md rose" style="bottom:22%;left:24%">软件测试</div>
+                            <div class="kg-node md violet" style="bottom:22%;right:24%">项目管理</div>
+                            <div class="kg-node sm" style="top:12%;left:16%">需求规格</div>
+                            <div class="kg-node sm" style="top:12%;left:42%">功能需求</div>
+                            <div class="kg-node sm" style="top:12%;right:16%">架构设计</div>
+                            <div class="kg-node sm" style="bottom:12%;left:10%">单元测试</div>
+                            <div class="kg-node sm" style="bottom:12%;left:38%">集成测试</div>
+                            <div class="kg-node sm" style="bottom:12%;right:10%">进度管理</div>
+                        </div>
+                        <div class="graph-legend">
+                            <div class="legend-title">图例</div>
+                            <div class="legend-list">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:linear-gradient(135deg,#3b82f6,#2563eb)"></div>
+                                    <span>过程模型</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:linear-gradient(135deg,#10b981,#059669)"></div>
+                                    <span>需求相关</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:linear-gradient(135deg,#f59e0b,#d97706)"></div>
+                                    <span>设计相关</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:linear-gradient(135deg,#f43f5e,#e11d48)"></div>
+                                    <span>测试相关</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)"></div>
+                                    <span>项目管理</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 问答中心 -->
+            <div id="page-qa" class="page">
+                <div class="qa-layout">
+                    <div class="qa-sidebar">
+                        <div class="qa-sidebar-header">
+                            <span class="qa-sidebar-title">历史会话</span>
+                            <span class="btn-new-chat" onclick="showToast('已创建新对话')">+ 新建对话</span>
+                        </div>
+                        <div class="qa-history">
+                            <div class="qa-history-item active">
+                                <span class="qa-history-text">黑盒测试和白盒测试...</span>
+                            </div>
+                            <div class="qa-history-item">
+                                <span class="qa-history-text">什么是面向对象设计？</span>
+                            </div>
+                            <div class="qa-history-item">
+                                <span class="qa-history-text">UML中的类图是什么？</span>
+                            </div>
+                            <div class="qa-history-item">
+                                <span class="qa-history-text">软件工程的三要素？</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="qa-main">
+                        <div class="qa-header">
+                            <span class="qa-question-badge">黑盒测试和白盒测试的区别是什么？</span>
+                        </div>
+                        <div class="qa-content">
+                            <div class="qa-answer">
+                                <div class="qa-answer-header">
+                                    <div class="qa-avatar">AI</div>
+                                    <span class="qa-answer-title">智能助手</span>
+                                </div>
+                                <p class="qa-answer-text">
+                                    黑盒测试和白盒测试都是软件测试的方法，两者的主要区别如下：
+                                </p>
+                                <table class="compare-table">
+                                    <thead>
+                                        <tr>
+                                            <th>维度</th>
+                                            <th>黑盒测试</th>
+                                            <th>白盒测试</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>关注点</td>
+                                            <td>关注软件功能，输入输出</td>
+                                            <td>关注程序内部结构、代码、逻辑</td>
+                                        </tr>
+                                        <tr>
+                                            <td>测试依据</td>
+                                            <td>需求规格说明书</td>
+                                            <td>程序代码、设计文档</td>
+                                        </tr>
+                                        <tr>
+                                            <td>测试方法</td>
+                                            <td>等价类划分、边界值分析等</td>
+                                            <td>语句覆盖、分支覆盖等</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="qa-source">
+                                    知识来源：软件测试概述 > 测试方法分类
+                                </div>
+                                <div class="qa-tags">
+                                    <span class="qa-tag">软件测试</span>
+                                    <span class="qa-tag">黑盒测试</span>
+                                    <span class="qa-tag">白盒测试</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="qa-input-area">
+                            <input class="qa-input" placeholder="请输入你的问题...">
+                            <button class="btn-send" onclick="showToast('发送成功')">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 资料管理 -->
+            <div id="page-files" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">资料管理</span>
+                        <button class="btn-upload" onclick="showToast('打开文件上传')">📤 上传资料</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="file-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>文件名</th>
+                                        <th>类型</th>
+                                        <th>大小</th>
+                                        <th>上传时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="file-name">
+                                                <div class="file-icon pdf">📄</div>
+                                                <span>软件工程（第9版）.pdf</span>
+                                            </div>
+                                        </td>
+                                        <td>PDF</td>
+                                        <td>45.2 MB</td>
+                                        <td>2024-05-20</td>
+                                        <td><span class="file-status parsed">已解析</span></td>
+                                        <td><span class="file-action" onclick="showToast('确认删除？')">🗑️</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="file-name">
+                                                <div class="file-icon pptx">📊</div>
+                                                <span>软件工程课件.pptx</span>
+                                            </div>
+                                        </td>
+                                        <td>PPTX</td>
+                                        <td>12.8 MB</td>
+                                        <td>2024-05-19</td>
+                                        <td><span class="file-status parsed">已解析</span></td>
+                                        <td><span class="file-action" onclick="showToast('确认删除？')">🗑️</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="file-name">
+                                                <div class="file-icon md">📝</div>
+                                                <span>软件工程笔记.md</span>
+                                            </div>
+                                        </td>
+                                        <td>Markdown</td>
+                                        <td>2.1 MB</td>
+                                        <td>2024-05-18</td>
+                                        <td><span class="file-status parsing">解析中</span></td>
+                                        <td><span class="file-action" onclick="showToast('确认删除？')">🗑️</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分析统计 -->
+            <div id="page-stats" class="page">
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-value">48.5h</div>
+                        <div class="stat-label">总学习时长</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">156</div>
+                        <div class="stat-label">总问答次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color:var(--emerald)">78.5%</div>
+                        <div class="stat-label">平均正确率</div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">📈 近7天学习趋势</span>
+                        <div class="chart-legend">
+                            <div class="chart-legend-item">
+                                <div class="chart-legend-dot" style="background:var(--primary)"></div>
+                                <span>问答次数</span>
+                            </div>
+                            <div class="chart-legend-item">
+                                <div class="chart-legend-dot" style="background:var(--emerald)"></div>
+                                <span>学习时长(h)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bar-chart">
+                        <div class="bar-group">
+                            <div class="bar-value">12</div>
+                            <div class="bar qa" style="height:60%"></div>
+                            <div class="bar-label">周一</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">18</div>
+                            <div class="bar qa" style="height:80%"></div>
+                            <div class="bar-label">周二</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">15</div>
+                            <div class="bar qa" style="height:70%"></div>
+                            <div class="bar-label">周三</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">22</div>
+                            <div class="bar qa" style="height:95%"></div>
+                            <div class="bar-label">周四</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">8</div>
+                            <div class="bar qa" style="height:40%"></div>
+                            <div class="bar-label">周五</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">25</div>
+                            <div class="bar qa" style="height:100%"></div>
+                            <div class="bar-label">周六</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-value">12</div>
+                            <div class="bar qa" style="height:55%"></div>
+                            <div class="bar-label">周日</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ===== 页面切换 =====
+        function showPage(pageId) {
+            document.querySelectorAll('.auth-container').forEach(p => p.style.display = 'none');
+            document.getElementById(pageId).style.display = 'flex';
+        }
+
+        function switchPage(pageId, navItem) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+            if (navItem) navItem.classList.add('active');
+        }
+
+        // ===== 登录处理 =====
+        function handleLogin(e) {
+            e.preventDefault();
+            document.getElementById('auth-login').style.display = 'none';
+            document.getElementById('auth-register').style.display = 'none';
+            document.getElementById('app-layout').classList.add('active');
+            showToast('登录成功');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            showToast('注册成功，请登录');
+            showPage('auth-login');
+        }
+
+        function handleLogout() {
+            if (confirm('确定要退出登录吗？')) {
+                document.getElementById('app-layout').classList.remove('active');
+                showPage('auth-login');
+                showToast('已退出登录');
+            }
+        }
+
+        // ===== 搜索跳转 =====
+        function goToQA() {
+            const input = document.querySelector('.search-input');
+            const query = input?.value.trim();
+            if (query) {
+                switchPage('qa', document.querySelectorAll('.nav-item')[2]);
+                showToast(`正在搜索: ${query}`);
+            } else {
+                switchPage('qa', document.querySelectorAll('.nav-item')[2]);
+            }
+        }
+
+        // ===== Toast提示 =====
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // ===== 交互事件 =====
+        // 搜索框回车
+        document.querySelector('.search-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') goToQA();
+        });
+
+        // 密码显示/隐藏切换
+        document.querySelectorAll('.password-toggle').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.textContent = '🙈';
+                } else {
+                    input.type = 'password';
+                    this.textContent = '👁️';
+                }
+            });
+        });
+
+        // 表单输入动画
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+                if (this.value) {
+                    this.classList.add('has-value');
+                } else {
+                    this.classList.remove('has-value');
+                }
+            });
+        });
+
+        // 问答历史点击
+        document.querySelectorAll('.qa-history-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.qa-history-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                showToast('切换对话');
+            });
+        });
+
+        // 问答发送
+        document.querySelector('.qa-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') showToast('发送成功');
+        });
+
+        // 知识图谱节点点击
+        document.querySelectorAll('.kg-node').forEach(node => {
+            node.addEventListener('click', function() {
+                const text = this.textContent || '节点';
+                showToast(`查看节点: ${text}`);
+            });
+        });
+
+        // 问题列表点击
+        document.querySelectorAll('.question-item').forEach(item => {
+            item.addEventListener('click', function() {
+                switchPage('qa', document.querySelectorAll('.nav-item')[2]);
+                showToast('查看问题详情');
+            });
+        });
+    </script>
+</body>
+</html>

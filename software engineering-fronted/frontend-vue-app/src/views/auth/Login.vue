@@ -30,7 +30,7 @@
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="login-btn" @click="handleLogin">
+          <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">
             登录
           </el-button>
         </el-form-item>
