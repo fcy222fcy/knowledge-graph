@@ -39,26 +39,26 @@ func SetupRoutes(r *gin.Engine) {
 			// Documents
 			docs := protected.Group("/documents")
 			{
-				docs.POST("", stubHandler("上传文档"))
-				docs.GET("", paginatedStub("文档列表"))
-				docs.GET("/:id", stubHandler("文档详情"))
-				docs.PUT("/:id", stubHandler("更新文档信息"))
-				docs.DELETE("/:id", stubHandler("删除文档"))
-				docs.GET("/:id/content", stubHandler("获取文档内容"))
+				docs.POST("", controller.UploadDocument)
+				docs.GET("", controller.ListDocuments)
+				docs.GET("/:id", controller.GetDocument)
+				docs.PUT("/:id", controller.UpdateDocument)
+				docs.DELETE("/:id", controller.DeleteDocument)
+				docs.GET("/:id/content", controller.GetDocumentContent)
 			}
 
 			// Knowledge points
 			kp := protected.Group("/knowledge")
 			{
-				kp.GET("/points", paginatedStub("知识点列表"))
-				kp.GET("/points/:id", stubHandler("知识点详情"))
-				kp.POST("/points", stubHandler("新增知识点"))
-				kp.PUT("/points/:id", stubHandler("更新知识点"))
-				kp.DELETE("/points/:id", stubHandler("删除知识点"))
-				kp.GET("/relations", paginatedStub("关系列表"))
-				kp.POST("/relations", stubHandler("新增关系"))
-				kp.PUT("/relations/:id", stubHandler("更新关系"))
-				kp.DELETE("/relations/:id", stubHandler("删除关系"))
+				kp.GET("/points", controller.ListKnowledgePoints)
+				kp.GET("/points/:id", controller.GetKnowledgePoint)
+				kp.POST("/points", controller.CreateKnowledgePoint)
+				kp.PUT("/points/:id", controller.UpdateKnowledgePoint)
+				kp.DELETE("/points/:id", controller.DeleteKnowledgePoint)
+				kp.GET("/relations", controller.ListRelations)
+				kp.POST("/relations", controller.CreateRelation)
+				kp.PUT("/relations/:id", controller.UpdateRelation)
+				kp.DELETE("/relations/:id", controller.DeleteRelation)
 			}
 
 			// Graph
