@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/dto"
+	"software_engineering/internal/model/dto"
 	"software_engineering/internal/repository"
 	"software_engineering/internal/utils"
 )

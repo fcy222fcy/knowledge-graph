@@ -3,7 +3,7 @@ package seed
 import (
 	"log"
 	"software_engineering/internal/database"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/entity"
 )
 
 func SeedAll() {
@@ -14,12 +14,12 @@ func SeedAll() {
 
 func seedUsers() {
 	var count int64
-	database.DB.Model(&model.User{}).Count(&count)
+	database.DB.Model(&entity.User{}).Count(&count)
 	if count > 0 {
 		return
 	}
 
-	users := []model.User{
+	users := []entity.User{
 		{Username: "student001", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "student001@example.com", Nickname: "张三", Status: 1},
 		{Username: "student002", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "student002@example.com", Nickname: "李四", Status: 1},
 		{Username: "teacher001", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "teacher001@example.com", Nickname: "王老师", Status: 1},
@@ -34,12 +34,12 @@ func seedUsers() {
 
 func seedKnowledgePoints() {
 	var count int64
-	database.DB.Model(&model.KnowledgePoint{}).Count(&count)
+	database.DB.Model(&entity.KnowledgePoint{}).Count(&count)
 	if count > 0 {
 		return
 	}
 
-	points := []model.KnowledgePoint{
+	points := []entity.KnowledgePoint{
 		{Name: "需求分析", Description: "识别和确认用户需求的过程", Category: "需求相关"},
 		{Name: "软件测试", Description: "验证软件是否满足需求的过程", Category: "测试相关"},
 		{Name: "软件生命周期", Description: "软件从提出到废弃的整个过程", Category: "基础概念"},
@@ -52,7 +52,7 @@ func seedKnowledgePoints() {
 		return
 	}
 
-	relations := []model.KnowledgeRelation{
+	relations := []entity.KnowledgeRelation{
 		{SourceID: 1, TargetID: 2, RelationType: "DEPENDS_ON", Description: "需求分析是软件测试的前置环节"},
 		{SourceID: 1, TargetID: 4, RelationType: "DEPENDS_ON", Description: "需求分析完成后进入编码实现"},
 		{SourceID: 3, TargetID: 1, RelationType: "PART_OF", Description: "需求分析是软件生命周期的一个阶段"},
@@ -68,12 +68,12 @@ func seedKnowledgePoints() {
 
 func seedQuestions() {
 	var count int64
-	database.DB.Model(&model.Question{}).Count(&count)
+	database.DB.Model(&entity.Question{}).Count(&count)
 	if count > 0 {
 		return
 	}
 
-	questions := []model.Question{
+	questions := []entity.Question{
 		{
 			Title:            "以下哪个不是需求分析的活动？",
 			Type:             "single",

@@ -4,32 +4,32 @@ import (
 	"time"
 
 	"software_engineering/internal/database"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/entity"
 )
 
 func CountQuizzesByUser(userID uint) (int64, error) {
 	var count int64
-	err := database.DB.Model(&model.Quiz{}).Where("user_id = ?", userID).Count(&count).Error
+	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
 }
 
 func CountCorrectQuizzesByUser(userID uint) (int64, error) {
 	var count int64
-	err := database.DB.Model(&model.Quiz{}).Where("user_id = ? AND is_correct = ?", userID, true).Count(&count).Error
+	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ? AND is_correct = ?", userID, true).Count(&count).Error
 	return count, err
 }
 
 func CountTodayQuizzesByUser(userID uint) (int64, error) {
 	var count int64
 	today := time.Now().Format("2006-01-02")
-	err := database.DB.Model(&model.Quiz{}).Where("user_id = ? AND DATE(created_at) = ?", userID, today).Count(&count).Error
+	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ? AND DATE(created_at) = ?", userID, today).Count(&count).Error
 	return count, err
 }
 
 func CountTodayMessagesByUser(userID uint) (int64, error) {
 	var count int64
 	today := time.Now().Format("2006-01-02")
-	err := database.DB.Model(&model.AskMessage{}).
+	err := database.DB.Model(&entity.AskMessage{}).
 		Joins("JOIN ask_sessions ON ask_messages.session_id = ask_sessions.id").
 		Where("ask_sessions.user_id = ? AND ask_messages.role = 'user' AND DATE(ask_messages.created_at) = ?", userID, today).
 		Count(&count).Error
@@ -38,7 +38,7 @@ func CountTodayMessagesByUser(userID uint) (int64, error) {
 
 func CountTotalMessagesByUser(userID uint) (int64, error) {
 	var count int64
-	err := database.DB.Model(&model.AskMessage{}).
+	err := database.DB.Model(&entity.AskMessage{}).
 		Joins("JOIN ask_sessions ON ask_messages.session_id = ask_sessions.id").
 		Where("ask_sessions.user_id = ? AND ask_messages.role = 'user'", userID).
 		Count(&count).Error
@@ -51,7 +51,7 @@ func GetQuizzesByKnowledgePoint(userID uint) (map[uint]int, map[uint]int, error)
 		Total            int
 		Correct          int
 	}
-	query := database.DB.Model(&model.Quiz{}).
+	query := database.DB.Model(&entity.Quiz{}).
 		Select("questions.knowledge_point_id, COUNT(*) as total, SUM(CASE WHEN quizzes.is_correct = 1 THEN 1 ELSE 0 END) as correct").
 		Joins("JOIN questions ON quizzes.question_id = questions.id")
 	if userID > 0 {
@@ -79,7 +79,7 @@ func GetDailyQuizStats(userID uint, days int) ([]struct {
 		Total   int
 	}
 	since := time.Now().AddDate(0, 0, -days)
-	err := database.DB.Model(&model.Quiz{}).
+	err := database.DB.Model(&entity.Quiz{}).
 		Select("DATE(created_at) as date, COUNT(*) as total, SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct").
 		Where("user_id = ? AND created_at >= ?", userID, since).
 		Group("DATE(created_at)").
@@ -88,8 +88,8 @@ func GetDailyQuizStats(userID uint, days int) ([]struct {
 	return results, err
 }
 
-func FindQuestionsByKnowledgePoint(kpID uint, limit int) ([]model.Question, error) {
-	var questions []model.Question
+func FindQuestionsByKnowledgePoint(kpID uint, limit int) ([]entity.Question, error) {
+	var questions []entity.Question
 	err := database.DB.Where("knowledge_point_id = ?", kpID).Limit(limit).Find(&questions).Error
 	return questions, err
 }

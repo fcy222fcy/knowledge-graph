@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
 func CreateSession(userID uint, req dto.CreateSessionRequest) (*dto.AskSessionResponse, error) {
-	session := &model.AskSession{
+	session := &entity.AskSession{
 		UserID: userID,
 		Title:  req.Title,
 	}
@@ -67,7 +67,7 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 	// Auto-create or reuse session
 	sessionID := req.ConversationID
 	if sessionID == 0 {
-		session := &model.AskSession{
+		session := &entity.AskSession{
 			UserID: userID,
 			Title:  req.Question,
 		}
@@ -76,7 +76,7 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 	}
 
 	// Save user message
-	userMsg := &model.AskMessage{
+	userMsg := &entity.AskMessage{
 		SessionID: sessionID,
 		Role:      "user",
 		Content:   req.Question,
@@ -96,7 +96,7 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 	}
 
 	// Save assistant message
-	assistantMsg := &model.AskMessage{
+	assistantMsg := &entity.AskMessage{
 		SessionID:  sessionID,
 		Role:       "assistant",
 		Content:    answer,

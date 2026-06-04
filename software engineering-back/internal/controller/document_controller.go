@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"software_engineering/internal/dto"
+	"software_engineering/internal/model/dto"
 	"software_engineering/internal/service"
 	"software_engineering/internal/utils"
 )

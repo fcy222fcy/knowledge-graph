@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
@@ -16,7 +16,7 @@ func SubmitQuiz(userID uint, req dto.SubmitQuizRequest) (*dto.QuizResponse, erro
 
 	isCorrect := question.Answer == req.UserAnswer
 
-	quiz := &model.Quiz{
+	quiz := &entity.Quiz{
 		QuestionID: req.QuestionID,
 		UserID:     userID,
 		UserAnswer: req.UserAnswer,

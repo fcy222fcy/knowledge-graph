@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
@@ -45,7 +45,7 @@ func UploadDocument(title, description string, filename string, fileSize int64, 
 		title = filename
 	}
 
-	doc := &model.Document{
+	doc := &entity.Document{
 		Title:       title,
 		Description: description,
 		Filename:    filename,

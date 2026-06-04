@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
@@ -17,7 +17,7 @@ func parseOptions(optionsJSON string) []dto.QuestionOption {
 
 func CreateQuestion(req dto.CreateQuestionRequest) (uint, error) {
 	optionsJSON, _ := json.Marshal(req.Options)
-	q := &model.Question{
+	q := &entity.Question{
 		Title:            req.Title,
 		Type:             req.Type,
 		Difficulty:       req.Difficulty,

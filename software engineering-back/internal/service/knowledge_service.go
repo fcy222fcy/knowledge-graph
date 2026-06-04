@@ -3,13 +3,13 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
 func CreateKnowledgePoint(req dto.CreateKnowledgePointRequest) (uint, error) {
-	kp := &model.KnowledgePoint{
+	kp := &entity.KnowledgePoint{
 		Name:        req.Name,
 		Description: req.Description,
 		DocumentID:  req.DocumentID,
@@ -92,7 +92,7 @@ func CreateRelation(req dto.CreateRelationRequest) (uint, error) {
 	if _, err := repository.FindKnowledgePointByID(req.TargetID); err != nil {
 		return 0, errors.New("目标知识点不存在")
 	}
-	rel := &model.KnowledgeRelation{
+	rel := &entity.KnowledgeRelation{
 		SourceID:     req.SourceID,
 		TargetID:     req.TargetID,
 		RelationType: req.RelationType,

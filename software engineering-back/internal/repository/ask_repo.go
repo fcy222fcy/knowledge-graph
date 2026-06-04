@@ -2,36 +2,36 @@ package repository
 
 import (
 	"software_engineering/internal/database"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/entity"
 )
 
-func CreateAskSession(session *model.AskSession) error {
+func CreateAskSession(session *entity.AskSession) error {
 	return database.DB.Create(session).Error
 }
 
-func FindAskSessionByID(id uint) (*model.AskSession, error) {
-	var session model.AskSession
+func FindAskSessionByID(id uint) (*entity.AskSession, error) {
+	var session entity.AskSession
 	err := database.DB.First(&session, id).Error
 	return &session, err
 }
 
-func ListAskSessionsByUser(userID uint, page, size int) ([]model.AskSession, int64, error) {
-	var sessions []model.AskSession
+func ListAskSessionsByUser(userID uint, page, size int) ([]entity.AskSession, int64, error) {
+	var sessions []entity.AskSession
 	var total int64
-	query := database.DB.Model(&model.AskSession{}).Where("user_id = ?", userID)
+	query := database.DB.Model(&entity.AskSession{}).Where("user_id = ?", userID)
 	query.Count(&total)
 	err := query.Offset((page - 1) * size).Limit(size).Order("updated_at DESC").Find(&sessions).Error
 	return sessions, total, err
 }
 
-func CreateAskMessage(msg *model.AskMessage) error {
+func CreateAskMessage(msg *entity.AskMessage) error {
 	return database.DB.Create(msg).Error
 }
 
-func ListAskMessages(sessionID uint, page, size int) ([]model.AskMessage, int64, error) {
-	var messages []model.AskMessage
+func ListAskMessages(sessionID uint, page, size int) ([]entity.AskMessage, int64, error) {
+	var messages []entity.AskMessage
 	var total int64
-	query := database.DB.Model(&model.AskMessage{}).Where("session_id = ?", sessionID)
+	query := database.DB.Model(&entity.AskMessage{}).Where("session_id = ?", sessionID)
 	query.Count(&total)
 	err := query.Offset((page - 1) * size).Limit(size).Order("created_at ASC").Find(&messages).Error
 	return messages, total, err
@@ -39,12 +39,12 @@ func ListAskMessages(sessionID uint, page, size int) ([]model.AskMessage, int64,
 
 func CountMessagesBySession(sessionID uint) int {
 	var count int64
-	database.DB.Model(&model.AskMessage{}).Where("session_id = ?", sessionID).Count(&count)
+	database.DB.Model(&entity.AskMessage{}).Where("session_id = ?", sessionID).Count(&count)
 	return int(count)
 }
 
-func GetLastMessageBySession(sessionID uint) (*model.AskMessage, error) {
-	var msg model.AskMessage
+func GetLastMessageBySession(sessionID uint) (*entity.AskMessage, error) {
+	var msg entity.AskMessage
 	err := database.DB.Where("session_id = ? AND role = ?", sessionID, "user").Order("created_at DESC").First(&msg).Error
 	return &msg, err
 }

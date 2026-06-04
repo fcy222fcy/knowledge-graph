@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
@@ -21,7 +21,7 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*dto.Gr
 	}
 
 	// Filter points
-	var filteredPoints []model.KnowledgePoint
+	var filteredPoints []entity.KnowledgePoint
 	for _, p := range points {
 		if documentID > 0 && p.DocumentID != documentID {
 			continue
@@ -37,7 +37,7 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*dto.Gr
 		pointIDs[p.ID] = true
 	}
 
-	var filteredRels []model.KnowledgeRelation
+	var filteredRels []entity.KnowledgeRelation
 	for _, r := range rels {
 		if !pointIDs[r.SourceID] && !pointIDs[r.TargetID] {
 			continue
@@ -88,7 +88,7 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 	createdRelations := 0
 
 	// Find points related to the given documents
-	var docPoints []model.KnowledgePoint
+	var docPoints []entity.KnowledgePoint
 	for _, p := range existingPoints {
 		for _, docID := range documentIDs {
 			if p.DocumentID == docID {
@@ -100,7 +100,7 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 	// Create relations between points from the same document
 	for i := 0; i < len(docPoints); i++ {
 		for j := i + 1; j < len(docPoints); j++ {
-			rel := &model.KnowledgeRelation{
+			rel := &entity.KnowledgeRelation{
 				SourceID:     docPoints[i].ID,
 				TargetID:     docPoints[j].ID,
 				RelationType: "RELATED",
@@ -116,7 +116,7 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 		docIDsStr[i] = strconv.Itoa(int(id))
 	}
 
-	build := &model.KnowledgeBuild{
+	build := &entity.KnowledgeBuild{
 		DocumentIDs:      strings.Join(docIDsStr, ","),
 		CreatedPoints:    createdPoints,
 		CreatedRelations: createdRelations,

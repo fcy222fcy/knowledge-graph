@@ -8,8 +8,8 @@ import (
 	"github.com/joho/godotenv"
 	"software_engineering/internal/database"
 	"software_engineering/internal/middleware"
-	"software_engineering/internal/routes"
-	"software_engineering/internal/seed"
+	"software_engineering/internal/api"
+	"software_engineering/internal/repository/seed"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 	r.Use(middleware.CORSMiddleware())
 
 	// Register all routes
-	routes.SetupRoutes(r)
+	api.SetupRoutes(r)
 
 	// Start server
 	port := os.Getenv("SERVER_PORT")

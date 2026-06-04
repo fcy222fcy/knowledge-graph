@@ -2,31 +2,31 @@ package repository
 
 import (
 	"software_engineering/internal/database"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/entity"
 )
 
-func CreateKnowledgePoint(kp *model.KnowledgePoint) error {
+func CreateKnowledgePoint(kp *entity.KnowledgePoint) error {
 	return database.DB.Create(kp).Error
 }
 
-func FindKnowledgePointByID(id uint) (*model.KnowledgePoint, error) {
-	var kp model.KnowledgePoint
+func FindKnowledgePointByID(id uint) (*entity.KnowledgePoint, error) {
+	var kp entity.KnowledgePoint
 	err := database.DB.First(&kp, id).Error
 	return &kp, err
 }
 
-func UpdateKnowledgePoint(kp *model.KnowledgePoint) error {
+func UpdateKnowledgePoint(kp *entity.KnowledgePoint) error {
 	return database.DB.Save(kp).Error
 }
 
 func DeleteKnowledgePoint(id uint) error {
-	return database.DB.Delete(&model.KnowledgePoint{}, id).Error
+	return database.DB.Delete(&entity.KnowledgePoint{}, id).Error
 }
 
-func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]model.KnowledgePoint, int64, error) {
-	var points []model.KnowledgePoint
+func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]entity.KnowledgePoint, int64, error) {
+	var points []entity.KnowledgePoint
 	var total int64
-	query := database.DB.Model(&model.KnowledgePoint{})
+	query := database.DB.Model(&entity.KnowledgePoint{})
 	if keyword != "" {
 		query = query.Where("name LIKE ?", "%"+keyword+"%")
 	}
@@ -38,28 +38,28 @@ func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]mod
 	return points, total, err
 }
 
-func CreateRelation(rel *model.KnowledgeRelation) error {
+func CreateRelation(rel *entity.KnowledgeRelation) error {
 	return database.DB.Create(rel).Error
 }
 
-func FindRelationByID(id uint) (*model.KnowledgeRelation, error) {
-	var rel model.KnowledgeRelation
+func FindRelationByID(id uint) (*entity.KnowledgeRelation, error) {
+	var rel entity.KnowledgeRelation
 	err := database.DB.First(&rel, id).Error
 	return &rel, err
 }
 
-func UpdateRelation(rel *model.KnowledgeRelation) error {
+func UpdateRelation(rel *entity.KnowledgeRelation) error {
 	return database.DB.Save(rel).Error
 }
 
 func DeleteRelation(id uint) error {
-	return database.DB.Delete(&model.KnowledgeRelation{}, id).Error
+	return database.DB.Delete(&entity.KnowledgeRelation{}, id).Error
 }
 
-func ListRelations(page, size int, pointID uint) ([]model.KnowledgeRelation, int64, error) {
-	var rels []model.KnowledgeRelation
+func ListRelations(page, size int, pointID uint) ([]entity.KnowledgeRelation, int64, error) {
+	var rels []entity.KnowledgeRelation
 	var total int64
-	query := database.DB.Model(&model.KnowledgeRelation{})
+	query := database.DB.Model(&entity.KnowledgeRelation{})
 	if pointID > 0 {
 		query = query.Where("source_id = ? OR target_id = ?", pointID, pointID)
 	}
@@ -68,8 +68,8 @@ func ListRelations(page, size int, pointID uint) ([]model.KnowledgeRelation, int
 	return rels, total, err
 }
 
-func GetAllKnowledgePoints() ([]model.KnowledgePoint, error) {
-	var points []model.KnowledgePoint
+func GetAllKnowledgePoints() ([]entity.KnowledgePoint, error) {
+	var points []entity.KnowledgePoint
 	err := database.DB.Find(&points).Error
 	return points, err
 }

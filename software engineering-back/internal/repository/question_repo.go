@@ -2,31 +2,31 @@ package repository
 
 import (
 	"software_engineering/internal/database"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/entity"
 )
 
-func CreateQuestion(q *model.Question) error {
+func CreateQuestion(q *entity.Question) error {
 	return database.DB.Create(q).Error
 }
 
-func FindQuestionByID(id uint) (*model.Question, error) {
-	var q model.Question
+func FindQuestionByID(id uint) (*entity.Question, error) {
+	var q entity.Question
 	err := database.DB.First(&q, id).Error
 	return &q, err
 }
 
-func UpdateQuestion(q *model.Question) error {
+func UpdateQuestion(q *entity.Question) error {
 	return database.DB.Save(q).Error
 }
 
 func DeleteQuestion(id uint) error {
-	return database.DB.Delete(&model.Question{}, id).Error
+	return database.DB.Delete(&entity.Question{}, id).Error
 }
 
-func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]model.Question, int64, error) {
-	var questions []model.Question
+func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]entity.Question, int64, error) {
+	var questions []entity.Question
 	var total int64
-	query := database.DB.Model(&model.Question{})
+	query := database.DB.Model(&entity.Question{})
 	if keyword != "" {
 		query = query.Where("title LIKE ?", "%"+keyword+"%")
 	}

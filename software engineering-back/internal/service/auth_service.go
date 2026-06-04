@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/dto"
-	"software_engineering/internal/model"
+	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 	"software_engineering/internal/utils"
 
@@ -22,7 +22,7 @@ func Register(req dto.RegisterRequest) error {
 		return err
 	}
 
-	user := &model.User{
+	user := &entity.User{
 		Username: req.Username,
 		Password: hash,
 		Email:    req.Email,
