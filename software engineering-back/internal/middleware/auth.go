@@ -2,26 +2,37 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"software_engineering/internal/utils"
 )
 
-// RequireAuth is a stub that checks for token presence.
-// TODO: implement real JWT token validation.
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
-		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":    401,
-				"message": "未授权",
-				"data":    nil,
-			})
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "未授权", "data": nil})
 			c.Abort()
 			return
 		}
-		// Stub: accept any non-empty token, set user_id to 1
-		c.Set("user_id", uint(1))
+
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "无效的令牌格式", "data": nil})
+			c.Abort()
+			return
+		}
+
+		claims, err := utils.ParseToken(parts[1])
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "无效或过期的令牌", "data": nil})
+			c.Abort()
+			return
+		}
+
+		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
 		c.Next()
 	}
 }
