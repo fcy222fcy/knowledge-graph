@@ -6,6 +6,13 @@ export interface GraphNode {
   description: string
   document_id: number
   category?: string
+  // D3 force simulation properties
+  x?: number
+  y?: number
+  vx?: number
+  vy?: number
+  fx?: number | null
+  fy?: number | null
 }
 
 export interface GraphEdge {

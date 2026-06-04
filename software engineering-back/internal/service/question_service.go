@@ -1,0 +1,109 @@
+package service
+
+import (
+	"encoding/json"
+	"errors"
+
+	"software_engineering/internal/dto"
+	"software_engineering/internal/model"
+	"software_engineering/internal/repository"
+)
+
+func parseOptions(optionsJSON string) []dto.QuestionOption {
+	var options []dto.QuestionOption
+	json.Unmarshal([]byte(optionsJSON), &options)
+	return options
+}
+
+func CreateQuestion(req dto.CreateQuestionRequest) (uint, error) {
+	optionsJSON, _ := json.Marshal(req.Options)
+	q := &model.Question{
+		Title:            req.Title,
+		Type:             req.Type,
+		Difficulty:       req.Difficulty,
+		KnowledgePointID: req.KnowledgePointID,
+		Options:          string(optionsJSON),
+		Answer:           req.Answer,
+		Explanation:      req.Explanation,
+	}
+	if err := repository.CreateQuestion(q); err != nil {
+		return 0, err
+	}
+	return q.ID, nil
+}
+
+func GetQuestion(id uint, includeAnswer bool) (*dto.QuestionResponse, error) {
+	q, err := repository.FindQuestionByID(id)
+	if err != nil {
+		return nil, errors.New("题目不存在")
+	}
+	resp := &dto.QuestionResponse{
+		ID:               q.ID,
+		Title:            q.Title,
+		Type:             q.Type,
+		Difficulty:       q.Difficulty,
+		KnowledgePointID: q.KnowledgePointID,
+		Options:          parseOptions(q.Options),
+		CreatedAt:        q.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}
+	if includeAnswer {
+		resp.Answer = q.Answer
+		resp.Explanation = q.Explanation
+	}
+	return resp, nil
+}
+
+func UpdateQuestion(id uint, req dto.UpdateQuestionRequest) error {
+	q, err := repository.FindQuestionByID(id)
+	if err != nil {
+		return errors.New("题目不存在")
+	}
+	if req.Title != "" {
+		q.Title = req.Title
+	}
+	if req.Type != "" {
+		q.Type = req.Type
+	}
+	if req.Difficulty != "" {
+		q.Difficulty = req.Difficulty
+	}
+	if req.Options != nil {
+		optionsJSON, _ := json.Marshal(req.Options)
+		q.Options = string(optionsJSON)
+	}
+	if req.Answer != "" {
+		q.Answer = req.Answer
+	}
+	if req.Explanation != "" {
+		q.Explanation = req.Explanation
+	}
+	return repository.UpdateQuestion(q)
+}
+
+func DeleteQuestion(id uint) error {
+	_, err := repository.FindQuestionByID(id)
+	if err != nil {
+		return errors.New("题目不存在")
+	}
+	return repository.DeleteQuestion(id)
+}
+
+func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]dto.QuestionResponse, int64, error) {
+	questions, total, err := repository.ListQuestions(page, size, keyword, knowledgePointID, difficulty)
+	if err != nil {
+		return nil, 0, err
+	}
+	list := make([]dto.QuestionResponse, len(questions))
+	for i, q := range questions {
+		list[i] = dto.QuestionResponse{
+			ID:               q.ID,
+			Title:            q.Title,
+			Type:             q.Type,
+			Difficulty:       q.Difficulty,
+			KnowledgePointID: q.KnowledgePointID,
+			Options:          parseOptions(q.Options),
+			CreatedAt:        q.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		}
+	}
+	return list, total, nil
+}

@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"software_engineering/internal/controller"
@@ -120,32 +119,4 @@ func healthCheck(c *gin.Context) {
 			"service": "software-engineering-backend",
 		},
 	})
-}
-
-func stubHandler(name string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"code":    200,
-			"message": name + " - 待实现",
-			"data":    nil,
-		})
-	}
-}
-
-func paginatedStub(name string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-		size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
-		c.JSON(http.StatusOK, gin.H{
-			"code":    200,
-			"message": name + " - 待实现",
-			"data": gin.H{
-				"list":       []interface{}{},
-				"total":      0,
-				"page":       page,
-				"size":       size,
-				"total_page": 0,
-			},
-		})
-	}
 }
