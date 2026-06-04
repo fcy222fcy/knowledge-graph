@@ -11,16 +11,26 @@ import (
 )
 
 func GetGraphData(documentID uint, keyword string, relationType string) (*dto.GraphDataResponse, error) {
-	points, err := repository.GetAllKnowledgePointsForGraph()
-	if err != nil {
-		return nil, err
+	// 优先从 Python AI 服务获取
+	if aiClient.IsAvailable() {
+		graphData, err := aiClient.GetGraph()
+		if err == nil {
+			return convertAIGraphToDTO(graphData, documentID, keyword, relationType), nil
+		}
+		// 降级到 Neo4j
 	}
-	rels, err := repository.GetAllRelationsForGraph()
+
+	// 从 Neo4j 获取
+	points, rels, err := repository.GetAllGraphDataFromNeo4j()
 	if err != nil {
 		return nil, err
 	}
 
-	// Filter points
+	return filterAndConvertGraphData(points, rels, documentID, keyword, relationType), nil
+}
+
+func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.KnowledgeRelation, documentID uint, keyword string, relationType string) *dto.GraphDataResponse {
+	// 过滤
 	var filteredPoints []entity.KnowledgePoint
 	for _, p := range points {
 		if documentID > 0 && p.DocumentID != documentID {
@@ -77,40 +87,101 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*dto.Gr
 			NodeCount: len(nodes),
 			EdgeCount: len(edges),
 		},
-	}, nil
+	}
+}
+
+func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *dto.GraphDataResponse {
+	var nodes []dto.GraphNode
+	for _, n := range graphData.Nodes {
+		if documentID > 0 && n.DocumentID != documentID {
+			continue
+		}
+		if keyword != "" && !strings.Contains(n.Name, keyword) {
+			continue
+		}
+		nodes = append(nodes, dto.GraphNode{
+			ID:          n.ID,
+			Name:        n.Name,
+			Description: n.Description,
+			DocumentID:  n.DocumentID,
+			Category:    n.Category,
+		})
+	}
+
+	var edges []dto.GraphEdge
+	for _, e := range graphData.Edges {
+		if relationType != "" && e.RelationType != relationType {
+			continue
+		}
+		edges = append(edges, dto.GraphEdge{
+			Source:       e.Source,
+			Target:       e.Target,
+			RelationType: e.RelationType,
+			Description:  e.Description,
+		})
+	}
+
+	return &dto.GraphDataResponse{
+		Nodes: nodes,
+		Edges: edges,
+		Summary: dto.GraphSummary{
+			NodeCount: len(nodes),
+			EdgeCount: len(edges),
+		},
+	}
 }
 
 func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
-	// Get all knowledge points
-	existingPoints, _ := repository.GetAllKnowledgePointsForGraph()
+	// 从 MySQL 读取文档内容
+	var totalPoints, totalRelations, totalChunks int
 
-	createdPoints := 0
-	createdRelations := 0
+	for _, docID := range documentIDs {
+		doc, err := repository.FindDocumentByID(docID)
+		if err != nil {
+			continue
+		}
 
-	// Find points related to the given documents
-	var docPoints []entity.KnowledgePoint
-	for _, p := range existingPoints {
-		for _, docID := range documentIDs {
+		// 调用 Python AI 服务构建
+		if aiClient.IsAvailable() {
+			resp, err := aiClient.BuildGraph(AIBuildRequest{
+				DocumentID: docID,
+				Title:      doc.Title,
+				Content:    doc.Content,
+				Source:     "document",
+			})
+			if err == nil {
+				totalPoints += resp.CreatedPoints
+				totalRelations += resp.CreatedRelations
+				totalChunks += resp.ChunkCount
+				continue
+			}
+		}
+
+		// 降级：使用简化的本地构建
+		existingPoints, _ := repository.GetAllKnowledgePointsForGraph()
+		var docPoints []entity.KnowledgePoint
+		for _, p := range existingPoints {
 			if p.DocumentID == docID {
 				docPoints = append(docPoints, p)
 			}
 		}
-	}
 
-	// Create relations between points from the same document
-	for i := 0; i < len(docPoints); i++ {
-		for j := i + 1; j < len(docPoints); j++ {
-			rel := &entity.KnowledgeRelation{
-				SourceID:     docPoints[i].ID,
-				TargetID:     docPoints[j].ID,
-				RelationType: "RELATED",
-				Description:  fmt.Sprintf("%s 与 %s 相关", docPoints[i].Name, docPoints[j].Name),
+		for i := 0; i < len(docPoints); i++ {
+			for j := i + 1; j < len(docPoints); j++ {
+				rel := &entity.KnowledgeRelation{
+					SourceID:     docPoints[i].ID,
+					TargetID:     docPoints[j].ID,
+					RelationType: "RELATED",
+					Description:  fmt.Sprintf("%s 与 %s 相关", docPoints[i].Name, docPoints[j].Name),
+				}
+				repository.CreateRelation(rel)
+				totalRelations++
 			}
-			repository.CreateRelation(rel)
-			createdRelations++
 		}
+		totalChunks += len(docPoints)
 	}
 
+	// 记录构建历史
 	docIDsStr := make([]string, len(documentIDs))
 	for i, id := range documentIDs {
 		docIDsStr[i] = strconv.Itoa(int(id))
@@ -118,10 +189,10 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 
 	build := &entity.KnowledgeBuild{
 		DocumentIDs:      strings.Join(docIDsStr, ","),
-		CreatedPoints:    createdPoints,
-		CreatedRelations: createdRelations,
-		ChunkCount:       len(docPoints),
-		VectorCount:      len(docPoints) * 3,
+		CreatedPoints:    totalPoints,
+		CreatedRelations: totalRelations,
+		ChunkCount:       totalChunks,
+		VectorCount:      totalChunks * 3,
 		Status:           "completed",
 		Message:          "知识图谱构建完成",
 	}
@@ -129,8 +200,8 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 
 	return &dto.BuildGraphResponse{
 		BuildID:          build.ID,
-		CreatedPoints:    createdPoints,
-		CreatedRelations: createdRelations,
+		CreatedPoints:    totalPoints,
+		CreatedRelations: totalRelations,
 		ChunkCount:       build.ChunkCount,
 		VectorCount:      build.VectorCount,
 		Status:           build.Status,

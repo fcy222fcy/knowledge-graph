@@ -64,7 +64,7 @@ func ListSessionMessages(sessionID uint, page, size int) ([]dto.AskMessageRespon
 }
 
 func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
-	// Auto-create or reuse session
+	// 自动创建或复用会话
 	sessionID := req.ConversationID
 	if sessionID == 0 {
 		session := &entity.AskSession{
@@ -75,7 +75,7 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 		sessionID = session.ID
 	}
 
-	// Save user message
+	// 保存用户消息
 	userMsg := &entity.AskMessage{
 		SessionID: sessionID,
 		Role:      "user",
@@ -83,24 +83,50 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 	}
 	repository.CreateAskMessage(userMsg)
 
-	// Simplified keyword-matching answer
-	answer := fmt.Sprintf("关于「%s」的回答：这是系统生成的示例回答。在生产环境中，这里会接入语义检索和 AI 生成。", req.Question)
-
-	// Find related knowledge points
-	points, _ := repository.GetAllKnowledgePoints()
+	// 尝试调用 Python AI 服务进行语义检索
+	var answer string
+	var confidence float64
+	var sources []dto.AskSource
 	var related []dto.KPRef
-	for _, p := range points {
-		if strings.Contains(req.Question, p.Name) || strings.Contains(p.Name, req.Question) {
-			related = append(related, dto.KPRef{ID: p.ID, Name: p.Name, Description: p.Description})
+
+	if aiClient.IsAvailable() {
+		searchResp, err := aiClient.Search(req.Question, 3)
+		if err == nil && len(searchResp.Results) > 0 {
+			// 基于检索结果生成回答
+			answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
+			for i, r := range searchResp.Results {
+				answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+				sources = append(sources, dto.AskSource{
+					DocumentID:    uint(r.DocumentID),
+					DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
+					Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+				})
+			}
+			answer += "以上内容来自知识库语义检索，仅供参考。"
+			confidence = 0.85
 		}
 	}
 
-	// Save assistant message
+	// 降级到简单关键词匹配
+	if answer == "" {
+		answer = fmt.Sprintf("关于「%s」的回答：这是系统生成的示例回答。在生产环境中，这里会接入语义检索和 AI 生成。", req.Question)
+		confidence = 0.6
+
+		// 查找相关知识点
+		points, _ := repository.GetAllKnowledgePoints()
+		for _, p := range points {
+			if strings.Contains(req.Question, p.Name) || strings.Contains(p.Name, req.Question) {
+				related = append(related, dto.KPRef{ID: p.ID, Name: p.Name, Description: p.Description})
+			}
+		}
+	}
+
+	// 保存助手消息
 	assistantMsg := &entity.AskMessage{
 		SessionID:  sessionID,
 		Role:       "assistant",
 		Content:    answer,
-		Confidence: 0.75,
+		Confidence: confidence,
 	}
 	repository.CreateAskMessage(assistantMsg)
 
@@ -108,15 +134,14 @@ func Ask(userID uint, req dto.AskRequest) (*dto.AskResponse, error) {
 		ConversationID:         sessionID,
 		QuestionID:             userMsg.ID,
 		Answer:                 answer,
-		Confidence:             0.75,
-		Sources:                []dto.AskSource{},
+		Confidence:             confidence,
+		Sources:                sources,
 		RelatedKnowledgePoints: related,
 		CreatedAt:              assistantMsg.CreatedAt.Format("2006-01-02T15:04:05Z"),
 	}, nil
 }
 
 func ListAskHistory(userID uint, page, size int, conversationID uint) ([]dto.AskResponse, int64, error) {
-	// Simplified: return session list as history
 	sessions, total, err := repository.ListAskSessionsByUser(userID, page, size)
 	if err != nil {
 		return nil, 0, err
@@ -135,4 +160,11 @@ func ListAskHistory(userID uint, page, size int, conversationID uint) ([]dto.Ask
 		}
 	}
 	return list, total, nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
