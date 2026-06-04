@@ -1,0 +1,4 @@
+=== RUN   TestBuildGraphFromDocumentReadsExampleMarkdownFile
+--- PASS: TestBuildGraphFromDocumentReadsExampleMarkdownFile (0.03s)
+PASS
+ok  	software_engineering/internal/service	0.847s

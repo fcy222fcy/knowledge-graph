@@ -1,0 +1,6 @@
+# test log
+open doc\examples\SQL语法.md
+stat E:\goCode\goFile\software engineering\internal\service\go.mod
+stat E:\goCode\goFile\software engineering\internal\go.mod
+stat E:\goCode\goFile\software engineering\go.mod
+open E:\goCode\goFile\software engineering\doc\examples\SQL语法.md

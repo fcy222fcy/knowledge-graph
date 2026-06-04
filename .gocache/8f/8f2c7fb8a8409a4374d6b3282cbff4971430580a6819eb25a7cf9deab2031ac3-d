@@ -1,0 +1,21 @@
+# test log
+open notes.md
+stat E:\goCode\goFile\software engineering\internal\service\go.mod
+stat E:\goCode\goFile\software engineering\internal\go.mod
+stat E:\goCode\goFile\software engineering\go.mod
+open E:\goCode\goFile\software engineering\notes.md
+open notes.md
+stat E:\goCode\goFile\software engineering\internal\service\go.mod
+stat E:\goCode\goFile\software engineering\internal\go.mod
+stat E:\goCode\goFile\software engineering\go.mod
+open E:\goCode\goFile\software engineering\notes.md
+open doc\examples\SQL语法.md
+stat E:\goCode\goFile\software engineering\internal\service\go.mod
+stat E:\goCode\goFile\software engineering\internal\go.mod
+stat E:\goCode\goFile\software engineering\go.mod
+open E:\goCode\goFile\software engineering\doc\examples\SQL语法.md
+open doc\examples\Redis(Remote dictionary server).md
+stat E:\goCode\goFile\software engineering\internal\service\go.mod
+stat E:\goCode\goFile\software engineering\internal\go.mod
+stat E:\goCode\goFile\software engineering\go.mod
+open E:\goCode\goFile\software engineering\doc\examples\Redis(Remote dictionary server).md

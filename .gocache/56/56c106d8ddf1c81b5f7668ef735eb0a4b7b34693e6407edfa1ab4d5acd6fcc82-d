@@ -1,0 +1,8 @@
+=== RUN   TestAskUsesAISemanticSearchAndRecordsQA
+--- PASS: TestAskUsesAISemanticSearchAndRecordsQA (0.00s)
+=== RUN   TestBuildGraphUsesAIClientStatsAndMirrorsGraph
+--- PASS: TestBuildGraphUsesAIClientStatsAndMirrorsGraph (0.00s)
+=== RUN   TestGraphUsesAIClientWhenConfigured
+--- PASS: TestGraphUsesAIClientWhenConfigured (0.00s)
+PASS
+ok  	software_engineering/internal/service	0.796s

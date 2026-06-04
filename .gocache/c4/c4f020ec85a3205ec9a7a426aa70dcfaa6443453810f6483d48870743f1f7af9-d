@@ -1,0 +1,20 @@
+=== RUN   TestAskUsesAISemanticSearchAndRecordsQA
+--- PASS: TestAskUsesAISemanticSearchAndRecordsQA (0.00s)
+=== RUN   TestAskReturnsMatchedKnowledgeReferenceAndRelatedPoints
+--- PASS: TestAskReturnsMatchedKnowledgeReferenceAndRelatedPoints (0.00s)
+=== RUN   TestAskReturnsReadableFallbackWhenNoKnowledgeMatches
+--- PASS: TestAskReturnsReadableFallbackWhenNoKnowledgeMatches (0.00s)
+=== RUN   TestBuildGraphUsesAIClientStatsAndMirrorsGraph
+--- PASS: TestBuildGraphUsesAIClientStatsAndMirrorsGraph (0.00s)
+=== RUN   TestGraphUsesAIClientWhenConfigured
+--- PASS: TestGraphUsesAIClientWhenConfigured (0.00s)
+=== RUN   TestBuildGraphFromDocumentRejectsEmptyContent
+--- PASS: TestBuildGraphFromDocumentRejectsEmptyContent (0.00s)
+=== RUN   TestBuildGraphFromDocumentCreatesKnowledgeAndSkipsDuplicates
+--- PASS: TestBuildGraphFromDocumentCreatesKnowledgeAndSkipsDuplicates (0.00s)
+=== RUN   TestBuildGraphFromDocumentReadsExampleMarkdownFile
+--- PASS: TestBuildGraphFromDocumentReadsExampleMarkdownFile (0.01s)
+=== RUN   TestBuildGraphFromDocumentExtractsTermsFromExampleMarkdownBody
+--- PASS: TestBuildGraphFromDocumentExtractsTermsFromExampleMarkdownBody (0.01s)
+PASS
+ok  	software_engineering/internal/service	0.068s
