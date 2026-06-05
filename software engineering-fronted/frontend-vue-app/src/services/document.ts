@@ -1,10 +1,11 @@
-import request from '@/utils/request'
+import request, { USE_MOCK } from '@/utils/request'
+import { mockDocument } from './mock'
 
 export interface DocumentItem {
   id: number
   title: string
   description: string
-  filename: string
+  filename?: string
   file_size: number
   file_type: string
   status: string
@@ -22,13 +23,16 @@ export interface DocumentListParams {
 export interface PaginatedResponse<T> {
   list: T[]
   total: number
-  page: number
-  size: number
-  total_page: number
+  page?: number
+  size?: number
+  total_page?: number
 }
 
 // 上传文档
-export function uploadDocument(file: File, title?: string, description?: string) {
+export async function uploadDocument(file: File, title?: string, description?: string) {
+  if (USE_MOCK) {
+    return mockDocument.uploadDocument(file, title, description) as Promise<any>
+  }
   const formData = new FormData()
   formData.append('file', file)
   if (title) formData.append('title', title)
@@ -39,12 +43,18 @@ export function uploadDocument(file: File, title?: string, description?: string)
 }
 
 // 文档列表
-export function getDocumentList(params: DocumentListParams) {
+export async function getDocumentList(params: DocumentListParams) {
+  if (USE_MOCK) {
+    return mockDocument.getDocumentList(params) as Promise<any>
+  }
   return request.get<PaginatedResponse<DocumentItem>>('/documents', { params })
 }
 
 // 文档详情
-export function getDocumentDetail(id: number) {
+export async function getDocumentDetail(id: number) {
+  if (USE_MOCK) {
+    return mockDocument.getDocumentDetail(id) as Promise<any>
+  }
   return request.get<DocumentItem>(`/documents/${id}`)
 }
 
@@ -54,11 +64,17 @@ export function updateDocument(id: number, data: { title?: string; description?:
 }
 
 // 删除文档
-export function deleteDocument(id: number) {
+export async function deleteDocument(id: number) {
+  if (USE_MOCK) {
+    return mockDocument.deleteDocument(id) as Promise<any>
+  }
   return request.delete(`/documents/${id}`)
 }
 
 // 获取文档内容
-export function getDocumentContent(id: number) {
+export async function getDocumentContent(id: number) {
+  if (USE_MOCK) {
+    return mockDocument.getDocumentContent(id) as Promise<any>
+  }
   return request.get<{ id: number; title: string; content: string }>(`/documents/${id}/content`)
 }

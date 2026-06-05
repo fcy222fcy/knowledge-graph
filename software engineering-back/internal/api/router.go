@@ -4,6 +4,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"software_engineering/internal/api/v1/analytics"
+	"software_engineering/internal/api/v1/ask"
+	"software_engineering/internal/api/v1/auth"
+	"software_engineering/internal/api/v1/document"
+	"software_engineering/internal/api/v1/graph"
+	"software_engineering/internal/api/v1/knowledge"
+	"software_engineering/internal/api/v1/question"
+	"software_engineering/internal/api/v1/quiz"
+	"software_engineering/internal/api/v1/user"
 	"software_engineering/internal/middleware"
 )
 
@@ -13,21 +22,21 @@ func SetupRoutes(r *gin.Engine) {
 		// Health check
 		api.GET("/health", healthCheck)
 
-		// 注册各模块路由
-		RegisterAuthRoutes(api)
+		// Public routes
+		auth.RegisterRoutes(api)
 
 		// Protected routes
 		protected := api.Group("")
 		protected.Use(middleware.RequireAuth())
 		{
-			RegisterUserRoutes(protected)
-			RegisterDocumentRoutes(protected)
-			RegisterKnowledgeRoutes(protected)
-			RegisterGraphRoutes(protected)
-			RegisterQuestionRoutes(protected)
-			RegisterQuizRoutes(protected)
-			RegisterAskRoutes(protected)
-			RegisterAnalyticsRoutes(protected)
+			user.RegisterRoutes(protected)
+			document.RegisterRoutes(protected)
+			knowledge.RegisterRoutes(protected)
+			graph.RegisterRoutes(protected)
+			question.RegisterRoutes(protected)
+			quiz.RegisterRoutes(protected)
+			ask.RegisterRoutes(protected)
+			analytics.RegisterRoutes(protected)
 		}
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"software_engineering/internal/utils"
+	"software_engineering/pkg/jwt"
 )
 
 func RequireAuth() gin.HandlerFunc {
@@ -24,7 +24,7 @@ func RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := utils.ParseToken(parts[1])
+		claims, err := jwt.ParseToken(parts[1])
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "无效或过期的令牌", "data": nil})
 			c.Abort()

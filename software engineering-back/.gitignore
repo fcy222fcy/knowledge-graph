@@ -23,3 +23,8 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Python local artifacts
+venv/
+__pycache__/
+*.pyc

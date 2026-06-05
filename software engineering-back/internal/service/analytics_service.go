@@ -3,11 +3,11 @@ package service
 import (
 	"math"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/repository"
 )
 
-func GetOverview(userID uint) (*dto.OverviewResponse, error) {
+func GetOverview(userID uint) (*response.OverviewResponse, error) {
 	totalQuizzes, _ := repository.CountQuizzesByUser(userID)
 	correctQuizzes, _ := repository.CountCorrectQuizzesByUser(userID)
 	_, _ = repository.CountTodayQuizzesByUser(userID)
@@ -37,7 +37,7 @@ func GetOverview(userID uint) (*dto.OverviewResponse, error) {
 		masteryRate = math.Round(float64(mastered)/float64(totalPoints)*100) / 100
 	}
 
-	return &dto.OverviewResponse{
+	return &response.OverviewResponse{
 		TodayLearningHours:      float64(todayMessages) * 0.1,
 		TodayQuestionsAsked:     int(todayMessages),
 		TotalLearningHours:      float64(totalMessages) * 0.1,
@@ -50,15 +50,15 @@ func GetOverview(userID uint) (*dto.OverviewResponse, error) {
 	}, nil
 }
 
-func GetHotKnowledgePoints(limit int) ([]dto.HotKnowledgePoint, error) {
+func GetHotKnowledgePoints(limit int) ([]response.HotKnowledgePoint, error) {
 	points, _ := repository.GetAllKnowledgePointsForGraph()
 	totalMap, correctMap, _ := repository.GetQuizzesByKnowledgePoint(0)
 
-	var result []dto.HotKnowledgePoint
+	var result []response.HotKnowledgePoint
 	for _, p := range points {
 		heat := totalMap[p.ID] * 10
 		if heat > 0 {
-			result = append(result, dto.HotKnowledgePoint{
+			result = append(result, response.HotKnowledgePoint{
 				KnowledgePointID:   p.ID,
 				KnowledgePointName: p.Name,
 				Heat:               heat,
@@ -83,11 +83,11 @@ func GetHotKnowledgePoints(limit int) ([]dto.HotKnowledgePoint, error) {
 	return result, nil
 }
 
-func GetKnowledgeMastery(userID uint) ([]dto.KnowledgeMastery, error) {
+func GetKnowledgeMastery(userID uint) ([]response.KnowledgeMastery, error) {
 	points, _ := repository.GetAllKnowledgePointsForGraph()
 	totalMap, correctMap, _ := repository.GetQuizzesByKnowledgePoint(userID)
 
-	var result []dto.KnowledgeMastery
+	var result []response.KnowledgeMastery
 	for _, p := range points {
 		total := totalMap[p.ID]
 		correct := correctMap[p.ID]
@@ -101,7 +101,7 @@ func GetKnowledgeMastery(userID uint) ([]dto.KnowledgeMastery, error) {
 		} else if rate >= 0.5 {
 			level = "learning"
 		}
-		result = append(result, dto.KnowledgeMastery{
+		result = append(result, response.KnowledgeMastery{
 			KnowledgePointID:   p.ID,
 			KnowledgePointName: p.Name,
 			TotalQuestions:      total,
@@ -113,22 +113,22 @@ func GetKnowledgeMastery(userID uint) ([]dto.KnowledgeMastery, error) {
 	return result, nil
 }
 
-func GetWeakPoints(userID uint, limit int) ([]dto.WeakPoint, error) {
+func GetWeakPoints(userID uint, limit int) ([]response.WeakPoint, error) {
 	masteries, _ := GetKnowledgeMastery(userID)
 
-	var result []dto.WeakPoint
+	var result []response.WeakPoint
 	for _, m := range masteries {
 		if m.Level == "weak" || m.Level == "learning" {
 			// Fetch suggested questions for this knowledge point
-			suggested := make([]dto.SuggestedQuestion, 0)
+			suggested := make([]response.SuggestedQuestion, 0)
 			questions, _ := repository.FindQuestionsByKnowledgePoint(m.KnowledgePointID, 3)
 			for _, q := range questions {
-				suggested = append(suggested, dto.SuggestedQuestion{
+				suggested = append(suggested, response.SuggestedQuestion{
 					ID:    q.ID,
 					Title: q.Title,
 				})
 			}
-			result = append(result, dto.WeakPoint{
+			result = append(result, response.WeakPoint{
 				KnowledgePointID:   m.KnowledgePointID,
 				KnowledgePointName: m.KnowledgePointName,
 				CorrectRate:        m.MasteryRate,
@@ -143,16 +143,16 @@ func GetWeakPoints(userID uint, limit int) ([]dto.WeakPoint, error) {
 	return result, nil
 }
 
-func GetTrends(userID uint, days int) (*dto.TrendData, error) {
+func GetTrends(userID uint, days int) (*response.TrendData, error) {
 	dailyStats, _ := repository.GetDailyQuizStats(userID, days)
 
-	var trends []dto.DailyStat
+	var trends []response.DailyStat
 	for _, d := range dailyStats {
 		rate := 0.0
 		if d.Total > 0 {
 			rate = float64(d.Correct) / float64(d.Total)
 		}
-		trends = append(trends, dto.DailyStat{
+		trends = append(trends, response.DailyStat{
 			Date:           d.Date,
 			QuestionsAsked: d.Total,
 			LearningHours:  float64(d.Total) * 0.1,
@@ -160,8 +160,8 @@ func GetTrends(userID uint, days int) (*dto.TrendData, error) {
 		})
 	}
 
-	return &dto.TrendData{
+	return &response.TrendData{
 		DailyStats:  trends,
-		WeeklyTrend: []dto.WeeklyTrend{},
+		WeeklyTrend: []response.WeeklyTrend{},
 	}, nil
 }

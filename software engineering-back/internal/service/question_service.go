@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
-func parseOptions(optionsJSON string) []dto.QuestionOption {
-	var options []dto.QuestionOption
+func parseOptions(optionsJSON string) []response.QuestionOption {
+	var options []response.QuestionOption
 	json.Unmarshal([]byte(optionsJSON), &options)
 	return options
 }
 
-func CreateQuestion(req dto.CreateQuestionRequest) (uint, error) {
+func CreateQuestion(req request.CreateQuestionRequest) (uint, error) {
 	optionsJSON, _ := json.Marshal(req.Options)
 	q := &entity.Question{
 		Title:            req.Title,
@@ -32,12 +33,12 @@ func CreateQuestion(req dto.CreateQuestionRequest) (uint, error) {
 	return q.ID, nil
 }
 
-func GetQuestion(id uint, includeAnswer bool) (*dto.QuestionResponse, error) {
+func GetQuestion(id uint, includeAnswer bool) (*response.QuestionResponse, error) {
 	q, err := repository.FindQuestionByID(id)
 	if err != nil {
 		return nil, errors.New("题目不存在")
 	}
-	resp := &dto.QuestionResponse{
+	resp := &response.QuestionResponse{
 		ID:               q.ID,
 		Title:            q.Title,
 		Type:             q.Type,
@@ -53,7 +54,7 @@ func GetQuestion(id uint, includeAnswer bool) (*dto.QuestionResponse, error) {
 	return resp, nil
 }
 
-func UpdateQuestion(id uint, req dto.UpdateQuestionRequest) error {
+func UpdateQuestion(id uint, req request.UpdateQuestionRequest) error {
 	q, err := repository.FindQuestionByID(id)
 	if err != nil {
 		return errors.New("题目不存在")
@@ -88,14 +89,14 @@ func DeleteQuestion(id uint) error {
 	return repository.DeleteQuestion(id)
 }
 
-func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]dto.QuestionResponse, int64, error) {
+func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]response.QuestionResponse, int64, error) {
 	questions, total, err := repository.ListQuestions(page, size, keyword, knowledgePointID, difficulty)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := make([]dto.QuestionResponse, len(questions))
+	list := make([]response.QuestionResponse, len(questions))
 	for i, q := range questions {
-		list[i] = dto.QuestionResponse{
+		list[i] = response.QuestionResponse{
 			ID:               q.ID,
 			Title:            q.Title,
 			Type:             q.Type,

@@ -3,12 +3,13 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
-func CreateKnowledgePoint(req dto.CreateKnowledgePointRequest) (uint, error) {
+func CreateKnowledgePoint(req request.CreateKnowledgePointRequest) (uint, error) {
 	kp := &entity.KnowledgePoint{
 		Name:        req.Name,
 		Description: req.Description,
@@ -21,12 +22,12 @@ func CreateKnowledgePoint(req dto.CreateKnowledgePointRequest) (uint, error) {
 	return kp.ID, nil
 }
 
-func GetKnowledgePoint(id uint) (*dto.KnowledgePointResponse, error) {
+func GetKnowledgePoint(id uint) (*response.KnowledgePointResponse, error) {
 	kp, err := repository.FindKnowledgePointByID(id)
 	if err != nil {
 		return nil, errors.New("知识点不存在")
 	}
-	return &dto.KnowledgePointResponse{
+	return &response.KnowledgePointResponse{
 		ID:          kp.ID,
 		Name:        kp.Name,
 		Description: kp.Description,
@@ -37,7 +38,7 @@ func GetKnowledgePoint(id uint) (*dto.KnowledgePointResponse, error) {
 	}, nil
 }
 
-func UpdateKnowledgePoint(id uint, req dto.UpdateKnowledgePointRequest) error {
+func UpdateKnowledgePoint(id uint, req request.UpdateKnowledgePointRequest) error {
 	kp, err := repository.FindKnowledgePointByID(id)
 	if err != nil {
 		return errors.New("知识点不存在")
@@ -62,14 +63,14 @@ func DeleteKnowledgePoint(id uint) error {
 	return repository.DeleteKnowledgePoint(id)
 }
 
-func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]dto.KnowledgePointResponse, int64, error) {
+func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]response.KnowledgePointResponse, int64, error) {
 	points, total, err := repository.ListKnowledgePoints(page, size, keyword, documentID)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := make([]dto.KnowledgePointResponse, len(points))
+	list := make([]response.KnowledgePointResponse, len(points))
 	for i, p := range points {
-		list[i] = dto.KnowledgePointResponse{
+		list[i] = response.KnowledgePointResponse{
 			ID:          p.ID,
 			Name:        p.Name,
 			Description: p.Description,
@@ -84,7 +85,7 @@ func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]dto
 
 // --- 关系 ---
 
-func CreateRelation(req dto.CreateRelationRequest) (uint, error) {
+func CreateRelation(req request.CreateRelationRequest) (uint, error) {
 	// 验证源和目标知识点存在
 	if _, err := repository.FindKnowledgePointByID(req.SourceID); err != nil {
 		return 0, errors.New("源知识点不存在")
@@ -104,7 +105,7 @@ func CreateRelation(req dto.CreateRelationRequest) (uint, error) {
 	return rel.ID, nil
 }
 
-func UpdateRelation(id uint, req dto.UpdateRelationRequest) error {
+func UpdateRelation(id uint, req request.UpdateRelationRequest) error {
 	rel, err := repository.FindRelationByID(id)
 	if err != nil {
 		return errors.New("关系不存在")
@@ -126,7 +127,7 @@ func DeleteRelation(id uint) error {
 	return repository.DeleteRelation(id)
 }
 
-func ListRelations(page, size int, pointID uint) ([]dto.KnowledgeRelationResponse, int64, error) {
+func ListRelations(page, size int, pointID uint) ([]response.KnowledgeRelationResponse, int64, error) {
 	rels, total, err := repository.ListRelations(page, size, pointID)
 	if err != nil {
 		return nil, 0, err
@@ -145,9 +146,9 @@ func ListRelations(page, size int, pointID uint) ([]dto.KnowledgeRelationRespons
 		}
 	}
 
-	list := make([]dto.KnowledgeRelationResponse, len(rels))
+	list := make([]response.KnowledgeRelationResponse, len(rels))
 	for i, r := range rels {
-		list[i] = dto.KnowledgeRelationResponse{
+		list[i] = response.KnowledgeRelationResponse{
 			ID:           r.ID,
 			SourceID:     r.SourceID,
 			SourceName:   names[r.SourceID],

@@ -7,14 +7,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
 const uploadDir = "./uploads"
 
-func UploadDocument(title, description string, filename string, fileSize int64, fileType string, contentReader io.Reader) (*dto.DocumentResponse, error) {
+func UploadDocument(userID uint, title, description string, filename string, fileSize int64, fileType string, contentReader io.Reader) (*response.DocumentResponse, error) {
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		return nil, err
 	}
@@ -46,6 +47,7 @@ func UploadDocument(title, description string, filename string, fileSize int64, 
 	}
 
 	doc := &entity.Document{
+		UserID:      userID,
 		Title:       title,
 		Description: description,
 		Filename:    filename,
@@ -59,7 +61,7 @@ func UploadDocument(title, description string, filename string, fileSize int64, 
 		return nil, err
 	}
 
-	return &dto.DocumentResponse{
+	return &response.DocumentResponse{
 		ID:          doc.ID,
 		Title:       doc.Title,
 		Description: doc.Description,
@@ -72,7 +74,7 @@ func UploadDocument(title, description string, filename string, fileSize int64, 
 	}, nil
 }
 
-func GetDocument(id uint) (*dto.DocumentResponse, error) {
+func GetDocument(id uint) (*response.DocumentResponse, error) {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
 		return nil, errors.New("文档不存在")
@@ -81,7 +83,7 @@ func GetDocument(id uint) (*dto.DocumentResponse, error) {
 	if len(preview) > 200 {
 		preview = preview[:200] + "..."
 	}
-	return &dto.DocumentResponse{
+	return &response.DocumentResponse{
 		ID:             doc.ID,
 		Title:          doc.Title,
 		Description:    doc.Description,
@@ -95,15 +97,15 @@ func GetDocument(id uint) (*dto.DocumentResponse, error) {
 	}, nil
 }
 
-func GetDocumentContent(id uint) (*dto.DocumentContentResponse, error) {
+func GetDocumentContent(id uint) (*response.DocumentContentResponse, error) {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
 		return nil, errors.New("文档不存在")
 	}
-	return &dto.DocumentContentResponse{ID: doc.ID, Title: doc.Title, Content: doc.Content}, nil
+	return &response.DocumentContentResponse{ID: doc.ID, Title: doc.Title, Content: doc.Content}, nil
 }
 
-func UpdateDocument(id uint, req dto.UpdateDocumentRequest) error {
+func UpdateDocument(id uint, req request.UpdateDocumentRequest) error {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
 		return errors.New("文档不存在")
@@ -129,14 +131,36 @@ func DeleteDocument(id uint) error {
 	return repository.DeleteDocument(id)
 }
 
-func ListDocuments(page, size int, keyword, status string) ([]dto.DocumentResponse, int64, error) {
+func ListDocuments(page, size int, keyword, status string) ([]response.DocumentResponse, int64, error) {
 	docs, total, err := repository.ListDocuments(page, size, keyword, status)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := make([]dto.DocumentResponse, len(docs))
+	list := make([]response.DocumentResponse, len(docs))
 	for i, d := range docs {
-		list[i] = dto.DocumentResponse{
+		list[i] = response.DocumentResponse{
+			ID:          d.ID,
+			Title:       d.Title,
+			Description: d.Description,
+			Filename:    d.Filename,
+			FileSize:    d.FileSize,
+			FileType:    d.FileType,
+			Status:      d.Status,
+			CreatedAt:   d.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			UpdatedAt:   d.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+		}
+	}
+	return list, total, nil
+}
+
+func ListUserDocuments(userID uint, page, size int, keyword, status string) ([]response.DocumentResponse, int64, error) {
+	docs, total, err := repository.ListDocumentsByUser(userID, page, size, keyword, status)
+	if err != nil {
+		return nil, 0, err
+	}
+	list := make([]response.DocumentResponse, len(docs))
+	for i, d := range docs {
+		list[i] = response.DocumentResponse{
 			ID:          d.ID,
 			Title:       d.Title,
 			Description: d.Description,

@@ -3,7 +3,7 @@ package repository
 import (
 	"log"
 
-	"software_engineering/internal/database"
+	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
 )
 

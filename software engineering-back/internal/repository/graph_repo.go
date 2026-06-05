@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"software_engineering/internal/database"
+	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
 )
 
@@ -151,6 +151,19 @@ func CreateKnowledgePointInNeo4j(kp *entity.KnowledgePoint) error {
 func CreateRelationInNeo4j(rel *entity.KnowledgeRelation) error {
 	if !database.IsNeo4jAvailable() {
 		return nil
+	}
+
+	// Validate relation type to prevent Cypher injection
+	validRelationTypes := map[string]bool{
+		"RELATED":    true,
+		"DEPENDS_ON": true,
+		"PART_OF":    true,
+		"IMPLEMENTS": true,
+		"EXTENDS":    true,
+		"USES":       true,
+	}
+	if !validRelationTypes[rel.RelationType] {
+		return fmt.Errorf("invalid relation type: %s", rel.RelationType)
 	}
 
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{

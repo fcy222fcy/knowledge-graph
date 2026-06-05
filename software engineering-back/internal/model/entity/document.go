@@ -4,6 +4,7 @@ package entity
 
 type Document struct {
 	BaseModel
+	UserID      uint   `gorm:"index" json:"user_id"`
 	Title       string `gorm:"size:200;not null" json:"title"`
 	Description string `gorm:"size:500" json:"description"`
 	Filename    string `gorm:"size:200;not null" json:"filename"`

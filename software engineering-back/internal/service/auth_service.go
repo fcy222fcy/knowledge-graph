@@ -3,21 +3,23 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
-	"software_engineering/internal/utils"
+	"software_engineering/pkg/bcrypt"
+	"software_engineering/pkg/jwt"
 
 	"gorm.io/gorm"
 )
 
-func Register(req dto.RegisterRequest) error {
+func Register(req request.RegisterRequest) error {
 	existing, _ := repository.FindUserByUsername(req.Username)
 	if existing.ID != 0 {
 		return errors.New("用户名已存在")
 	}
 
-	hash, err := utils.HashPassword(req.Password)
+	hash, err := bcrypt.HashPassword(req.Password)
 	if err != nil {
 		return err
 	}
@@ -32,7 +34,7 @@ func Register(req dto.RegisterRequest) error {
 	return repository.CreateUser(user)
 }
 
-func Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
+func Login(req request.LoginRequest) (*response.LoginResponse, error) {
 	user, err := repository.FindUserByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -45,18 +47,18 @@ func Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 		return nil, errors.New("用户已被禁用")
 	}
 
-	if !utils.CheckPassword(req.Password, user.Password) {
+	if !bcrypt.CheckPassword(req.Password, user.Password) {
 		return nil, errors.New("用户名或密码错误")
 	}
 
-	token, err := utils.GenerateToken(user.ID, user.Username)
+	token, err := jwt.GenerateToken(user.ID, user.Username)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dto.LoginResponse{
+	return &response.LoginResponse{
 		Token: token,
-		User: dto.UserResponse{
+		User: response.UserResponse{
 			ID:        user.ID,
 			Username:  user.Username,
 			Email:     user.Email,
@@ -70,9 +72,9 @@ func Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 }
 
 func RefreshToken(oldToken string) (string, error) {
-	claims, err := utils.ParseToken(oldToken)
+	claims, err := jwt.ParseToken(oldToken)
 	if err != nil {
 		return "", errors.New("无效的令牌")
 	}
-	return utils.GenerateToken(claims.UserID, claims.Username)
+	return jwt.GenerateToken(claims.UserID, claims.Username)
 }

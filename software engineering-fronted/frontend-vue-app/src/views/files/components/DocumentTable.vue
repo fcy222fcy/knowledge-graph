@@ -25,8 +25,8 @@
     </el-table-column>
     <el-table-column label="操作" width="160" fixed="right">
       <template #default="{ row }">
-        <el-button type="primary" link size="small" @click="$emit('view', row)">详情</el-button>
-        <el-button type="danger" link size="small" @click="$emit('delete', row)">删除</el-button>
+        <el-button type="primary" link size="small" @click="$emit('view', row as DocumentItem)">详情</el-button>
+        <el-button type="danger" link size="small" @click="$emit('delete', row as DocumentItem)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -53,8 +53,8 @@ const formatFileSize = (bytes: number) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
-const getFileTagType = (type: string) => {
-  const map: Record<string, string> = {
+const getFileTagType = (type: string): 'danger' | 'primary' | 'warning' | 'success' | 'info' => {
+  const map: Record<string, 'danger' | 'primary' | 'warning' | 'success' | 'info'> = {
     '.pdf': 'danger',
     '.docx': 'primary',
     '.pptx': 'warning',

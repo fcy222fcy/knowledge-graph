@@ -3,17 +3,18 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/repository"
-	"software_engineering/internal/utils"
+	"software_engineering/pkg/bcrypt"
 )
 
-func GetProfile(userID uint) (*dto.UserResponse, error) {
+func GetProfile(userID uint) (*response.UserResponse, error) {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
 		return nil, errors.New("用户不存在")
 	}
-	return &dto.UserResponse{
+	return &response.UserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
@@ -25,7 +26,7 @@ func GetProfile(userID uint) (*dto.UserResponse, error) {
 	}, nil
 }
 
-func UpdateProfile(userID uint, req dto.UpdateProfileRequest) error {
+func UpdateProfile(userID uint, req request.UpdateProfileRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
 		return errors.New("用户不存在")
@@ -39,15 +40,15 @@ func UpdateProfile(userID uint, req dto.UpdateProfileRequest) error {
 	return repository.UpdateUser(user)
 }
 
-func ChangePassword(userID uint, req dto.ChangePasswordRequest) error {
+func ChangePassword(userID uint, req request.ChangePasswordRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
-	if !utils.CheckPassword(req.OldPassword, user.Password) {
+	if !bcrypt.CheckPassword(req.OldPassword, user.Password) {
 		return errors.New("旧密码错误")
 	}
-	hash, err := utils.HashPassword(req.NewPassword)
+	hash, err := bcrypt.HashPassword(req.NewPassword)
 	if err != nil {
 		return err
 	}
@@ -55,14 +56,14 @@ func ChangePassword(userID uint, req dto.ChangePasswordRequest) error {
 	return repository.UpdateUser(user)
 }
 
-func ListUsers(page, size int) (*dto.UserListResponse, error) {
+func ListUsers(page, size int) (*response.UserListResponse, error) {
 	users, total, err := repository.ListUsers(page, size)
 	if err != nil {
 		return nil, err
 	}
-	list := make([]dto.UserResponse, len(users))
+	list := make([]response.UserResponse, len(users))
 	for i, u := range users {
-		list[i] = dto.UserResponse{
+		list[i] = response.UserResponse{
 			ID:        u.ID,
 			Username:  u.Username,
 			Email:     u.Email,
@@ -77,5 +78,5 @@ func ListUsers(page, size int) (*dto.UserListResponse, error) {
 	if int(total)%size > 0 {
 		totalPage++
 	}
-	return &dto.UserListResponse{List: list, Total: total, Page: page, Size: size, TotalPage: totalPage}, nil
+	return &response.UserListResponse{List: list, Total: total, Page: page, Size: size, TotalPage: totalPage}, nil
 }

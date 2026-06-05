@@ -1,4 +1,5 @@
-import request from '@/utils/request'
+import request, { USE_MOCK } from '@/utils/request'
+import { mockGraphApi } from './mock'
 
 export interface GraphNode {
   id: number
@@ -43,12 +44,18 @@ export interface GraphBuildResult {
 }
 
 // 获取图谱数据
-export function getGraphData(params?: { document_id?: number; keyword?: string; relation_type?: string }) {
+export async function getGraphData(params?: { document_id?: number; keyword?: string; relation_type?: string }) {
+  if (USE_MOCK) {
+    return mockGraphApi.getGraphData(params) as Promise<any>
+  }
   return request.get<GraphData>('/graph', { params })
 }
 
 // 从文档构建图谱
-export function buildGraph(document_ids: number[]) {
+export async function buildGraph(document_ids: number[]) {
+  if (USE_MOCK) {
+    return mockGraphApi.buildGraph(document_ids) as Promise<any>
+  }
   return request.post<GraphBuildResult>('/graph/build', { document_ids })
 }
 

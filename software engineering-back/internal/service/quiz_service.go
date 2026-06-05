@@ -3,12 +3,13 @@ package service
 import (
 	"errors"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/request"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
-func SubmitQuiz(userID uint, req dto.SubmitQuizRequest) (*dto.QuizResponse, error) {
+func SubmitQuiz(userID uint, req request.SubmitQuizRequest) (*response.QuizResponse, error) {
 	question, err := repository.FindQuestionByID(req.QuestionID)
 	if err != nil {
 		return nil, errors.New("题目不存在")
@@ -26,7 +27,7 @@ func SubmitQuiz(userID uint, req dto.SubmitQuizRequest) (*dto.QuizResponse, erro
 		return nil, err
 	}
 
-	return &dto.QuizResponse{
+	return &response.QuizResponse{
 		QuizID:        quiz.ID,
 		QuestionID:    question.ID,
 		UserAnswer:    req.UserAnswer,
@@ -37,7 +38,7 @@ func SubmitQuiz(userID uint, req dto.SubmitQuizRequest) (*dto.QuizResponse, erro
 	}, nil
 }
 
-func GetQuizDetail(id uint) (*dto.QuizResponse, error) {
+func GetQuizDetail(id uint) (*response.QuizResponse, error) {
 	quiz, err := repository.FindQuizByID(id)
 	if err != nil {
 		return nil, errors.New("答题记录不存在")
@@ -47,7 +48,7 @@ func GetQuizDetail(id uint) (*dto.QuizResponse, error) {
 		return nil, errors.New("题目不存在")
 	}
 
-	return &dto.QuizResponse{
+	return &response.QuizResponse{
 		QuizID:        quiz.ID,
 		QuestionID:    question.ID,
 		QuestionTitle: question.Title,
@@ -62,15 +63,15 @@ func GetQuizDetail(id uint) (*dto.QuizResponse, error) {
 	}, nil
 }
 
-func ListQuizHistory(userID uint, page, size int, knowledgePointID uint, isCorrect *bool) ([]dto.QuizResponse, int64, error) {
+func ListQuizHistory(userID uint, page, size int, knowledgePointID uint, isCorrect *bool) ([]response.QuizResponse, int64, error) {
 	quizzes, total, err := repository.ListQuizzesByUser(userID, page, size, knowledgePointID, isCorrect)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := make([]dto.QuizResponse, len(quizzes))
+	list := make([]response.QuizResponse, len(quizzes))
 	for i, q := range quizzes {
 		question, _ := repository.FindQuestionByID(q.QuestionID)
-		item := dto.QuizResponse{
+		item := response.QuizResponse{
 			QuizID:     q.ID,
 			QuestionID: q.QuestionID,
 			UserAnswer: q.UserAnswer,

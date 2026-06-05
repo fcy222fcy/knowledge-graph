@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"software_engineering/internal/database"
+	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
 )
 
@@ -36,4 +36,25 @@ func ListDocuments(page, size int, keyword, status string) ([]entity.Document, i
 	query.Count(&total)
 	err := query.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&docs).Error
 	return docs, total, err
+}
+
+func ListDocumentsByUser(userID uint, page, size int, keyword, status string) ([]entity.Document, int64, error) {
+	var docs []entity.Document
+	var total int64
+	query := database.DB.Model(&entity.Document{}).Where("user_id = ?", userID)
+	if keyword != "" {
+		query = query.Where("title LIKE ?", "%"+keyword+"%")
+	}
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	query.Count(&total)
+	err := query.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&docs).Error
+	return docs, total, err
+}
+
+func GetAllDocumentsContent() ([]entity.Document, error) {
+	var docs []entity.Document
+	err := database.DB.Where("content != '' AND status = ?", "completed").Find(&docs).Error
+	return docs, err
 }

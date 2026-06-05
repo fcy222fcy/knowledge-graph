@@ -1,13 +1,20 @@
-import request from '@/utils/request'
+import request, { USE_MOCK } from '@/utils/request'
 import type { LoginParams, RegisterParams, LoginResponse, UserInfo } from '@/types/auth'
+import { mockAuth } from './mock'
 
 // 用户登录
-export function login(data: LoginParams) {
+export async function login(data: LoginParams) {
+  if (USE_MOCK) {
+    return mockAuth.login(data) as Promise<any>
+  }
   return request.post<LoginResponse>('/auth/login', data)
 }
 
 // 用户注册
-export function register(data: RegisterParams) {
+export async function register(data: RegisterParams) {
+  if (USE_MOCK) {
+    return mockAuth.register(data) as Promise<any>
+  }
   return request.post('/auth/register', data)
 }
 

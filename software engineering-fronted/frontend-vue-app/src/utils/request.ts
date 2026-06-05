@@ -2,6 +2,9 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
+// Mock 模式开关 - 设为 true 启用 mock 数据，设为 false 使用真实后端
+const USE_MOCK = false
+
 // 创建 axios 实例
 const request = axios.create({
   baseURL: '/api/v1',
@@ -52,10 +55,16 @@ request.interceptors.response.use(
         ElMessage.error(error.message || '请求失败')
       }
     } else {
-      ElMessage.error('网络错误，请检查网络连接')
+      // 网络错误 - 如果是 mock 模式，静默处理
+      if (!USE_MOCK) {
+        ElMessage.error('网络错误，请检查网络连接')
+      }
     }
     return Promise.reject(error)
   }
 )
+
+// 导出 mock 模式状态
+export { USE_MOCK }
 
 export default request

@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"software_engineering/internal/model/dto"
+	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
 )
 
-func GetGraphData(documentID uint, keyword string, relationType string) (*dto.GraphDataResponse, error) {
+func GetGraphData(documentID uint, keyword string, relationType string) (*response.GraphDataResponse, error) {
 	// 优先从 Python AI 服务获取
 	if aiClient.IsAvailable() {
 		graphData, err := aiClient.GetGraph()
@@ -29,7 +29,7 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*dto.Gr
 	return filterAndConvertGraphData(points, rels, documentID, keyword, relationType), nil
 }
 
-func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.KnowledgeRelation, documentID uint, keyword string, relationType string) *dto.GraphDataResponse {
+func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.KnowledgeRelation, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
 	// 过滤
 	var filteredPoints []entity.KnowledgePoint
 	for _, p := range points {
@@ -58,9 +58,9 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 		filteredRels = append(filteredRels, r)
 	}
 
-	nodes := make([]dto.GraphNode, len(filteredPoints))
+	nodes := make([]response.GraphNode, len(filteredPoints))
 	for i, p := range filteredPoints {
-		nodes[i] = dto.GraphNode{
+		nodes[i] = response.GraphNode{
 			ID:          p.ID,
 			Name:        p.Name,
 			Description: p.Description,
@@ -69,9 +69,9 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 		}
 	}
 
-	edges := make([]dto.GraphEdge, len(filteredRels))
+	edges := make([]response.GraphEdge, len(filteredRels))
 	for i, r := range filteredRels {
-		edges[i] = dto.GraphEdge{
+		edges[i] = response.GraphEdge{
 			ID:           r.ID,
 			Source:       r.SourceID,
 			Target:       r.TargetID,
@@ -80,18 +80,18 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 		}
 	}
 
-	return &dto.GraphDataResponse{
+	return &response.GraphDataResponse{
 		Nodes: nodes,
 		Edges: edges,
-		Summary: dto.GraphSummary{
+		Summary: response.GraphSummary{
 			NodeCount: len(nodes),
 			EdgeCount: len(edges),
 		},
 	}
 }
 
-func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *dto.GraphDataResponse {
-	var nodes []dto.GraphNode
+func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
+	var nodes []response.GraphNode
 	for _, n := range graphData.Nodes {
 		if documentID > 0 && n.DocumentID != documentID {
 			continue
@@ -99,7 +99,7 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 		if keyword != "" && !strings.Contains(n.Name, keyword) {
 			continue
 		}
-		nodes = append(nodes, dto.GraphNode{
+		nodes = append(nodes, response.GraphNode{
 			ID:          n.ID,
 			Name:        n.Name,
 			Description: n.Description,
@@ -108,12 +108,12 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 		})
 	}
 
-	var edges []dto.GraphEdge
+	var edges []response.GraphEdge
 	for _, e := range graphData.Edges {
 		if relationType != "" && e.RelationType != relationType {
 			continue
 		}
-		edges = append(edges, dto.GraphEdge{
+		edges = append(edges, response.GraphEdge{
 			Source:       e.Source,
 			Target:       e.Target,
 			RelationType: e.RelationType,
@@ -121,17 +121,17 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 		})
 	}
 
-	return &dto.GraphDataResponse{
+	return &response.GraphDataResponse{
 		Nodes: nodes,
 		Edges: edges,
-		Summary: dto.GraphSummary{
+		Summary: response.GraphSummary{
 			NodeCount: len(nodes),
 			EdgeCount: len(edges),
 		},
 	}
 }
 
-func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
+func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 	// 从 MySQL 读取文档内容
 	var totalPoints, totalRelations, totalChunks int
 
@@ -198,7 +198,7 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 	}
 	repository.CreateKnowledgeBuild(build)
 
-	return &dto.BuildGraphResponse{
+	return &response.BuildGraphResponse{
 		BuildID:          build.ID,
 		CreatedPoints:    totalPoints,
 		CreatedRelations: totalRelations,
@@ -209,12 +209,12 @@ func BuildGraph(documentIDs []uint) (*dto.BuildGraphResponse, error) {
 	}, nil
 }
 
-func GetLatestBuildResult() (*dto.BuildGraphResponse, error) {
+func GetLatestBuildResult() (*response.BuildGraphResponse, error) {
 	build, err := repository.GetLatestBuild()
 	if err != nil {
 		return nil, fmt.Errorf("暂无构建记录")
 	}
-	return &dto.BuildGraphResponse{
+	return &response.BuildGraphResponse{
 		BuildID:          build.ID,
 		CreatedPoints:    build.CreatedPoints,
 		CreatedRelations: build.CreatedRelations,
@@ -225,14 +225,14 @@ func GetLatestBuildResult() (*dto.BuildGraphResponse, error) {
 	}, nil
 }
 
-func ListBuildHistory(page, size int) (*dto.BuildHistoryResponse, error) {
+func ListBuildHistory(page, size int) (*response.BuildHistoryResponse, error) {
 	builds, total, err := repository.ListBuilds(page, size)
 	if err != nil {
 		return nil, err
 	}
-	list := make([]dto.BuildGraphResponse, len(builds))
+	list := make([]response.BuildGraphResponse, len(builds))
 	for i, b := range builds {
-		list[i] = dto.BuildGraphResponse{
+		list[i] = response.BuildGraphResponse{
 			BuildID:          b.ID,
 			CreatedPoints:    b.CreatedPoints,
 			CreatedRelations: b.CreatedRelations,
@@ -246,5 +246,5 @@ func ListBuildHistory(page, size int) (*dto.BuildHistoryResponse, error) {
 	if int(total)%size > 0 {
 		totalPage++
 	}
-	return &dto.BuildHistoryResponse{List: list, Total: total, Page: page, Size: size, TotalPage: totalPage}, nil
+	return &response.BuildHistoryResponse{List: list, Total: total, Page: page, Size: size, TotalPage: totalPage}, nil
 }
