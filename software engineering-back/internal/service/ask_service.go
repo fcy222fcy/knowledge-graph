@@ -85,32 +85,45 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}
 	repository.CreateAskMessage(userMsg)
 
-	// 尝试调用 Python AI 服务进行语义检索
+	// 尝试调用 Python AI 服务进行智能问答
 	var answer string
 	var confidence float64
 	var sources []response.AskSource
 	var related []response.KPRef
 
 	if aiClient.IsAvailable() {
-		searchResp, err := aiClient.Search(req.Question, 3)
-		if err == nil && len(searchResp.Results) > 0 {
-			// 基于检索结果生成回答
-			answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
-			for i, r := range searchResp.Results {
-				answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+		// 使用 Ollama 生成智能回答
+		answerResp, err := aiClient.SearchAndAnswer(req.Question, 3)
+		if err == nil && answerResp.Answer != "" {
+			answer = answerResp.Answer
+			confidence = answerResp.Confidence
+			for _, s := range answerResp.Sources {
 				sources = append(sources, response.AskSource{
-					DocumentID:    uint(r.DocumentID),
-					DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
-					Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+					DocumentID:    uint(s.DocumentID),
+					DocumentTitle: s.DocumentTitle,
+					Content:       s.Content,
 				})
 			}
-			answer += "以上内容来自知识库语义检索，仅供参考。"
-			confidence = 0.85
 		} else {
-			log.Printf("warning: AI search failed or returned empty, degrading to local search: %v", err)
+			// 降级到简单搜索
+			log.Printf("warning: AI search_and_answer failed, degrading to simple search: %v", err)
+			searchResp, err := aiClient.Search(req.Question, 3)
+			if err == nil && len(searchResp.Results) > 0 {
+				answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
+				for i, r := range searchResp.Results {
+					answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+					sources = append(sources, response.AskSource{
+						DocumentID:    uint(r.DocumentID),
+						DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
+						Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+					})
+				}
+				answer += "以上内容来自知识库语义检索，仅供参考。"
+				confidence = 0.75
+			}
 		}
 	} else {
-		log.Println("info: AI search service not available, using local keyword search")
+		log.Println("info: AI service not available, using local keyword search")
 	}
 
 	// 降级到文档内容检索

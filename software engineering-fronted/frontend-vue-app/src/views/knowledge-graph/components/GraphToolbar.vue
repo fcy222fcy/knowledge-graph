@@ -19,9 +19,7 @@
       @change="$emit('search')"
     >
       <el-option label="全部关系" value="" />
-      <el-option label="RELATED" value="RELATED" />
-      <el-option label="DEPENDS_ON" value="DEPENDS_ON" />
-      <el-option label="PART_OF" value="PART_OF" />
+      <el-option label="关联" value="关联" />
     </el-select>
     <div class="toolbar-right">
       <el-button @click="$emit('refresh')">

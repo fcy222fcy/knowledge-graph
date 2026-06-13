@@ -202,9 +202,6 @@ def extract_relations(points: List[Dict]) -> List[Dict]:
                     })
                     rel_id += 1
 
-    # 3. 基于关键词共现的关系（同一段落中出现的术语）
-    _add_cooccurrence_relations(points, relations, seen, rel_id)
-
     return relations
 
 
@@ -228,39 +225,6 @@ def _infer_relation_type(name1: str, name2: str) -> str:
 
     # 默认关系
     return "关联"
-
-
-def _add_cooccurrence_relations(points: List[Dict], relations: List[Dict], seen: set, start_id: int):
-    """基于关键词共现添加关系"""
-    # 简单的共现分析：如果两个术语在同一个文档中且类别不同，可能存在关系
-    doc_groups = defaultdict(list)
-    for p in points:
-        doc_groups[p["document_id"]].append(p)
-
-    rel_id = start_id
-    for doc_id, doc_points in doc_groups.items():
-        if len(doc_points) < 2:
-            continue
-        # 限制每个文档最多添加3个共现关系
-        added = 0
-        for i, p1 in enumerate(doc_points):
-            if added >= 3:
-                break
-            for p2 in doc_points[i + 1:]:
-                if p1["category"] != p2["category"]:
-                    key = (p1["id"], p2["id"])
-                    if key not in seen:
-                        seen.add(key)
-                        relations.append({
-                            "id": rel_id,
-                            "source_id": p1["id"],
-                            "target_id": p2["id"],
-                            "relation_type": "关联",
-                            "description": f"{p1['name']} 与 {p2['name']} 相关"
-                        })
-                        rel_id += 1
-                        added += 1
-                        break
 
 
 def chunk_text(content: str, chunk_size: int = 500) -> List[str]:

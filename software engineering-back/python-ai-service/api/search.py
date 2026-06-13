@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from models.schemas import SearchRequest, SearchResponse, SearchResult
 from services.vector_service import vector_service
+from services.answer_service import answer_service
 
 router = APIRouter()
 
@@ -18,3 +19,8 @@ async def search(req: SearchRequest):
         ))
 
     return SearchResponse(results=search_results)
+
+@router.post("/search_and_answer")
+async def search_and_answer(req: SearchRequest):
+    """语义检索并使用 Ollama 生成智能回答"""
+    return answer_service.search_and_answer(req.query, req.top_k)

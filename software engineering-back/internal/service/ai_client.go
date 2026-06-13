@@ -16,11 +16,28 @@ type AIClient struct {
 	Client  *http.Client
 }
 
+type AIAnswerRequest struct {
+	Query string `json:"query"`
+	TopK  int    `json:"top_k"`
+}
+
+type AIAnswerSource struct {
+	DocumentID    int    `json:"document_id"`
+	DocumentTitle string `json:"document_title"`
+	Content       string `json:"content"`
+}
+
+type AIAnswerResponse struct {
+	Answer     string           `json:"answer"`
+	Confidence float64          `json:"confidence"`
+	Sources    []AIAnswerSource `json:"sources"`
+}
+
 func NewAIClient() *AIClient {
 	return &AIClient{
 		BaseURL: os.Getenv("AI_SERVICE_URL"),
 		Client: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 60 * time.Second,
 		},
 	}
 }
@@ -130,6 +147,31 @@ func (c *AIClient) Search(query string, topK int) (*AISearchResponse, error) {
 	var result AISearchResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode AI search response: %w", err)
+	}
+	return &result, nil
+}
+
+func (c *AIClient) SearchAndAnswer(query string, topK int) (*AIAnswerResponse, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not configured")
+	}
+
+	req := AIAnswerRequest{Query: query, TopK: topK}
+	body, _ := json.Marshal(req)
+	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI search_and_answer: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("AI search_and_answer failed: %s", string(body))
+	}
+
+	var result AIAnswerResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode AI search_and_answer response: %w", err)
 	}
 	return &result, nil
 }

@@ -60,7 +60,8 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 
 	var filteredRels []entity.KnowledgeRelation
 	for _, r := range rels {
-		if !pointIDs[r.SourceID] && !pointIDs[r.TargetID] {
+		// 边的 source 和 target 都必须在过滤后的节点集中
+		if !pointIDs[r.SourceID] || !pointIDs[r.TargetID] {
 			continue
 		}
 		if relationType != "" && r.RelationType != relationType {
@@ -123,8 +124,8 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 
 	edges := make([]response.GraphEdge, 0)
 	for _, e := range graphData.Edges {
-		// 交叉验证：边的 source/target 必须在过滤后的节点集中
-		if !filteredNodeIDs[e.Source] && !filteredNodeIDs[e.Target] {
+		// 交叉验证：边的 source 和 target 都必须在过滤后的节点集中
+		if !filteredNodeIDs[e.Source] || !filteredNodeIDs[e.Target] {
 			continue
 		}
 		if relationType != "" && e.RelationType != relationType {
@@ -174,6 +175,8 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 				totalChunks += resp.ChunkCount
 
 				// 将 AI 构建的知识点和关系写入 MySQL
+				// 建立 Python ID 到 MySQL ID 的映射
+				idMapping := make(map[uint]uint)
 				for _, p := range resp.Points {
 					kp := &entity.KnowledgePoint{
 						Name:        p.Name,
@@ -183,12 +186,21 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 					}
 					if err := repository.CreateKnowledgePoint(kp); err != nil {
 						log.Printf("warning: failed to save knowledge point to MySQL: %v", err)
+					} else {
+						idMapping[p.ID] = kp.ID
 					}
 				}
 				for _, r := range resp.Relations {
+					// 使用映射后的 ID
+					sourceID := idMapping[r.Source]
+					targetID := idMapping[r.Target]
+					if sourceID == 0 || targetID == 0 {
+						log.Printf("warning: skipping relation with unmapped IDs: source=%d, target=%d", r.Source, r.Target)
+						continue
+					}
 					rel := &entity.KnowledgeRelation{
-						SourceID:     r.Source,
-						TargetID:     r.Target,
+						SourceID:     sourceID,
+						TargetID:     targetID,
 						RelationType: r.RelationType,
 						Description:  r.Description,
 					}
