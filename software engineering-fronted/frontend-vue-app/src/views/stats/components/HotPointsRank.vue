@@ -1,7 +1,7 @@
 <template>
   <div class="chart-card">
     <h3>热门知识点排行</h3>
-    <div v-if="data.length" class="rank-list">
+    <div v-if="data && data.length" class="rank-list">
       <div v-for="(item, index) in data" :key="item.knowledge_point_id" class="rank-item">
         <span class="rank-num" :class="{ top3: index < 3 }">{{ index + 1 }}</span>
         <span class="rank-name">{{ item.knowledge_point_name }}</span>

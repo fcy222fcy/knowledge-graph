@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -11,11 +12,17 @@ import (
 func CORSMiddleware() gin.HandlerFunc {
 	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if allowedOrigins == "" {
-		allowedOrigins = "http://localhost:5173"
+		allowedOrigins = "http://localhost:5173,http://localhost:5174"
+	}
+
+	// 拆分逗号分隔的多个 origin
+	origins := strings.Split(allowedOrigins, ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
 	}
 
 	return cors.New(cors.Config{
-		AllowOrigins:     []string{allowedOrigins},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

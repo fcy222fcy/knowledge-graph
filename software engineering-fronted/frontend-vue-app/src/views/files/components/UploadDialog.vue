@@ -79,13 +79,13 @@ const handleUpload = async () => {
   uploadProgress.value = 0
 
   try {
-    const timer = setInterval(() => {
-      if (uploadProgress.value < 90) uploadProgress.value += 10
-    }, 200)
+    await uploadDocument(
+      selectedFile.value,
+      title.value || undefined,
+      description.value || undefined,
+      (percent) => { uploadProgress.value = percent }
+    )
 
-    await uploadDocument(selectedFile.value, title.value || undefined, description.value || undefined)
-
-    clearInterval(timer)
     uploadProgress.value = 100
     ElMessage.success('上传成功')
     visible.value = false

@@ -36,3 +36,12 @@ type AskMessageResponse struct {
 	Content   string `json:"content"`
 	CreatedAt string `json:"created_at"`
 }
+
+type AskHistoryItem struct {
+	ConversationID uint   `json:"conversation_id"`
+	Title          string `json:"title"`
+	LastQuestion   string `json:"last_question"`
+	LastAnswer     string `json:"last_answer"`
+	CreatedAt      string `json:"created_at"`
+	UpdatedAt      string `json:"updated_at"`
+}

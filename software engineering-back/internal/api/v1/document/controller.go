@@ -11,6 +11,13 @@ import (
 	"software_engineering/pkg/response"
 )
 
+const maxFileSize = 50 << 20 // 50MB
+
+var allowedExts = map[string]bool{
+	".md": true, ".txt": true, ".pdf": true,
+	".docx": true, ".pptx": true,
+}
+
 func UploadDocument(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	file, err := c.FormFile("file")
@@ -18,9 +25,22 @@ func UploadDocument(c *gin.Context) {
 		response.Error(c, http.StatusBadRequest, "请上传文件")
 		return
 	}
+
+	// 文件大小限制
+	if file.Size > maxFileSize {
+		response.Error(c, http.StatusBadRequest, "文件大小超出限制（最大 50MB）")
+		return
+	}
+
 	title := c.PostForm("title")
 	description := c.PostForm("description")
 	ext := filepath.Ext(file.Filename)
+
+	// 文件类型白名单
+	if !allowedExts[ext] {
+		response.Error(c, http.StatusBadRequest, "不支持的文件类型，支持：.md .txt .pdf .docx .pptx")
+		return
+	}
 
 	f, err := file.Open()
 	if err != nil {
@@ -72,8 +92,9 @@ func UpdateDocument(c *gin.Context) {
 }
 
 func DeleteDocument(c *gin.Context) {
+	userID := c.GetUint("user_id")
 	id, _ := strconv.Atoi(c.Param("id"))
-	if err := service.DeleteDocument(uint(id)); err != nil {
+	if err := service.DeleteDocument(userID, uint(id)); err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"software_engineering/internal/model/dto/request"
@@ -105,7 +106,11 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 			}
 			answer += "以上内容来自知识库语义检索，仅供参考。"
 			confidence = 0.85
+		} else {
+			log.Printf("warning: AI search failed or returned empty, degrading to local search: %v", err)
 		}
+	} else {
+		log.Println("info: AI search service not available, using local keyword search")
 	}
 
 	// 降级到文档内容检索
@@ -184,22 +189,30 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}, nil
 }
 
-func ListAskHistory(userID uint, page, size int, conversationID uint) ([]response.AskResponse, int64, error) {
+func ListAskHistory(userID uint, page, size int, conversationID uint) ([]response.AskHistoryItem, int64, error) {
 	sessions, total, err := repository.ListAskSessionsByUser(userID, page, size)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := make([]response.AskResponse, len(sessions))
+	list := make([]response.AskHistoryItem, len(sessions))
 	for i, s := range sessions {
-		lastMsg, _ := repository.GetLastMessageBySession(s.ID)
-		question := ""
-		if lastMsg.ID > 0 {
-			question = lastMsg.Content
+		var lastQuestion, lastAnswer string
+		// 获取该会话的消息
+		msgs, _, _ := repository.ListAskMessages(s.ID, 1, 100)
+		for _, m := range msgs {
+			if m.Role == "user" {
+				lastQuestion = m.Content
+			} else if m.Role == "assistant" {
+				lastAnswer = m.Content
+			}
 		}
-		list[i] = response.AskResponse{
+		list[i] = response.AskHistoryItem{
 			ConversationID: s.ID,
-			Answer:         question,
+			Title:          s.Title,
+			LastQuestion:   lastQuestion,
+			LastAnswer:     lastAnswer,
 			CreatedAt:      s.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			UpdatedAt:      s.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 		}
 	}
 	return list, total, nil

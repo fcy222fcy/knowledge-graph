@@ -16,6 +16,7 @@ func ConnectNeo4j() {
 	password := os.Getenv("NEO4J_PASSWORD")
 
 	if uri == "" {
+		Neo4jDriver = nil
 		log.Println("warning: NEO4J_URI not set, skipping Neo4j connection")
 		return
 	}
@@ -23,6 +24,7 @@ func ConnectNeo4j() {
 	var err error
 	Neo4jDriver, err = neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(user, password, ""))
 	if err != nil {
+		Neo4jDriver = nil
 		log.Printf("warning: failed to create neo4j driver: %v", err)
 		return
 	}
@@ -30,6 +32,8 @@ func ConnectNeo4j() {
 	ctx := context.Background()
 	err = Neo4jDriver.VerifyConnectivity(ctx)
 	if err != nil {
+		_ = Neo4jDriver.Close(ctx)
+		Neo4jDriver = nil
 		log.Printf("warning: neo4j connectivity check failed: %v", err)
 		return
 	}

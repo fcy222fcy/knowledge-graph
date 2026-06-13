@@ -13,6 +13,7 @@ import (
 	"software_engineering/internal/api"
 	"software_engineering/internal/middleware"
 	"software_engineering/internal/repository/seed"
+	"software_engineering/internal/service"
 	"software_engineering/pkg/config"
 	"software_engineering/pkg/database"
 )
@@ -30,24 +31,27 @@ func (a *App) Initialize() {
 	// 1. 加载配置
 	config.Load()
 
-	// 2. 连接数据库
+	// 2. 初始化 AI 客户端（需要在 config.Load 之后）
+	service.InitAIClient()
+
+	// 3. 连接数据库
 	database.Connect()
 	database.ConnectNeo4j()
 
-	// 3. 数据库迁移
+	// 4. 数据库迁移
 	database.AutoMigrate()
 
-	// 4. 初始化种子数据
+	// 5. 初始化种子数据
 	seed.SeedAll()
 
-	// 5. 初始化路由
+	// 6. 初始化路由
 	a.router = gin.New()
 	a.router.Use(middleware.Logger())
 	a.router.Use(middleware.Recovery())
 	a.router.Use(middleware.CORSMiddleware())
 	api.SetupRoutes(a.router)
 
-	// 6. 创建 HTTP 服务器
+	// 7. 创建 HTTP 服务器
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "8080"

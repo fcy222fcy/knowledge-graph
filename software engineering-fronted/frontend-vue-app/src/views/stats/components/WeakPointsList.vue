@@ -1,7 +1,7 @@
 <template>
   <div class="chart-card">
     <h3>薄弱知识点</h3>
-    <div v-if="data.length" class="weak-list">
+    <div v-if="data && data.length" class="weak-list">
       <div v-for="item in data" :key="item.knowledge_point_id" class="weak-item">
         <div class="weak-header">
           <span class="weak-name">{{ item.knowledge_point_name }}</span>

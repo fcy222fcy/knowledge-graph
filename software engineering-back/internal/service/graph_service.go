@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -17,13 +18,23 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*respon
 		if err == nil {
 			return convertAIGraphToDTO(graphData, documentID, keyword, relationType), nil
 		}
-		// 降级到 Neo4j
+		log.Printf("warning: AI graph service failed, degrading to Neo4j/MySQL: %v", err)
+	} else {
+		log.Println("info: AI graph service not available, using Neo4j/MySQL")
 	}
 
-	// 从 Neo4j 获取
+	// 从 Neo4j 获取（如果不可用则自动降级到 MySQL）
 	points, rels, err := repository.GetAllGraphDataFromNeo4j()
 	if err != nil {
-		return nil, err
+		// Neo4j 失败时降级到 MySQL
+		points, err = repository.GetAllKnowledgePointsForGraph()
+		if err != nil {
+			return nil, err
+		}
+		rels, err = repository.GetAllRelationsForGraph()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return filterAndConvertGraphData(points, rels, documentID, keyword, relationType), nil
@@ -92,6 +103,7 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 
 func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
 	var nodes []response.GraphNode
+	filteredNodeIDs := make(map[uint]bool)
 	for _, n := range graphData.Nodes {
 		if documentID > 0 && n.DocumentID != documentID {
 			continue
@@ -99,6 +111,7 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 		if keyword != "" && !strings.Contains(n.Name, keyword) {
 			continue
 		}
+		filteredNodeIDs[n.ID] = true
 		nodes = append(nodes, response.GraphNode{
 			ID:          n.ID,
 			Name:        n.Name,
@@ -110,6 +123,10 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 
 	var edges []response.GraphEdge
 	for _, e := range graphData.Edges {
+		// 交叉验证：边的 source/target 必须在过滤后的节点集中
+		if !filteredNodeIDs[e.Source] && !filteredNodeIDs[e.Target] {
+			continue
+		}
 		if relationType != "" && e.RelationType != relationType {
 			continue
 		}
@@ -143,6 +160,7 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 
 		// 调用 Python AI 服务构建
 		if aiClient.IsAvailable() {
+			log.Printf("info: Calling AI service for document %d, content length: %d", docID, len(doc.Content))
 			resp, err := aiClient.BuildGraph(AIBuildRequest{
 				DocumentID: docID,
 				Title:      doc.Title,
@@ -150,14 +168,18 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 				Source:     "document",
 			})
 			if err == nil {
+				log.Printf("info: AI build success for document %d: %d points, %d relations", docID, resp.CreatedPoints, resp.CreatedRelations)
 				totalPoints += resp.CreatedPoints
 				totalRelations += resp.CreatedRelations
 				totalChunks += resp.ChunkCount
 				continue
 			}
+			log.Printf("warning: AI build graph failed for document %d, degrading to local: %v", docID, err)
+		} else {
+			log.Printf("info: AI service not available, using local graph build for document %d", docID)
 		}
 
-		// 降级：使用简化的本地构建
+		// 降级：使用简化的本地构建 - 只建立链式关系，不全连接
 		existingPoints, _ := repository.GetAllKnowledgePointsForGraph()
 		var docPoints []entity.KnowledgePoint
 		for _, p := range existingPoints {
@@ -166,17 +188,16 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 			}
 		}
 
-		for i := 0; i < len(docPoints); i++ {
-			for j := i + 1; j < len(docPoints); j++ {
-				rel := &entity.KnowledgeRelation{
-					SourceID:     docPoints[i].ID,
-					TargetID:     docPoints[j].ID,
-					RelationType: "RELATED",
-					Description:  fmt.Sprintf("%s 与 %s 相关", docPoints[i].Name, docPoints[j].Name),
-				}
-				repository.CreateRelation(rel)
-				totalRelations++
+		// 只建立相邻节点的链式关系
+		for i := 0; i < len(docPoints)-1; i++ {
+			rel := &entity.KnowledgeRelation{
+				SourceID:     docPoints[i].ID,
+				TargetID:     docPoints[i+1].ID,
+				RelationType: "RELATED",
+				Description:  fmt.Sprintf("%s 与 %s 相关", docPoints[i].Name, docPoints[i+1].Name),
 			}
+			repository.CreateRelation(rel)
+			totalRelations++
 		}
 		totalChunks += len(docPoints)
 	}

@@ -20,8 +20,9 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		return nil, err
 	}
 
-	// 保存文件
-	filePath := filepath.Join(uploadDir, filename)
+	// 保存文件（清理路径穿越字符）
+	safeName := filepath.Base(filename)
+	filePath := filepath.Join(uploadDir, safeName)
 	out, err := os.Create(filePath)
 	if err != nil {
 		return nil, err
@@ -119,10 +120,14 @@ func UpdateDocument(id uint, req request.UpdateDocumentRequest) error {
 	return repository.UpdateDocument(doc)
 }
 
-func DeleteDocument(id uint) error {
+func DeleteDocument(userID uint, id uint) error {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
 		return errors.New("文档不存在")
+	}
+	// 归属校验：只能删除自己的文档
+	if doc.UserID != userID {
+		return errors.New("无权删除此文档")
 	}
 	// 删除物理文件
 	if doc.FilePath != "" {

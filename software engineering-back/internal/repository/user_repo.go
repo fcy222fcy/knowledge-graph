@@ -15,6 +15,12 @@ func FindUserByUsername(username string) (*entity.User, error) {
 	return &user, err
 }
 
+func FindUserByEmail(email string) (*entity.User, error) {
+	var user entity.User
+	err := database.DB.Where("email = ?", email).First(&user).Error
+	return &user, err
+}
+
 func FindUserByID(id uint) (*entity.User, error) {
 	var user entity.User
 	err := database.DB.First(&user, id).Error

@@ -2,39 +2,86 @@
   <el-drawer v-model="visible" title="节点详情" size="400px">
     <template v-if="node">
       <div class="node-info">
-        <h3>{{ node.name }}</h3>
+        <div class="node-header">
+          <div class="node-dot" :style="{ background: getNodeColor(node.category) }"></div>
+          <h3>{{ node.name }}</h3>
+        </div>
         <p class="node-desc">{{ node.description || '暂无描述' }}</p>
         <el-descriptions :column="1" border size="small">
-          <el-descriptions-item label="ID">{{ node.id }}</el-descriptions-item>
           <el-descriptions-item label="分类">{{ node.category || '-' }}</el-descriptions-item>
           <el-descriptions-item label="关联文档ID">{{ node.document_id }}</el-descriptions-item>
         </el-descriptions>
+        <el-button
+          v-if="node.document_id"
+          type="primary"
+          class="doc-link"
+          @click="goToDocument"
+        >
+          <el-icon><Document /></el-icon>
+          查看关联文档
+        </el-button>
       </div>
     </template>
   </el-drawer>
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { Document } from '@element-plus/icons-vue'
 import type { GraphNode } from '@/types/graph'
 
 const visible = defineModel<boolean>({ default: false })
+const router = useRouter()
 
-defineProps<{
+const props = defineProps<{
   node: GraphNode | null
 }>()
+
+const COLORS: Record<string, string> = {
+  '软件工程': '#3b82f6',
+  'SQL': '#10b981',
+  'Redis': '#f59e0b',
+  'AI': '#8b5cf6'
+}
+
+const getNodeColor = (category?: string) => {
+  return COLORS[category || ''] || '#3b82f6'
+}
+
+const goToDocument = () => {
+  if (props.node?.document_id) {
+    router.push({ path: '/files', query: { highlight: String(props.node.document_id) } })
+  }
+}
 </script>
 
 <style scoped>
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.node-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 .node-info h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
+  color: #0f172a;
+  margin: 0;
 }
 .node-desc {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: #64748b;
   margin-bottom: 16px;
   line-height: 1.6;
+}
+.doc-link {
+  margin-top: 16px;
+  width: 100%;
 }
 </style>

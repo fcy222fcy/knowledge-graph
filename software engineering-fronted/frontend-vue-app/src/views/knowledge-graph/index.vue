@@ -13,12 +13,14 @@
       <el-tag type="info">关系: {{ graphData.summary.edge_count }}</el-tag>
     </div>
 
-    <GraphCanvas
-      :data="graphData"
-      :loading="loading"
-      :highlight="searchKeyword"
-      @node-click="handleNodeClick"
-    />
+    <div class="graph-canvas-wrapper">
+      <GraphCanvas
+        :data="graphData"
+        :loading="loading"
+        :highlight="searchKeyword"
+        @node-click="handleNodeClick"
+      />
+    </div>
 
     <NodeDetail v-model="detailVisible" :node="selectedNode" />
     <BuildDialog v-model="buildVisible" :loading="buildLoading" @confirm="handleBuild" />
@@ -89,15 +91,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.graph-container h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
+.graph-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.graph-toolbar {
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
 }
 .graph-summary {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+}
+.graph-canvas-wrapper {
+  flex: 1;
+  overflow: hidden;
 }
 </style>

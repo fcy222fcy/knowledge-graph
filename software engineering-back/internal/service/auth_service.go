@@ -18,6 +18,10 @@ func Register(req request.RegisterRequest) error {
 	if existing.ID != 0 {
 		return errors.New("用户名已存在")
 	}
+	existingEmail, _ := repository.FindUserByEmail(req.Email)
+	if existingEmail.ID != 0 {
+		return errors.New("邮箱已存在")
+	}
 
 	hash, err := bcrypt.HashPassword(req.Password)
 	if err != nil {
@@ -75,6 +79,14 @@ func RefreshToken(oldToken string) (string, error) {
 	claims, err := jwt.ParseToken(oldToken)
 	if err != nil {
 		return "", errors.New("无效的令牌")
+	}
+	// 验证用户是否存在且未被禁用
+	user, err := repository.FindUserByID(claims.UserID)
+	if err != nil {
+		return "", errors.New("用户不存在")
+	}
+	if user.Status == 0 {
+		return "", errors.New("用户已被禁用")
 	}
 	return jwt.GenerateToken(claims.UserID, claims.Username)
 }

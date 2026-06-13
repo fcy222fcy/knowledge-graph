@@ -1,7 +1,7 @@
 <template>
   <div class="chart-card">
     <h3>知识点掌握度</h3>
-    <v-chart v-if="data.length" :option="option" autoresize style="height: 300px" />
+    <v-chart v-if="data && data.length" :option="option" autoresize style="height: 300px" />
     <EmptyState v-else text="暂无掌握度数据" />
   </div>
 </template>

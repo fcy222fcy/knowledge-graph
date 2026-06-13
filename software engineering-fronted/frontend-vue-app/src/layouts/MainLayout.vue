@@ -24,9 +24,9 @@
 
       <div class="sidebar-footer">
         <div class="user-card" @click="handleLogout">
-          <div class="user-avatar">张</div>
+          <div class="user-avatar">{{ userAvatar }}</div>
           <div class="user-info">
-            <div class="user-name">张同学</div>
+            <div class="user-name">{{ userName }}</div>
             <div class="user-role">软件工程专业</div>
           </div>
         </div>
@@ -34,7 +34,7 @@
     </aside>
 
     <!-- 主内容 -->
-    <main class="main">
+    <main class="main" :class="{ 'no-padding': currentPath === '/knowledge-graph' }">
       <router-view />
     </main>
   </div>
@@ -44,6 +44,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 import {
   HomeFilled,
   Share,
@@ -54,8 +55,11 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const currentPath = computed(() => route.path)
+const userName = computed(() => userStore.userInfo?.nickname || userStore.userInfo?.username || '用户')
+const userAvatar = computed(() => userName.value.charAt(0))
 
 const navItems = [
   { path: '/home', title: '首页', icon: HomeFilled },
@@ -71,7 +75,7 @@ const handleLogout = () => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    localStorage.removeItem('token')
+    userStore.logout()
     ElMessage.success('已退出登录')
     router.push('/login')
   }).catch(() => {})
@@ -213,5 +217,11 @@ const handleLogout = () => {
   min-height: 100vh;
   padding: 28px;
   background: #f8fafc;
+}
+
+.main.no-padding {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 </style>

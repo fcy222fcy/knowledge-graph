@@ -30,7 +30,7 @@ func Login(c *gin.Context) {
 	}
 	resp, err := service.Login(req)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.Error(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 	response.Success(c, resp)

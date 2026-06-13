@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
+	"software_engineering/pkg/database"
 )
+
+const neo4jQueryTimeout = 3 * time.Second
 
 func CreateKnowledgeBuild(build *entity.KnowledgeBuild) error {
 	return database.DB.Create(build).Error
@@ -61,9 +64,12 @@ func GetAllGraphDataFromNeo4j() ([]entity.KnowledgePoint, []entity.KnowledgeRela
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{
 		DatabaseName: "neo4j",
 	})
-	defer session.Close(context.Background())
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer closeCancel()
+	defer session.Close(closeCtx)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer cancel()
 
 	// Fetch all KnowledgePoint nodes
 	pointsResult, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -128,9 +134,12 @@ func CreateKnowledgePointInNeo4j(kp *entity.KnowledgePoint) error {
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{
 		DatabaseName: "neo4j",
 	})
-	defer session.Close(context.Background())
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer closeCancel()
+	defer session.Close(closeCtx)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer cancel()
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		_, err := tx.Run(ctx, `CREATE (n:KnowledgePoint {id: $id, name: $name, description: $description, document_id: $document_id, category: $category})`,
 			map[string]any{
@@ -169,9 +178,12 @@ func CreateRelationInNeo4j(rel *entity.KnowledgeRelation) error {
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{
 		DatabaseName: "neo4j",
 	})
-	defer session.Close(context.Background())
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer closeCancel()
+	defer session.Close(closeCtx)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer cancel()
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		// Use the relation type as the Neo4j relationship type
 		cypher := fmt.Sprintf(`MATCH (a:KnowledgePoint {id: $source_id}), (b:KnowledgePoint {id: $target_id}) CREATE (a)-[r:%s {id: $id, description: $description}]->(b)`, rel.RelationType)
@@ -197,9 +209,12 @@ func DeleteKnowledgePointFromNeo4j(id uint) error {
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{
 		DatabaseName: "neo4j",
 	})
-	defer session.Close(context.Background())
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer closeCancel()
+	defer session.Close(closeCtx)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer cancel()
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		_, err := tx.Run(ctx, `MATCH (n:KnowledgePoint {id: $id}) DETACH DELETE n`, map[string]any{
 			"id": int64(id),
@@ -220,9 +235,12 @@ func DeleteRelationFromNeo4j(id uint) error {
 	session := database.Neo4jDriver.NewSession(context.Background(), neo4j.SessionConfig{
 		DatabaseName: "neo4j",
 	})
-	defer session.Close(context.Background())
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer closeCancel()
+	defer session.Close(closeCtx)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), neo4jQueryTimeout)
+	defer cancel()
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		_, err := tx.Run(ctx, `MATCH ()-[r]->() WHERE r.id = $id DELETE r`, map[string]any{
 			"id": int64(id),

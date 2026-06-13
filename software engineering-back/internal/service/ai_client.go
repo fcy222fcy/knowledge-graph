@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -154,4 +155,13 @@ func (c *AIClient) GetGraph() (*AIGraphResponse, error) {
 	return &result, nil
 }
 
-var aiClient = NewAIClient()
+var aiClient *AIClient
+
+func InitAIClient() {
+	aiClient = NewAIClient()
+	if aiClient.IsAvailable() {
+		log.Printf("AI client initialized with URL: %s", aiClient.BaseURL)
+	} else {
+		log.Println("AI client: AI_SERVICE_URL not configured, AI features disabled")
+	}
+}

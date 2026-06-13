@@ -29,7 +29,12 @@ export interface PaginatedResponse<T> {
 }
 
 // 上传文档
-export async function uploadDocument(file: File, title?: string, description?: string) {
+export async function uploadDocument(
+  file: File,
+  title?: string,
+  description?: string,
+  onProgress?: (percent: number) => void
+) {
   if (USE_MOCK) {
     return mockDocument.uploadDocument(file, title, description) as Promise<any>
   }
@@ -38,7 +43,12 @@ export async function uploadDocument(file: File, title?: string, description?: s
   if (title) formData.append('title', title)
   if (description) formData.append('description', description)
   return request.post<DocumentItem>('/documents', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (e) => {
+      if (e.total && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
   })
 }
 
