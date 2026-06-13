@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.schemas import BuildRequest, BuildResponse
+from models.schemas import BuildRequest, BuildResponse, GraphNode, GraphEdge
 from services.extraction_service import extract_knowledge_points, extract_relations, chunk_text
 from services.neo4j_service import neo4j_service
 from services.vector_service import vector_service
@@ -38,6 +38,10 @@ async def build_graph(req: BuildRequest):
     vector_service.add_texts(chunks, metadata)
     vector_service.save_index()
 
+    # 5. 转换为响应格式
+    graph_nodes = [GraphNode(id=p["id"], name=p["name"], description=p["description"], category=p["category"], document_id=p["document_id"]) for p in points]
+    graph_edges = [GraphEdge(source=r["source_id"], target=r["target_id"], relation_type=r["relation_type"], description=r["description"]) for r in relations]
+
     return BuildResponse(
         document_id=req.document_id,
         document_title=req.title,
@@ -46,5 +50,7 @@ async def build_graph(req: BuildRequest):
         chunk_count=len(chunks),
         vector_count=len(chunks),
         status="completed",
-        message="知识图谱构建完成"
+        message="知识图谱构建完成",
+        points=graph_nodes,
+        relations=graph_edges
     )

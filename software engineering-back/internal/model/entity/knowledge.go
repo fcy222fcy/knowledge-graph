@@ -14,6 +14,7 @@ type KnowledgeRelation struct {
 	BaseModel
 	SourceID     uint   `json:"source_id"`
 	TargetID     uint   `json:"target_id"`
+	Type         string `gorm:"size:60;not null;default:''" json:"type"`
 	RelationType string `gorm:"size:20;not null" json:"relation_type"` // RELATED/DEPENDS_ON/PART_OF
 	Description  string `gorm:"size:500" json:"description"`
 }

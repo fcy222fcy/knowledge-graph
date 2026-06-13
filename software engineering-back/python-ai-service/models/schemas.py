@@ -7,16 +7,6 @@ class BuildRequest(BaseModel):
     content: str
     source: Optional[str] = ""
 
-class BuildResponse(BaseModel):
-    document_id: int
-    document_title: str
-    created_points: int
-    created_relations: int
-    chunk_count: int
-    vector_count: int
-    status: str
-    message: str
-
 class SearchRequest(BaseModel):
     query: str
     top_k: int = 3
@@ -46,3 +36,15 @@ class GraphEdge(BaseModel):
 class GraphResponse(BaseModel):
     nodes: List[GraphNode]
     edges: List[GraphEdge]
+
+class BuildResponse(BaseModel):
+    document_id: int
+    document_title: str
+    created_points: int
+    created_relations: int
+    chunk_count: int
+    vector_count: int
+    status: str
+    message: str
+    points: Optional[List[GraphNode]] = []
+    relations: Optional[List[GraphEdge]] = []

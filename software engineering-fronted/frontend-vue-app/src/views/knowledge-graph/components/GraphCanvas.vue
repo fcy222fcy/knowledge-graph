@@ -41,8 +41,8 @@ const renderGraph = () => {
   const g = svg.append('g')
   let currentScale = 1
 
-  const nodes = props.data.nodes.map(d => ({ ...d }))
-  const edges = props.data.edges.map(d => ({ ...d }))
+  const nodes = (props.data.nodes || []).map(d => ({ ...d }))
+  const edges = (props.data.edges || []).map(d => ({ ...d }))
 
   const categories = [...new Set(nodes.map(n => n.category || '未知'))]
   const colorScale = d3.scaleOrdinal<string>().domain(categories).range(COLORS)
@@ -93,10 +93,16 @@ const renderGraph = () => {
       })
     )
 
-  // 根据缩放级别调整标签显示 - Obsidian 风格：缩小隐藏，放大显示
+  // 根据缩放级别调整标签显示和线条样式 - Obsidian 风格
   const updateLabels = (scale: number) => {
     const sortedDegrees = Array.from(degreeMap.values()).sort((a, b) => b - a)
     const coreThreshold = sortedDegrees[Math.floor(sortedDegrees.length * 0.2)] || 0
+
+    // 根据缩放级别调整线条样式 - 缩小时更黑更明显
+    link
+      .attr('stroke', scale < 0.5 ? '#94a3b8' : scale < 0.8 ? '#a1a1aa' : '#cbd5e1')
+      .attr('stroke-width', scale < 0.3 ? 1.5 : scale < 0.5 ? 1.2 : scale < 0.8 ? 0.8 : 0.5)
+      .attr('stroke-opacity', scale < 0.3 ? 0.8 : scale < 0.5 ? 0.6 : scale < 0.8 ? 0.5 : 0.3)
 
     node.select('text')
       .attr('opacity', (d: any) => {

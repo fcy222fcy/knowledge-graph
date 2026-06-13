@@ -102,7 +102,7 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 }
 
 func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
-	var nodes []response.GraphNode
+	nodes := make([]response.GraphNode, 0)
 	filteredNodeIDs := make(map[uint]bool)
 	for _, n := range graphData.Nodes {
 		if documentID > 0 && n.DocumentID != documentID {
@@ -121,7 +121,7 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 		})
 	}
 
-	var edges []response.GraphEdge
+	edges := make([]response.GraphEdge, 0)
 	for _, e := range graphData.Edges {
 		// 交叉验证：边的 source/target 必须在过滤后的节点集中
 		if !filteredNodeIDs[e.Source] && !filteredNodeIDs[e.Target] {
@@ -172,6 +172,30 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 				totalPoints += resp.CreatedPoints
 				totalRelations += resp.CreatedRelations
 				totalChunks += resp.ChunkCount
+
+				// 将 AI 构建的知识点和关系写入 MySQL
+				for _, p := range resp.Points {
+					kp := &entity.KnowledgePoint{
+						Name:        p.Name,
+						Description: p.Description,
+						DocumentID:  p.DocumentID,
+						Category:    p.Category,
+					}
+					if err := repository.CreateKnowledgePoint(kp); err != nil {
+						log.Printf("warning: failed to save knowledge point to MySQL: %v", err)
+					}
+				}
+				for _, r := range resp.Relations {
+					rel := &entity.KnowledgeRelation{
+						SourceID:     r.Source,
+						TargetID:     r.Target,
+						RelationType: r.RelationType,
+						Description:  r.Description,
+					}
+					if err := repository.CreateRelation(rel); err != nil {
+						log.Printf("warning: failed to save relation to MySQL: %v", err)
+					}
+				}
 				continue
 			}
 			log.Printf("warning: AI build graph failed for document %d, degrading to local: %v", docID, err)

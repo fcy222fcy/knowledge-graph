@@ -33,14 +33,16 @@ type AIBuildRequest struct {
 }
 
 type AIBuildResponse struct {
-	DocumentID       uint   `json:"document_id"`
-	DocumentTitle    string `json:"document_title"`
-	CreatedPoints    int    `json:"created_points"`
-	CreatedRelations int    `json:"created_relations"`
-	ChunkCount       int    `json:"chunk_count"`
-	VectorCount      int    `json:"vector_count"`
-	Status           string `json:"status"`
-	Message          string `json:"message"`
+	DocumentID       uint          `json:"document_id"`
+	DocumentTitle    string        `json:"document_title"`
+	CreatedPoints    int           `json:"created_points"`
+	CreatedRelations int           `json:"created_relations"`
+	ChunkCount       int           `json:"chunk_count"`
+	VectorCount      int           `json:"vector_count"`
+	Status           string        `json:"status"`
+	Message          string        `json:"message"`
+	Points           []AIGraphNode `json:"points"`
+	Relations        []AIGraphEdge `json:"relations"`
 }
 
 type AISearchRequest struct {
