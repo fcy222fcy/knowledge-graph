@@ -77,7 +77,14 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 		sessionID = session.ID
 	}
 
-	// 保存用户消息
+	// 获取历史消息用于上下文
+	historyMsgs, _ := repository.ListRecentMessages(sessionID, 10)
+	history := make([]ChatMessage, len(historyMsgs))
+	for i, m := range historyMsgs {
+		history[i] = ChatMessage{Role: m.Role, Content: m.Content}
+	}
+
+	// 保存当前用户消息
 	userMsg := &entity.AskMessage{
 		SessionID: sessionID,
 		Role:      "user",
@@ -85,15 +92,14 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}
 	repository.CreateAskMessage(userMsg)
 
-	// 尝试调用 Python AI 服务进行智能问答
+	// 尝试调用 AI 服务（带历史上下文）
 	var answer string
 	var confidence float64
 	var sources []response.AskSource
 	var related []response.KPRef
 
 	if aiClient.IsAvailable() {
-		// 使用 Ollama 生成智能回答
-		answerResp, err := aiClient.SearchAndAnswer(req.Question, 3)
+		answerResp, err := aiClient.SearchAndAnswerWithHistory(req.Question, history, 3)
 		if err == nil && answerResp.Answer != "" {
 			answer = answerResp.Answer
 			confidence = answerResp.Confidence
@@ -105,7 +111,6 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 				})
 			}
 		} else {
-			// 降级到简单搜索
 			log.Printf("warning: AI search_and_answer failed, degrading to simple search: %v", err)
 			searchResp, err := aiClient.Search(req.Question, 3)
 			if err == nil && len(searchResp.Results) > 0 {
@@ -126,59 +131,53 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 		log.Println("info: AI service not available, using local keyword search")
 	}
 
-	// 降级到文档内容检索
+	// 降级到本地关键词检索
 	if answer == "" {
-		// 从数据库中检索包含关键词的文档
 		docs, _ := repository.GetAllDocumentsContent()
-		if len(docs) > 0 {
-			// 简单的关键词匹配
-			questionLower := strings.ToLower(req.Question)
-			for _, doc := range docs {
-				contentLower := strings.ToLower(doc.Content)
-				if strings.Contains(contentLower, questionLower) {
-					// 找到包含关键词的文档片段
-					idx := strings.Index(contentLower, questionLower)
-					start := max(0, idx-100)
-					end := min(len(doc.Content), idx+200)
-					snippet := doc.Content[start:end]
-					if start > 0 {
-						snippet = "..." + snippet
-					}
-					if end < len(doc.Content) {
-						snippet = snippet + "..."
-					}
-					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, doc.Title, snippet)
-					sources = append(sources, response.AskSource{
-						DocumentID:    doc.ID,
-						DocumentTitle: doc.Title,
-						Content:       snippet[:min(len(snippet), 200)],
-					})
-					confidence = 0.75
-					break
+		questionLower := strings.ToLower(req.Question)
+		for _, doc := range docs {
+			contentLower := strings.ToLower(doc.Content)
+			if strings.Contains(contentLower, questionLower) {
+				idx := strings.Index(contentLower, questionLower)
+				start := max(0, idx-100)
+				end := min(len(doc.Content), idx+200)
+				snippet := doc.Content[start:end]
+				if start > 0 {
+					snippet = "..." + snippet
 				}
+				if end < len(doc.Content) {
+					snippet = snippet + "..."
+				}
+				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, doc.Title, snippet)
+				sources = append(sources, response.AskSource{
+					DocumentID:    doc.ID,
+					DocumentTitle: doc.Title,
+					Content:       snippet[:min(len(snippet), 200)],
+				})
+				confidence = 0.75
+				break
 			}
 		}
+	}
 
-		// 如果没有找到相关文档，使用知识点匹配
-		if answer == "" {
-			points, _ := repository.GetAllKnowledgePoints()
-			for _, p := range points {
-				if strings.Contains(req.Question, p.Name) || strings.Contains(p.Name, req.Question) {
-					related = append(related, response.KPRef{ID: p.ID, Name: p.Name, Description: p.Description})
-				}
+	// 最终降级：知识点匹配
+	if answer == "" {
+		points, _ := repository.GetAllKnowledgePoints()
+		for _, p := range points {
+			if strings.Contains(req.Question, p.Name) || strings.Contains(p.Name, req.Question) {
+				related = append(related, response.KPRef{ID: p.ID, Name: p.Name, Description: p.Description})
 			}
-
-			if len(related) > 0 {
-				answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
-				for i, kp := range related {
-					answer += fmt.Sprintf("%d. %s: %s\n\n", i+1, kp.Name, kp.Description)
-				}
-				answer += "以上内容来自知识点库，仅供参考。"
-				confidence = 0.7
-			} else {
-				answer = fmt.Sprintf("抱歉，暂时无法找到关于「%s」的准确回答。您可以尝试：\n1. 上传更多相关文档\n2. 构建知识图谱\n3. 联系管理员获取帮助", req.Question)
-				confidence = 0.3
+		}
+		if len(related) > 0 {
+			answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
+			for i, kp := range related {
+				answer += fmt.Sprintf("%d. %s: %s\n\n", i+1, kp.Name, kp.Description)
 			}
+			answer += "以上内容来自知识点库，仅供参考。"
+			confidence = 0.7
+		} else {
+			answer = fmt.Sprintf("抱歉，暂时无法找到关于「%s」的准确回答。您可以尝试：\n1. 上传更多相关文档\n2. 构建知识图谱\n3. 联系管理员获取帮助", req.Question)
+			confidence = 0.3
 		}
 	}
 
@@ -210,7 +209,6 @@ func ListAskHistory(userID uint, page, size int, conversationID uint) ([]respons
 	list := make([]response.AskHistoryItem, len(sessions))
 	for i, s := range sessions {
 		var lastQuestion, lastAnswer string
-		// 获取该会话的消息
 		msgs, _, _ := repository.ListAskMessages(s.ID, 1, 100)
 		for _, m := range msgs {
 			if m.Role == "user" {

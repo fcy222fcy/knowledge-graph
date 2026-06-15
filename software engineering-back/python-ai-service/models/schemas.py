@@ -7,9 +7,14 @@ class BuildRequest(BaseModel):
     content: str
     source: Optional[str] = ""
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
 class SearchRequest(BaseModel):
     query: str
     top_k: int = 3
+    history: Optional[List[ChatMessage]] = None
 
 class SearchResult(BaseModel):
     chunk_text: str

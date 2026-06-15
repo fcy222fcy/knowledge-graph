@@ -48,3 +48,16 @@ func GetLastMessageBySession(sessionID uint) (*entity.AskMessage, error) {
 	err := database.DB.Where("session_id = ? AND role = ?", sessionID, "user").Order("created_at DESC").First(&msg).Error
 	return &msg, err
 }
+
+func ListRecentMessages(sessionID uint, limit int) ([]entity.AskMessage, error) {
+	var messages []entity.AskMessage
+	err := database.DB.Where("session_id = ?", sessionID).
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&messages).Error
+	// 反转为时间正序
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
+	return messages, err
+}

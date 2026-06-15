@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -33,11 +34,24 @@ type AIAnswerResponse struct {
 	Sources    []AIAnswerSource `json:"sources"`
 }
 
+// ChatMessage 对话消息，用于传递历史上下文
+type ChatMessage struct {
+	Role    string `json:"role"`    // user / assistant
+	Content string `json:"content"`
+}
+
+// AIAnswerWithHistoryRequest 带历史上下文的请求
+type AIAnswerWithHistoryRequest struct {
+	Query   string        `json:"query"`
+	History []ChatMessage `json:"history"`
+	TopK    int           `json:"top_k"`
+}
+
 func NewAIClient() *AIClient {
 	return &AIClient{
 		BaseURL: os.Getenv("AI_SERVICE_URL"),
 		Client: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 180 * time.Second,
 		},
 	}
 }
@@ -176,6 +190,49 @@ func (c *AIClient) SearchAndAnswer(query string, topK int) (*AIAnswerResponse, e
 	return &result, nil
 }
 
+// SearchAndAnswerWithHistory 带对话历史的智能问答
+func (c *AIClient) SearchAndAnswerWithHistory(query string, history []ChatMessage, topK int) (*AIAnswerResponse, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not configured")
+	}
+
+	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
+	body, _ := json.Marshal(req)
+	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI search_and_answer: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("AI search_and_answer failed: %s", string(body))
+	}
+
+	var result AIAnswerResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode AI search_and_answer response: %w", err)
+	}
+	return &result, nil
+}
+
+// BuildConversationContext 构建对话上下文字符串，用于本地降级时拼接 prompt
+func BuildConversationContext(history []ChatMessage) string {
+	if len(history) == 0 {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString("对话历史：\n")
+	for _, m := range history {
+		if m.Role == "user" {
+			sb.WriteString(fmt.Sprintf("用户：%s\n", m.Content))
+		} else {
+			sb.WriteString(fmt.Sprintf("助手：%s\n", m.Content))
+		}
+	}
+	return sb.String()
+}
+
 func (c *AIClient) GetGraph() (*AIGraphResponse, error) {
 	if !c.IsAvailable() {
 		return nil, fmt.Errorf("AI service not configured")
@@ -208,4 +265,9 @@ func InitAIClient() {
 	} else {
 		log.Println("AI client: AI_SERVICE_URL not configured, AI features disabled")
 	}
+}
+
+// GetAIClient 获取 AI 客户端实例
+func GetAIClient() *AIClient {
+	return aiClient
 }

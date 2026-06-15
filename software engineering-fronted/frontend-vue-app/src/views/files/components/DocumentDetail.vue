@@ -45,8 +45,8 @@ const formatFileSize = (bytes: number) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
-watch(() => props.document, async (doc) => {
-  if (doc && visible.value) {
+const loadDocumentContent = async (doc: DocumentItem) => {
+  if (doc) {
     loading.value = true
     try {
       const result = await getDocumentContent(doc.id)
@@ -57,11 +57,19 @@ watch(() => props.document, async (doc) => {
       loading.value = false
     }
   }
+}
+
+watch(() => props.document, async (doc) => {
+  if (doc && visible.value) {
+    await loadDocumentContent(doc)
+  }
 })
 
-watch(visible, (val) => {
+watch(visible, async (val) => {
   if (!val) {
     content.value = ''
+  } else if (props.document) {
+    await loadDocumentContent(props.document)
   }
 })
 </script>

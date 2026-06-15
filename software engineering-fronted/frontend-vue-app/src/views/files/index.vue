@@ -50,16 +50,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { Upload } from '@element-plus/icons-vue'
-import { getDocumentList, deleteDocument } from '@/services/document'
+import { getDocumentList, getDocumentDetail, deleteDocument } from '@/services/document'
 import type { DocumentItem } from '@/types/document'
 import { usePagination } from '@/composables/usePagination'
 import DocumentTable from './components/DocumentTable.vue'
 import UploadDialog from './components/UploadDialog.vue'
 import DocumentDetail from './components/DocumentDetail.vue'
 
+const route = useRoute()
 const documentList = ref<DocumentItem[]>([])
 const loading = ref(false)
 const searchKeyword = ref('')
@@ -113,8 +115,30 @@ const handleDelete = async (row: DocumentItem) => {
   }
 }
 
+// 处理从知识图谱跳转过来的文档ID参数
+const handleDocumentParam = async () => {
+  const docId = route.query.doc_id
+  if (docId) {
+    try {
+      const result = await getDocumentDetail(Number(docId))
+      if (result.data) {
+        currentDocument.value = result.data
+        detailVisible.value = true
+      }
+    } catch (error) {
+      console.error('获取文档详情失败:', error)
+    }
+  }
+}
+
 onMounted(() => {
   fetchDocuments()
+  handleDocumentParam()
+})
+
+// 监听路由参数变化
+watch(() => route.query.doc_id, () => {
+  handleDocumentParam()
 })
 </script>
 

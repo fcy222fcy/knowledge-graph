@@ -50,7 +50,8 @@ const getNodeColor = (category?: string) => {
 
 const goToDocument = () => {
   if (props.node?.document_id) {
-    router.push({ path: '/files', query: { highlight: String(props.node.document_id) } })
+    // 跳转到文件列表页面，并传递文档ID参数以自动打开详情
+    router.push({ path: '/files', query: { doc_id: String(props.node.document_id) } })
   }
 }
 </script>

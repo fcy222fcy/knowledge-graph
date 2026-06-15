@@ -23,4 +23,5 @@ async def search(req: SearchRequest):
 @router.post("/search_and_answer")
 async def search_and_answer(req: SearchRequest):
     """语义检索并使用 Ollama 生成智能回答"""
-    return answer_service.search_and_answer(req.query, req.top_k)
+    history = [m.model_dump() for m in req.history] if req.history else None
+    return answer_service.search_and_answer(req.query, req.top_k, history)
