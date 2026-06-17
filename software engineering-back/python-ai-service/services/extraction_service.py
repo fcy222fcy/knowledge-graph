@@ -1,6 +1,13 @@
 import re
-from typing import List, Dict
+import json
+import httpx
+import asyncio
+import logging
+from typing import List, Dict, Optional
 from collections import defaultdict
+from config import config
+
+logger = logging.getLogger(__name__)
 
 # 软件工程领域知识本体 - 用于分类和关系推断
 ONTOLOGY = {
@@ -48,6 +55,172 @@ RELATION_TYPES = {
     "部署": "实体A用于部署实体B",
     "关联": "实体A和实体B在概念上相关"
 }
+
+
+async def _call_ollama_for_extraction(prompt: str, system_prompt: str) -> str:
+    """调用 Ollama 进行知识点提取"""
+    try:
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            response = await client.post(
+                f"{config.ollama_base_url}/api/generate",
+                json={
+                    "model": config.ollama_model,
+                    "prompt": prompt,
+                    "system": system_prompt,
+                    "stream": False,
+                    "think": False,
+                    "options": {
+                        "temperature": 0.3,  # 降低温度以获得更稳定的结构化输出
+                        "top_p": 0.9,
+                        "num_predict": 2048,
+                    },
+                },
+            )
+            response.raise_for_status()
+            result = response.json()
+            answer = result.get("response", "").strip()
+            if not answer:
+                answer = result.get("thinking", "").strip()
+            return answer
+    except Exception as e:
+        logger.error(f"Ollama extraction call failed: {e}")
+        return ""
+
+
+def _parse_llm_extraction_response(response: str) -> Dict:
+    """解析LLM返回的JSON提取结果"""
+    try:
+        # 尝试提取JSON块
+        json_match = re.search(r'\{[\s\S]*\}', response)
+        if json_match:
+            json_str = json_match.group(0)
+            data = json.loads(json_str)
+
+            # 验证结构
+            if "points" in data and "relations" in data:
+                return data
+    except json.JSONDecodeError as e:
+        logger.warning(f"Failed to parse LLM response as JSON: {e}")
+    except Exception as e:
+        logger.error(f"Error parsing LLM response: {e}")
+
+    return {"points": [], "relations": []}
+
+
+def extract_with_llm(content: str, document_id: int) -> Dict:
+    """使用LLM从文档内容中智能抽取知识点和关系
+
+    Args:
+        content: 文档内容
+        document_id: 文档ID
+
+    Returns:
+        Dict: 包含 points 和 relations 的字典
+    """
+    # 限制输入长度，避免超出LLM上下文窗口
+    max_content_length = 6000
+    if len(content) > max_content_length:
+        content = content[:max_content_length] + "\n\n...(文档已截断)..."
+
+    system_prompt = """你是一个软件工程领域的知识图谱构建专家。你的任务是从文档中提取核心知识点和它们之间的关系，构建高质量的知识图谱。
+
+提取原则：
+1. 知识点应该是核心概念、术语、方法、技术、工具等
+2. 每个知识点名称应该简洁准确（2-20个字符）
+3. 描述应该清晰说明该知识点的含义（10-100个字符）
+4. 分类应该准确反映知识点所属领域
+5. 关系应该反映知识点之间的真实语义联系
+6. 关系类型必须是以下之一：RELATED, DEPENDS_ON, PART_OF, IS_A, EXAMPLE_OF, USES, IMPLEMENTS
+
+分类选项（category）：
+- 软件生命周期：需求分析、设计、编码、测试、维护等阶段
+- 软件设计：架构、模式、接口、数据库设计等
+- 质量保障：测试方法、质量标准、缺陷管理等
+- 过程模型：瀑布、敏捷、Scrum、DevOps等
+- 数据库：SQL、NoSQL、数据建模等
+- 编程语言：Java、Python、Go等语言和技术
+- Web开发：前端、后端、框架、协议等
+- AI/ML：机器学习、深度学习、大模型等
+- 工具与平台：IDE、版本控制、CI/CD等
+- 其他：不属于以上分类的知识点"""
+
+    user_prompt = f"""请从以下软件工程课程文档中提取知识点和关系。
+
+文档内容：
+{content}
+
+请严格按照以下JSON格式返回结果（不要添加任何其他文字）：
+{{
+  "points": [
+    {{
+      "name": "知识点名称",
+      "description": "简要描述该知识点",
+      "category": "分类"
+    }}
+  ],
+  "relations": [
+    {{
+      "source": "源知识点名称",
+      "target": "目标知识点名称",
+      "relation_type": "关系类型",
+      "description": "关系描述"
+    }}
+  ]
+}}
+
+注意：
+- 提取10-30个核心知识点
+- 提取5-20个有意义的关系
+- 关系类型必须是：RELATED, DEPENDS_ON, PART_OF, IS_A, EXAMPLE_OF, USES, IMPLEMENTS
+- 确保source和target都是提取出的知识点名称"""
+
+    try:
+        import threading
+
+        result = [None]
+
+        def _run():
+            result[0] = asyncio.run(_call_ollama_for_extraction(user_prompt, system_prompt))
+
+        t = threading.Thread(target=_run)
+        t.start()
+        t.join(timeout=120)
+
+        if result[0]:
+            data = _parse_llm_extraction_response(result[0])
+
+            # 为每个知识点添加ID和document_id
+            for i, point in enumerate(data.get("points", []), 1):
+                point["id"] = i
+                point["document_id"] = document_id
+                # 确保必填字段存在
+                if "name" not in point or not point["name"]:
+                    point["name"] = f"未知知识点{i}"
+                if "description" not in point:
+                    point["description"] = f"{point['name']}相关概念"
+                if "category" not in point:
+                    point["category"] = "其他"
+
+            # 为关系添加ID并验证节点存在
+            point_names = {p["name"] for p in data.get("points", [])}
+            valid_relations = []
+            for i, rel in enumerate(data.get("relations", []), 1):
+                if (rel.get("source") in point_names and
+                    rel.get("target") in point_names and
+                    rel.get("relation_type") in ["RELATED", "DEPENDS_ON", "PART_OF",
+                                                   "IS_A", "EXAMPLE_OF", "USES", "IMPLEMENTS"]):
+                    rel["id"] = i
+                    valid_relations.append(rel)
+
+            data["relations"] = valid_relations
+
+            logger.info(f"LLM extraction: {len(data['points'])} points, {len(data['relations'])} relations")
+            return data
+
+    except Exception as e:
+        logger.error(f"LLM extraction failed: {e}")
+
+    return {"points": [], "relations": []}
 
 
 def extract_knowledge_points(content: str, document_id: int) -> List[Dict]:
@@ -104,14 +277,18 @@ def _extract_entities_from_text(text: str) -> List[tuple]:
 
     # 匹配技术术语模式
     patterns = [
-        # 英文技术术语
+        # 英文技术术语（支持多单词组合如 Spring Boot）
         (r'\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)\b', "技术术语"),
-        # 缩写
+        # 缩写（2-6个大写字母）
         (r'\b([A-Z]{2,6})\b', "缩写"),
-        # 中文术语（2-8个字）
-        (r'([一-龥]{2,8}(?:模型|模式|系统|框架|工具|技术|方法|测试|设计|开发|架构|接口|数据库|服务器|容器))', "技术概念"),
+        # 中文术语 + 后缀（更宽泛的匹配）
+        (r'([一-龥]{2,10}(?:模型|模式|系统|框架|工具|技术|方法|测试|设计|开发|架构|接口|数据库|服务器|容器|平台|服务|协议|标准|规范|流程|工程))', "技术概念"),
+        # 中文术语 + 动词/名词后缀
+        (r'([一-龥]{2,8}(?:分析|管理|优化|集成|部署|配置|实现|验证|评估|监控|维护|演进|迭代|重构|抽象|封装|继承|多态))', "技术概念"),
         # 带版本号的术语
         (r'([A-Za-z]+\s*\d+(?:\.\d+)*)', "版本号"),
+        # 点分隔的技术术语（如 Spring Boot、Node.js）
+        (r'\b([A-Z][a-z]+(?:\.[A-Za-z][a-z]+)+)\b', "技术术语"),
     ]
 
     for pattern, category in patterns:
@@ -162,7 +339,7 @@ def extract_relations(points: List[Dict]) -> List[Dict]:
     for p in points:
         category_points[p["category"]].append(p)
 
-    # 1. 同类别内的链式关系（基于文档顺序）
+    # 1. 同类别内的关系（基于文档顺序和语义）
     for cat, cat_pts in category_points.items():
         if len(cat_pts) <= 1:
             continue
@@ -202,29 +379,102 @@ def extract_relations(points: List[Dict]) -> List[Dict]:
                     })
                     rel_id += 1
 
+    # 3. 基于名称相似性的关系（包含关系）
+    for i, p1 in enumerate(points):
+        for j, p2 in enumerate(points):
+            if i >= j:
+                continue
+            key = (p1["id"], p2["id"])
+            if key in seen:
+                continue
+
+            # 检查包含关系
+            if p1["name"] in p2["name"] or p2["name"] in p1["name"]:
+                # 短的被长的包含
+                if len(p1["name"]) < len(p2["name"]):
+                    source, target = p1, p2
+                else:
+                    source, target = p2, p1
+
+                relations.append({
+                    "id": rel_id,
+                    "source_id": source["id"],
+                    "target_id": target["id"],
+                    "relation_type": "PART_OF",
+                    "description": f"{source['name']} 是 {target['name']} 的一部分"
+                })
+                rel_id += 1
+                seen.add(key)
+
+    # 4. 同一文档内的相关关系（如果关系太少）
+    if len(relations) < len(points) // 2:
+        for i, p1 in enumerate(points):
+            for j, p2 in enumerate(points):
+                if i >= j:
+                    continue
+                key = (p1["id"], p2["id"])
+                if key in seen:
+                    continue
+
+                # 同一类别内的节点建立RELATED关系
+                if p1["category"] == p2["category"]:
+                    relations.append({
+                        "id": rel_id,
+                        "source_id": p1["id"],
+                        "target_id": p2["id"],
+                        "relation_type": "RELATED",
+                        "description": f"{p1['name']} 与 {p2['name']} 相关"
+                    })
+                    rel_id += 1
+                    seen.add(key)
+
+                    # 限制每个节点最多3个关系
+                    source_count = sum(1 for r in relations if r["source_id"] == p1["id"])
+                    if source_count >= 3:
+                        break
+
     return relations
 
 
 def _infer_relation_type(name1: str, name2: str) -> str:
     """推断两个术语之间的关系类型"""
-    # 演化关系
+    # 演化关系（DEPENDS_ON）
     evolution_pairs = [
         ("需求分析", "概要设计"), ("概要设计", "详细设计"),
         ("瀑布模型", "增量模型"), ("增量模型", "敏捷开发"),
-        ("单元测试", "集成测试"), ("集成测试", "系统测试")
+        ("单元测试", "集成测试"), ("集成测试", "系统测试"),
+        ("设计", "编码"), ("编码", "测试"), ("测试", "部署")
     ]
     for src, tgt in evolution_pairs:
         if src in name1 and tgt in name2:
-            return "演化"
+            return "DEPENDS_ON"
 
-    # 包含关系
+    # 包含关系（PART_OF）
     if len(name1) > len(name2) and name2 in name1:
-        return "包含"
+        return "PART_OF"
     if len(name2) > len(name1) and name1 in name2:
-        return "包含"
+        return "PART_OF"
 
-    # 默认关系
-    return "关联"
+    # 使用关系（USES）
+    usage_keywords = ["使用", "采用", "基于", "利用"]
+    for kw in usage_keywords:
+        if kw in name1 or kw in name2:
+            return "USES"
+
+    # 实现关系（IMPLEMENTS）
+    impl_keywords = ["实现", "执行", "运行"]
+    for kw in impl_keywords:
+        if kw in name1 or kw in name2:
+            return "IMPLEMENTS"
+
+    # 示例关系（EXAMPLE_OF）
+    example_keywords = ["示例", "例子", "案例", "实例"]
+    for kw in example_keywords:
+        if kw in name1 or kw in name2:
+            return "EXAMPLE_OF"
+
+    # 默认关系（RELATED）
+    return "RELATED"
 
 
 def chunk_text(content: str, chunk_size: int = 500) -> List[str]:

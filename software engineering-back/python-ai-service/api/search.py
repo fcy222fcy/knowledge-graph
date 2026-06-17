@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from models.schemas import SearchRequest, SearchResponse, SearchResult
 from services.vector_service import vector_service
-from services.answer_service import answer_service
+from services.answer_service import answer_service, graph_qa_service
 
 router = APIRouter()
 
@@ -25,3 +25,9 @@ async def search_and_answer(req: SearchRequest):
     """语义检索并使用 Ollama 生成智能回答"""
     history = [m.model_dump() for m in req.history] if req.history else None
     return answer_service.search_and_answer(req.query, req.top_k, history)
+
+@router.post("/search_and_answer_with_graph")
+async def search_and_answer_with_graph(req: SearchRequest):
+    """基于知识图谱的语义检索和智能回答"""
+    history = [m.model_dump() for m in req.history] if req.history else None
+    return graph_qa_service.search_and_answer_with_graph(req.query, req.top_k, history)

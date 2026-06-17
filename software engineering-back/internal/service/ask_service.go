@@ -92,39 +92,66 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}
 	repository.CreateAskMessage(userMsg)
 
-	// 尝试调用 AI 服务（带历史上下文）
+	// 尝试调用 AI 服务（优先使用知识图谱问答）
 	var answer string
 	var confidence float64
 	var sources []response.AskSource
 	var related []response.KPRef
 
 	if aiClient.IsAvailable() {
-		answerResp, err := aiClient.SearchAndAnswerWithHistory(req.Question, history, 3)
-		if err == nil && answerResp.Answer != "" {
-			answer = answerResp.Answer
-			confidence = answerResp.Confidence
-			for _, s := range answerResp.Sources {
+		// 优先使用基于知识图谱的问答
+		graphResp, err := aiClient.SearchAndAnswerWithGraph(req.Question, history, 3)
+		if err == nil && graphResp.Answer != "" {
+			answer = graphResp.Answer
+			confidence = graphResp.Confidence
+			for _, s := range graphResp.Sources {
 				sources = append(sources, response.AskSource{
 					DocumentID:    uint(s.DocumentID),
 					DocumentTitle: s.DocumentTitle,
 					Content:       s.Content,
 				})
 			}
+			// 添加相关知识点
+			for _, kp := range graphResp.RelatedKnowledgePoints {
+				related = append(related, response.KPRef{
+					ID:          kp.ID,
+					Name:        kp.Name,
+					Description: kp.Description,
+				})
+			}
+			log.Printf("info: Graph-based QA succeeded, graph nodes: %d, relations: %d",
+				graphResp.GraphNodesCount, graphResp.GraphRelationsCount)
 		} else {
-			log.Printf("warning: AI search_and_answer failed, degrading to simple search: %v", err)
-			searchResp, err := aiClient.Search(req.Question, 3)
-			if err == nil && len(searchResp.Results) > 0 {
-				answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
-				for i, r := range searchResp.Results {
-					answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+			// 降级到普通RAG问答
+			log.Printf("warning: Graph-based QA failed, falling back to RAG: %v", err)
+			answerResp, err := aiClient.SearchAndAnswerWithHistory(req.Question, history, 3)
+			if err == nil && answerResp.Answer != "" {
+				answer = answerResp.Answer
+				confidence = answerResp.Confidence
+				for _, s := range answerResp.Sources {
 					sources = append(sources, response.AskSource{
-						DocumentID:    uint(r.DocumentID),
-						DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
-						Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+						DocumentID:    uint(s.DocumentID),
+						DocumentTitle: s.DocumentTitle,
+						Content:       s.Content,
 					})
 				}
-				answer += "以上内容来自知识库语义检索，仅供参考。"
-				confidence = 0.75
+			} else {
+				// 再降级到简单搜索
+				log.Printf("warning: AI search_and_answer failed, degrading to simple search: %v", err)
+				searchResp, err := aiClient.Search(req.Question, 3)
+				if err == nil && len(searchResp.Results) > 0 {
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
+					for i, r := range searchResp.Results {
+						answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+						sources = append(sources, response.AskSource{
+							DocumentID:    uint(r.DocumentID),
+							DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
+							Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+						})
+					}
+					answer += "以上内容来自知识库语义检索，仅供参考。"
+					confidence = 0.75
+				}
 			}
 		}
 	} else {

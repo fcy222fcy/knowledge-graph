@@ -34,6 +34,23 @@ type AIAnswerResponse struct {
 	Sources    []AIAnswerSource `json:"sources"`
 }
 
+// AIKnowledgePoint 相关知识点
+type AIKnowledgePoint struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// AIAnswerWithGraphResponse 基于知识图谱的回答响应
+type AIAnswerWithGraphResponse struct {
+	Answer                   string              `json:"answer"`
+	Confidence               float64             `json:"confidence"`
+	Sources                  []AIAnswerSource    `json:"sources"`
+	RelatedKnowledgePoints   []AIKnowledgePoint  `json:"related_knowledge_points"`
+	GraphNodesCount          int                 `json:"graph_nodes_count"`
+	GraphRelationsCount      int                 `json:"graph_relations_count"`
+}
+
 // ChatMessage 对话消息，用于传递历史上下文
 type ChatMessage struct {
 	Role    string `json:"role"`    // user / assistant
@@ -212,6 +229,32 @@ func (c *AIClient) SearchAndAnswerWithHistory(query string, history []ChatMessag
 	var result AIAnswerResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode AI search_and_answer response: %w", err)
+	}
+	return &result, nil
+}
+
+// SearchAndAnswerWithGraph 基于知识图谱的智能问答
+func (c *AIClient) SearchAndAnswerWithGraph(query string, history []ChatMessage, topK int) (*AIAnswerWithGraphResponse, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not configured")
+	}
+
+	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
+	body, _ := json.Marshal(req)
+	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI search_and_answer_with_graph: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("AI search_and_answer_with_graph failed: %s", string(body))
+	}
+
+	var result AIAnswerWithGraphResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode AI search_and_answer_with_graph response: %w", err)
 	}
 	return &result, nil
 }

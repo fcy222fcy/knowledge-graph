@@ -3,6 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from api import build, search, graph, health
 from services.neo4j_service import neo4j_service
 from config import config
+import logging
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 app = FastAPI(title="SE智图 AI Service", version="1.0.0")
 
