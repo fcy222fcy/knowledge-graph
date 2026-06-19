@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <h3>学习趋势</h3>
-    <v-chart v-if="data && data.daily_stats.length" :option="option" autoresize style="height: 240px" />
+    <v-chart v-if="data && data.daily_stats && data.daily_stats.length" :option="option" autoresize style="height: 240px" />
     <EmptyState v-else text="暂无趋势数据" />
   </div>
 </template>

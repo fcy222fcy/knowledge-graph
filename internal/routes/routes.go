@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"software_engineering/internal/handlers"
 	"software_engineering/internal/middleware"
 )
 
@@ -17,9 +18,9 @@ func SetupRoutes(r *gin.Engine) {
 		// Auth (public)
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", stubHandler("用户注册"))
-			auth.POST("/login", stubHandler("用户登录"))
-			auth.POST("/refresh", stubHandler("刷新token"))
+			auth.POST("/register", handlers.Register)
+			auth.POST("/login", handlers.Login)
+			auth.POST("/refresh", handlers.RefreshToken)
 		}
 
 		// Protected routes

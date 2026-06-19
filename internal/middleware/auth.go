@@ -2,16 +2,25 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-// RequireAuth is a stub that checks for token presence.
-// TODO: implement real JWT token validation.
+var jwtSecret = []byte("software-engineering-secret-key-2024")
+
+type Claims struct {
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
+// RequireAuth 验证 JWT 令牌
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
-		if token == "" {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code":    401,
 				"message": "未授权",
@@ -20,8 +29,50 @@ func RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// Stub: accept any non-empty token, set user_id to 1
-		c.Set("user_id", uint(1))
+
+		// 提取 Bearer token
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的授权格式",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		tokenString := parts[1]
+
+		// 解析并验证 token
+		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+			return jwtSecret, nil
+		})
+
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的令牌",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		claims, ok := token.Claims.(*Claims)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的令牌",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		// 设置用户信息到上下文
+		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
 		c.Next()
 	}
 }

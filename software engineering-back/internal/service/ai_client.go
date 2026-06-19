@@ -10,6 +10,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 type AIClient struct {
@@ -241,7 +244,20 @@ func (c *AIClient) SearchAndAnswerWithGraph(query string, history []ChatMessage,
 
 	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
 	body, _ := json.Marshal(req)
-	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", bytes.NewBuffer(body))
+
+	// 将 UTF-8 JSON 转换为 GBK 编码
+	var gbkBody bytes.Buffer
+	encoder := simplifiedchinese.GBK.NewEncoder()
+	transformer := transform.NewWriter(&gbkBody, encoder)
+	if _, err := transformer.Write(body); err != nil {
+		// 如果转换失败，使用原始 UTF-8
+		log.Printf("GBK encoding failed, using UTF-8: %v", err)
+		gbkBody.Reset()
+		gbkBody.Write(body)
+	}
+	transformer.Close()
+
+	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", &gbkBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call AI search_and_answer_with_graph: %w", err)
 	}

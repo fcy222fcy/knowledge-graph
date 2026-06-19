@@ -112,16 +112,30 @@ class GraphQAService:
             nodes = all_nodes
             relations = all_relations
 
+            # 尝试修复编码问题：如果包含 GBK 编码的字节，尝试解码
+            try:
+                raw_bytes = query.encode('latin-1')
+                query = raw_bytes.decode('gbk')
+                logger.info(f"Decoded GBK query: {query}")
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                pass
+
             # 搜索与查询相关的节点
             query_lower = query.lower()
             # 移除常见停用词
-            stop_words = {"什么是", "哪些", "如何", "怎么", "为什么", "请", "介绍", "说明", "解释", "的", "了", "在", "是"}
+            stop_words = {"什么是", "哪些", "如何", "怎么", "为什么", "请", "介绍", "说明", "解释", "的", "了", "在", "是", "？", "吗", "呢"}
+            # 按字符分割，而不是按字节分割
             query_keywords = []
-            for word in [query_lower[i:i+2] for i in range(0, len(query_lower), 2)]:
-                if word and word not in stop_words and len(word) >= 2:
-                    query_keywords.append(word)
+            for i in range(len(query_lower)):
+                # 尝试提取2-4字的关键词
+                for length in [4, 3, 2]:
+                    if i + length <= len(query_lower):
+                        word = query_lower[i:i+length]
+                        if word and word not in stop_words and len(word) >= 2:
+                            query_keywords.append(word)
+                            break
 
-            logger.info(f"Search query: {query_lower}, keywords: {query_keywords}")
+            logger.info(f"Search query: {repr(query_lower)}, keywords: {query_keywords}")
 
             relevant_nodes = []
             for node in nodes:

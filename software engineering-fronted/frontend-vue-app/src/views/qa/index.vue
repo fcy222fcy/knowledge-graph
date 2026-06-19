@@ -53,15 +53,10 @@ const fetchSessions = async () => {
   }
 }
 
-const handleNewSession = async () => {
-  try {
-    const result = await createSession()
-    await fetchSessions()
-    currentSessionId.value = result.data.conversation_id
-    messages.value = []
-  } catch (error) {
-    console.error('创建会话失败:', error)
-  }
+const handleNewSession = () => {
+  // 不立即创建会话，等发送第一条消息时再创建
+  currentSessionId.value = null
+  messages.value = []
 }
 
 const handleSelectSession = async (sessionId: number) => {
@@ -84,6 +79,7 @@ const handleAskQuestion = async (question: string) => {
     try {
       const result = await createSession()
       currentSessionId.value = result.data.conversation_id
+      await fetchSessions()
     } catch {
       ElMessage.error('创建会话失败')
       return
