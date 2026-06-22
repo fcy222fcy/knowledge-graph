@@ -20,3 +20,10 @@ type DocumentContentResponse struct {
 	Title   string `json:"title"`   // 文档标题
 	Content string `json:"content"` // 文档完整内容
 }
+
+// DocumentDownloadResponse 文档下载响应
+type DocumentDownloadResponse struct {
+	ID      uint   `json:"id"`      // 文档ID
+	Title   string `json:"title"`   // 文档标题
+	URL     string `json:"url"`     // 预签名下载 URL
+}

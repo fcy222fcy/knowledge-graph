@@ -12,6 +12,7 @@ func RegisterRoutes(protected *gin.RouterGroup) {
 		ask.GET("/sessions", ListSessions)
 		ask.GET("/sessions/:id/messages", ListSessionMessages)
 		ask.POST("", AskQuestion)
+		ask.POST("/stream", AskQuestionStream)
 		ask.GET("/history", ListAskHistory)
 	}
 }

@@ -20,7 +20,7 @@
 import { ref, onMounted } from 'vue'
 import type { ConversationItem } from '@/types/qa'
 import type { AskResponse } from '@/services/qa'
-import { getSessions, getSessionMessages, createSession, askQuestion } from '@/services/qa'
+import { getSessions, getSessionMessages, createSession, askQuestionStream } from '@/services/qa'
 import { ElMessage } from 'element-plus'
 import SessionList from './components/SessionList.vue'
 import ChatPanel from './components/ChatPanel.vue'
@@ -75,6 +75,7 @@ const handleSelectSession = async (sessionId: number) => {
 const handleAskQuestion = async (question: string) => {
   if (isAsking.value) return
 
+  // 先创建会话（如果需要）
   if (!currentSessionId.value) {
     try {
       const result = await createSession()
@@ -86,6 +87,7 @@ const handleAskQuestion = async (question: string) => {
     }
   }
 
+  // 添加用户消息
   const userMsg: ExtendedMessage = {
     message_id: Date.now(),
     role: 'user',
@@ -94,27 +96,45 @@ const handleAskQuestion = async (question: string) => {
   }
   messages.value.push(userMsg)
 
+  // 添加空的 AI 消息占位
+  const aiMsg: ExtendedMessage = {
+    message_id: Date.now() + 1,
+    role: 'assistant',
+    content: '',
+    created_at: new Date().toISOString()
+  }
+  messages.value.push(aiMsg)
+  const aiMsgIndex = messages.value.length - 1
+
   isAsking.value = true
+
   try {
-    const result = await askQuestion({
+    const stream = askQuestionStream({
       question,
       conversation_id: currentSessionId.value!
     })
-    const data = result.data
 
-    const aiMsg: ExtendedMessage = {
-      message_id: data.question_id,
-      role: 'assistant',
-      content: data.answer,
-      created_at: data.created_at,
-      sources: data.sources,
-      relatedKnowledgePoints: data.related_knowledge_points
+    for await (const event of stream) {
+      if (event.type === 'session') {
+        // 会话创建事件
+        if (event.session_id) {
+          currentSessionId.value = event.session_id
+        }
+      } else if (event.type === 'chunk') {
+        // 流式内容块
+        messages.value[aiMsgIndex].content += event.content
+      } else if (event.type === 'done') {
+        // 完成事件
+        messages.value[aiMsgIndex].sources = event.sources
+        messages.value[aiMsgIndex].relatedKnowledgePoints = event.related
+        fetchSessions()
+      } else if (event.type === 'error') {
+        messages.value[aiMsgIndex].content = event.content || '提问失败，请重试'
+      }
     }
-    messages.value.push(aiMsg)
-
-    fetchSessions()
   } catch (error) {
-    ElMessage.error('提问失败')
+    console.error('流式提问失败:', error)
+    messages.value[aiMsgIndex].content = '提问失败，请检查网络连接后重试'
   } finally {
     isAsking.value = false
   }

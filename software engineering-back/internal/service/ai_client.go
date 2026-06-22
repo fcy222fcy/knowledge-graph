@@ -1,21 +1,17 @@
 package service
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"os"
 	"strings"
-	"time"
+
+	"software_engineering/internal/repository"
 )
 
-// AIClient Python AI 服务客户端，负责调用知识图谱构建、语义搜索和智能问答接口
+// AIClient AI 服务客户端，负责调用知识图谱构建、语义搜索和智能问答接口
+// 现在直接调用本地 AI 服务，不再通过 HTTP 调用 Python 服务
 type AIClient struct {
-	BaseURL string      // AI 服务基础URL
-	Client  *http.Client // HTTP 客户端
+	available bool
 }
 
 // AIAnswerRequest AI 问答请求
@@ -66,16 +62,6 @@ type AIAnswerWithHistoryRequest struct {
 	Query   string        `json:"query"`   // 用户查询
 	History []ChatMessage `json:"history"` // 对话历史
 	TopK    int           `json:"top_k"`   // 返回结果数量
-}
-
-// NewAIClient 创建 AI 客户端，从 AI_SERVICE_URL 环境变量读取服务地址
-func NewAIClient() *AIClient {
-	return &AIClient{
-		BaseURL: os.Getenv("AI_SERVICE_URL"),
-		Client: &http.Client{
-			Timeout: 180 * time.Second,
-		},
-	}
 }
 
 // AIBuildRequest AI 知识图谱构建请求
@@ -144,140 +130,208 @@ type AIGraphEdge struct {
 
 // IsAvailable 检查 AI 服务是否已配置
 func (c *AIClient) IsAvailable() bool {
-	return c.BaseURL != ""
+	return c.available
 }
 
-// BuildGraph 调用 AI 服务构建知识图谱，返回创建的节点和边数量
+// BuildGraph 调用 AI 服务构建知识图谱
 func (c *AIClient) BuildGraph(req AIBuildRequest) (*AIBuildResponse, error) {
 	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
+		return nil, fmt.Errorf("AI service not available")
 	}
 
-	body, _ := json.Marshal(req)
-	resp, err := c.Client.Post(c.BaseURL+"/build", "application/json", bytes.NewBuffer(body))
+	// 使用抽取服务提取知识点和关系
+	extractionService := GetExtractionService()
+	if extractionService == nil {
+		return nil, fmt.Errorf("extraction service not initialized")
+	}
+
+	result, err := extractionService.ExtractKnowledgePoints(req.Content, req.DocumentID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call AI build: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI build failed: %s", string(body))
+		return nil, fmt.Errorf("extraction failed: %w", err)
 	}
 
-	var result AIBuildResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI build response: %w", err)
+	// 转换为 AIGraphNode 和 AIGraphEdge
+	nodes := make([]AIGraphNode, 0, len(result.Points))
+	pointIDMap := make(map[string]uint)
+	for i, point := range result.Points {
+		node := AIGraphNode{
+			ID:          uint(i + 1),
+			Name:        point.Name,
+			Description: point.Description,
+			Category:    point.Category,
+			DocumentID:  req.DocumentID,
+		}
+		nodes = append(nodes, node)
+		pointIDMap[point.Name] = node.ID
 	}
-	return &result, nil
+
+	edges := make([]AIGraphEdge, 0, len(result.Relations))
+	for _, rel := range result.Relations {
+		sourceID, ok := pointIDMap[rel.Source]
+		if !ok {
+			continue
+		}
+		targetID, ok := pointIDMap[rel.Target]
+		if !ok {
+			continue
+		}
+		edge := AIGraphEdge{
+			Source:       sourceID,
+			Target:       targetID,
+			RelationType: rel.RelationType,
+			Description:  rel.Description,
+		}
+		edges = append(edges, edge)
+	}
+
+	return &AIBuildResponse{
+		DocumentID:       req.DocumentID,
+		DocumentTitle:    req.Title,
+		CreatedPoints:    len(nodes),
+		CreatedRelations: len(edges),
+		Status:           "completed",
+		Message:          fmt.Sprintf("成功提取 %d 个知识点和 %d 个关系", len(nodes), len(edges)),
+		Points:           nodes,
+		Relations:        edges,
+	}, nil
 }
 
-// Search 调用 AI 服务进行语义搜索，返回与查询最相关的文档片段
+// Search 调用 AI 服务进行语义搜索
 func (c *AIClient) Search(query string, topK int) (*AISearchResponse, error) {
 	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
+		return nil, fmt.Errorf("AI service not available")
 	}
 
-	req := AISearchRequest{Query: query, TopK: topK}
-	body, _ := json.Marshal(req)
-	resp, err := c.Client.Post(c.BaseURL+"/search", "application/json", bytes.NewBuffer(body))
+	vectorService := GetVectorService()
+	if vectorService == nil {
+		return nil, fmt.Errorf("vector service not initialized")
+	}
+
+	results, err := vectorService.Search(query, topK)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call AI search: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI search failed: %s", string(body))
+		return nil, fmt.Errorf("vector search failed: %w", err)
 	}
 
-	var result AISearchResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI search response: %w", err)
+	searchResults := make([]AISearchResult, 0, len(results))
+	for _, r := range results {
+		searchResults = append(searchResults, AISearchResult{
+			ChunkText:  r.Metadata.ChunkText,
+			Score:      r.Score,
+			DocumentID: int(r.Metadata.DocumentID),
+		})
 	}
-	return &result, nil
+
+	return &AISearchResponse{Results: searchResults}, nil
 }
 
-// SearchAndAnswer 调用 AI 服务进行语义搜索并生成回答（不带历史上下文）
+// SearchAndAnswer 调用 AI 服务进行语义搜索并生成回答
 func (c *AIClient) SearchAndAnswer(query string, topK int) (*AIAnswerResponse, error) {
-	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
-	}
-
-	req := AIAnswerRequest{Query: query, TopK: topK}
-	body, _ := json.Marshal(req)
-	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer", "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		return nil, fmt.Errorf("failed to call AI search_and_answer: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI search_and_answer failed: %s", string(body))
-	}
-
-	var result AIAnswerResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI search_and_answer response: %w", err)
-	}
-	return &result, nil
+	return c.SearchAndAnswerWithHistory(query, nil, topK)
 }
 
 // SearchAndAnswerWithHistory 带对话历史的智能问答
 func (c *AIClient) SearchAndAnswerWithHistory(query string, history []ChatMessage, topK int) (*AIAnswerResponse, error) {
 	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
+		return nil, fmt.Errorf("AI service not available")
 	}
 
-	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
-	body, _ := json.Marshal(req)
-	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer", "application/json", bytes.NewBuffer(body))
+	answerService := GetAnswerService()
+	if answerService == nil {
+		return nil, fmt.Errorf("answer service not initialized")
+	}
+
+	resp, err := answerService.SearchAndAnswer(query, history, topK)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call AI search_and_answer: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI search_and_answer failed: %s", string(body))
+		return nil, err
 	}
 
-	var result AIAnswerResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI search_and_answer response: %w", err)
+	sources := make([]AIAnswerSource, 0, len(resp.Sources))
+	for _, s := range resp.Sources {
+		sources = append(sources, AIAnswerSource{
+			DocumentID: int(s.DocumentID),
+			Content:    s.Content,
+		})
 	}
-	return &result, nil
+
+	return &AIAnswerResponse{
+		Answer:     resp.Answer,
+		Confidence: resp.Confidence,
+		Sources:    sources,
+	}, nil
 }
 
 // SearchAndAnswerWithGraph 基于知识图谱的智能问答
 func (c *AIClient) SearchAndAnswerWithGraph(query string, history []ChatMessage, topK int) (*AIAnswerWithGraphResponse, error) {
 	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
+		return nil, fmt.Errorf("AI service not available")
 	}
 
-	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
-	body, _ := json.Marshal(req)
+	answerService := GetAnswerService()
+	if answerService == nil {
+		return nil, fmt.Errorf("answer service not initialized")
+	}
 
-	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", bytes.NewBuffer(body))
+	resp, err := answerService.SearchAndAnswerWithGraph(query, history, topK)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call AI search_and_answer_with_graph: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI search_and_answer_with_graph failed: %s", string(body))
+		return nil, err
 	}
 
-	var result AIAnswerWithGraphResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI search_and_answer_with_graph response: %w", err)
+	sources := make([]AIAnswerSource, 0, len(resp.Sources))
+	for _, s := range resp.Sources {
+		sources = append(sources, AIAnswerSource{
+			DocumentID: int(s.DocumentID),
+			Content:    s.Content,
+		})
 	}
-	return &result, nil
+
+	points := make([]AIKnowledgePoint, 0, len(resp.RelatedKnowledgePoints))
+	for _, p := range resp.RelatedKnowledgePoints {
+		points = append(points, AIKnowledgePoint{
+			ID:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+		})
+	}
+
+	return &AIAnswerWithGraphResponse{
+		Answer:                 resp.Answer,
+		Confidence:             resp.Confidence,
+		Sources:                sources,
+		RelatedKnowledgePoints: points,
+		GraphNodesCount:        resp.GraphNodesCount,
+		GraphRelationsCount:    resp.GraphRelationsCount,
+	}, nil
 }
 
-// BuildConversationContext 构建对话上下文字符串，用于本地降级时拼接 prompt
+// SearchAndAnswerWithHistoryStream 带对话历史的流式智能问答
+func (c *AIClient) SearchAndAnswerWithHistoryStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not available")
+	}
+
+	answerService := GetAnswerService()
+	if answerService == nil {
+		return nil, fmt.Errorf("answer service not initialized")
+	}
+
+	return answerService.SearchAndAnswerStream(query, history, topK)
+}
+
+// SearchAndAnswerWithGraphStream 基于知识图谱的流式智能问答
+func (c *AIClient) SearchAndAnswerWithGraphStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not available")
+	}
+
+	answerService := GetAnswerService()
+	if answerService == nil {
+		return nil, fmt.Errorf("answer service not initialized")
+	}
+
+	return answerService.SearchAndAnswerWithGraphStream(query, history, topK)
+}
+
+// BuildConversationContext 构建对话上下文字符串
 func BuildConversationContext(history []ChatMessage) string {
 	if len(history) == 0 {
 		return ""
@@ -294,41 +348,62 @@ func BuildConversationContext(history []ChatMessage) string {
 	return sb.String()
 }
 
-// GetGraph 从 AI 服务获取完整知识图谱数据（节点和边）
+// GetGraph 从数据库获取完整知识图谱数据
 func (c *AIClient) GetGraph() (*AIGraphResponse, error) {
-	if !c.IsAvailable() {
-		return nil, fmt.Errorf("AI service not configured")
-	}
-
-	resp, err := c.Client.Get(c.BaseURL + "/graph")
+	// 从数据库获取知识点和关系
+	points, rels, err := repository.GetAllGraphDataFromNeo4j()
 	if err != nil {
-		return nil, fmt.Errorf("failed to call AI graph: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("AI graph failed: %s", string(body))
+		return nil, fmt.Errorf("failed to get graph data: %w", err)
 	}
 
-	var result AIGraphResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode AI graph response: %w", err)
+	// 转换知识点为图节点
+	nodes := make([]AIGraphNode, 0, len(points))
+	for _, p := range points {
+		nodes = append(nodes, AIGraphNode{
+			ID:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+			Category:    p.Category,
+			DocumentID:  p.DocumentID,
+		})
 	}
-	return &result, nil
+
+	// 转换关系为图边
+	edges := make([]AIGraphEdge, 0, len(rels))
+	for _, r := range rels {
+		edges = append(edges, AIGraphEdge{
+			Source:       r.SourceID,
+			Target:       r.TargetID,
+			RelationType: r.RelationType,
+			Description:  r.Description,
+		})
+	}
+
+	return &AIGraphResponse{
+		Nodes: nodes,
+		Edges: edges,
+	}, nil
 }
 
 // aiClient 全局 AI 客户端单例
 var aiClient *AIClient
 
-// InitAIClient 初始化全局 AI 客户端，日志输出连接状态
+// InitAIClient 初始化全局 AI 客户端
 func InitAIClient() {
-	aiClient = NewAIClient()
-	if aiClient.IsAvailable() {
-		log.Printf("AI client initialized with URL: %s", aiClient.BaseURL)
-	} else {
-		log.Println("AI client: AI_SERVICE_URL not configured, AI features disabled")
+	// 初始化向量服务
+	InitVectorService()
+
+	// 初始化抽取服务
+	InitExtractionService()
+
+	// 初始化问答服务
+	InitAnswerService()
+
+	aiClient = &AIClient{
+		available: true,
 	}
+
+	log.Println("AI client initialized (local mode)")
 }
 
 // GetAIClient 获取 AI 客户端实例

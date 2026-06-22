@@ -268,3 +268,143 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+// StreamEvent 流式事件
+type StreamEvent struct {
+	Type       string             `json:"type"`       // "chunk", "done", "error"
+	Content    string             `json:"content"`
+	Confidence float64            `json:"confidence,omitempty"`
+	Sources    []response.AskSource `json:"sources,omitempty"`
+	Related    []response.KPRef   `json:"related,omitempty"`
+}
+
+// AskStream 流式智能问答核心方法
+func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, error) {
+	// 自动创建或复用会话
+	sessionID := req.ConversationID
+	if sessionID == 0 {
+		session := &entity.AskSession{
+			UserID: userID,
+			Title:  req.Question,
+		}
+		repository.CreateAskSession(session)
+		sessionID = session.ID
+	}
+
+	// 获取历史消息用于上下文
+	historyMsgs, _ := repository.ListRecentMessages(sessionID, 10)
+	history := make([]ChatMessage, len(historyMsgs))
+	for i, m := range historyMsgs {
+		history[i] = ChatMessage{Role: m.Role, Content: m.Content}
+	}
+
+	// 保存当前用户消息
+	userMsg := &entity.AskMessage{
+		SessionID: sessionID,
+		Role:      "user",
+		Content:   req.Question,
+	}
+	repository.CreateAskMessage(userMsg)
+
+	// 创建事件 channel
+	ch := make(chan StreamEvent, 100)
+
+	go func() {
+		defer close(ch)
+
+		var answer strings.Builder
+		var confidence float64
+		var sources []response.AskSource
+		var related []response.KPRef
+
+		if aiClient.IsAvailable() {
+			// 尝试使用知识图谱流式问答
+			stream, err := aiClient.SearchAndAnswerWithGraphStream(req.Question, history, 3)
+			if err == nil {
+				for chunk := range stream {
+					if chunk.Type == "done" {
+						confidence = chunk.Confidence
+					} else if chunk.Type == "chunk" {
+						answer.WriteString(chunk.Content)
+						ch <- StreamEvent{
+							Type:    "chunk",
+							Content: chunk.Content,
+						}
+					}
+				}
+			} else {
+				// 降级到普通 RAG 流式问答
+				log.Printf("warning: Graph stream QA failed, falling back to RAG stream: %v", err)
+				stream, err := aiClient.SearchAndAnswerWithHistoryStream(req.Question, history, 3)
+				if err == nil {
+					for chunk := range stream {
+						if chunk.Type == "done" {
+							confidence = chunk.Confidence
+						} else if chunk.Type == "chunk" {
+							answer.WriteString(chunk.Content)
+							ch <- StreamEvent{
+								Type:    "chunk",
+								Content: chunk.Content,
+							}
+						}
+					}
+				} else {
+					// 降级到非流式问答
+					log.Printf("warning: Stream QA failed, falling back to non-stream: %v", err)
+					resp, err := Ask(userID, req)
+					if err == nil {
+						ch <- StreamEvent{
+							Type:    "chunk",
+							Content: resp.Answer,
+						}
+						confidence = resp.Confidence
+						sources = resp.Sources
+						related = resp.RelatedKnowledgePoints
+					} else {
+						ch <- StreamEvent{
+							Type:    "error",
+							Content: "问答服务暂时不可用，请稍后重试",
+						}
+					}
+				}
+			}
+		} else {
+			// AI 服务不可用，使用非流式降级
+			resp, err := Ask(userID, req)
+			if err == nil {
+				ch <- StreamEvent{
+					Type:    "chunk",
+					Content: resp.Answer,
+				}
+				confidence = resp.Confidence
+				sources = resp.Sources
+				related = resp.RelatedKnowledgePoints
+			} else {
+				ch <- StreamEvent{
+					Type:    "error",
+					Content: "问答服务暂时不可用，请稍后重试",
+				}
+			}
+		}
+
+		// 保存助手消息
+		assistantMsg := &entity.AskMessage{
+			SessionID:  sessionID,
+			Role:       "assistant",
+			Content:    answer.String(),
+			Confidence: confidence,
+		}
+		repository.CreateAskMessage(assistantMsg)
+
+		// 发送完成事件
+		ch <- StreamEvent{
+			Type:       "done",
+			Content:    "",
+			Confidence: confidence,
+			Sources:    sources,
+			Related:    related,
+		}
+	}()
+
+	return sessionID, ch, nil
+}

@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config 应用配置结构体，包含服务器端口、数据库连接、Neo4j 和 JWT 相关配置
+// Config 应用配置结构体，包含服务器端口、数据库连接、Neo4j、JWT、MinIO 和 AI 相关配置
 type Config struct {
 	ServerPort string // 服务器端口
 	DBHost     string // 数据库主机
@@ -19,6 +19,18 @@ type Config struct {
 	Neo4jUser  string // Neo4j 用户名
 	Neo4jPass  string // Neo4j 密码
 	JWTSecret  string // JWT 签名密钥
+
+	// MinIO 配置
+	MinIOEndpoint  string // MinIO 端点
+	MinIOAccessKey string // MinIO 访问密钥
+	MinIOSecretKey string // MinIO 秘密密钥
+	MinIOBucket    string // MinIO 桶名
+	MinIOUseSSL    bool   // MinIO 是否使用 SSL
+
+	// AI 配置 (Ollama)
+	OllamaURL             string // Ollama 服务地址
+	OllamaModel           string // Ollama 生成模型
+	OllamaEmbeddingModel  string // Ollama 嵌入模型
 }
 
 // AppConfig 全局配置实例，程序启动时通过 Load() 初始化
@@ -42,6 +54,18 @@ func Load() {
 		Neo4jUser:  getEnv("NEO4J_USER", "neo4j"),
 		Neo4jPass:  getEnv("NEO4J_PASSWORD", ""),
 		JWTSecret:  getEnv("JWT_SECRET", "software-engineering-qa-platform-secret-key"),
+
+		// MinIO 配置
+		MinIOEndpoint:  getEnv("MINIO_ENDPOINT", "localhost:9000"),
+		MinIOAccessKey: getEnv("MINIO_ACCESS_KEY", "minioadmin"),
+		MinIOSecretKey: getEnv("MINIO_SECRET_KEY", "minioadmin"),
+		MinIOBucket:    getEnv("MINIO_BUCKET", "software-engineering-docs"),
+		MinIOUseSSL:    getEnv("MINIO_USE_SSL", "false") == "true",
+
+		// AI 配置 (Ollama)
+		OllamaURL:            getEnv("OLLAMA_URL", "http://localhost:11434"),
+		OllamaModel:          getEnv("OLLAMA_MODEL", "qwen3:8b"),
+		OllamaEmbeddingModel: getEnv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text"),
 	}
 }
 

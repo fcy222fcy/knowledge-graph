@@ -141,7 +141,7 @@ func (ctrl *DocumentController) ListDocuments(c *gin.Context) {
 		pkgResponse.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response.Paginated(c, list, total, page, size)
+	pkgResponse.Paginated(c, list, total, page, size)
 }
 
 // fixFilenameEncodingIface 修复 Windows 下 multipart 表单文件名的编码问题。

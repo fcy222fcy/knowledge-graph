@@ -1,36 +1,68 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"io"
-	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"software_engineering/internal/model/dto/request"
 	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/entity"
 	"software_engineering/internal/repository"
+	"software_engineering/pkg/config"
+	"software_engineering/pkg/storage"
 )
 
-// uploadDir 文档上传存储目录
-const uploadDir = "./uploads"
+// minioClient MinIO 客户端单例
+var minioClient *storage.MinIOClient
 
-// UploadDocument 上传文档，保存文件并提取文本内容（仅支持 .md 和 .txt）
+// InitMinIOClient 初始化 MinIO 客户端
+func InitMinIOClient() error {
+	cfg := config.AppConfig
+	minioCfg := storage.MinIOConfig{
+		Endpoint:  cfg.MinIOEndpoint,
+		AccessKey: cfg.MinIOAccessKey,
+		SecretKey: cfg.MinIOSecretKey,
+		Bucket:    cfg.MinIOBucket,
+		UseSSL:    cfg.MinIOUseSSL,
+	}
+	var err error
+	minioClient, err = storage.NewMinIOClient(minioCfg)
+	return err
+}
+
+// GetMinIOClient 获取 MinIO 客户端
+func GetMinIOClient() *storage.MinIOClient {
+	return minioClient
+}
+
+// UploadDocument 上传文档到 MinIO，保存文件并提取文本内容（仅支持 .md 和 .txt）
 func UploadDocument(userID uint, title, description string, filename string, fileSize int64, fileType string, contentReader io.Reader) (*response.DocumentResponse, error) {
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		return nil, err
+	if minioClient == nil {
+		return nil, errors.New("MinIO client not initialized")
 	}
 
-	// 保存文件（清理路径穿越字符）
+	// 安全处理文件名（清理路径穿越字符）
 	safeName := filepath.Base(filename)
-	filePath := filepath.Join(uploadDir, safeName)
-	out, err := os.Create(filePath)
+	ctx := context.Background()
+
+	// 生成唯一的 object name（用户ID/日期/文件名）
+	objectName := filepath.Join(
+		config.AppConfig.MinIOBucket,
+		safeName,
+	)
+
+	// 读取文件内容到缓冲区（用于后续提取文本）
+	contentBytes, err := io.ReadAll(contentReader)
 	if err != nil {
 		return nil, err
 	}
-	defer out.Close()
-	content, err := io.Copy(out, contentReader)
+
+	// 上传到 MinIO
+	err = minioClient.UploadFile(ctx, objectName, strings.NewReader(string(contentBytes)), int64(len(contentBytes)), fileType)
 	if err != nil {
 		return nil, err
 	}
@@ -39,10 +71,7 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 	var fileContent string
 	ext := strings.ToLower(fileType)
 	if ext == ".md" || ext == ".txt" {
-		data, err := os.ReadFile(filePath)
-		if err == nil {
-			fileContent = string(data)
-		}
+		fileContent = string(contentBytes)
 	}
 
 	if title == "" {
@@ -54,8 +83,8 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		Title:       title,
 		Description: description,
 		Filename:    filename,
-		FilePath:    filePath,
-		FileSize:    content,
+		FilePath:    objectName,
+		FileSize:    fileSize,
 		FileType:    fileType,
 		Content:     fileContent,
 		Status:      "completed",
@@ -75,6 +104,26 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		CreatedAt:   doc.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:   doc.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	}, nil
+}
+
+// GetDocumentDownloadURL 获取文档的下载 URL
+func GetDocumentDownloadURL(id uint) (string, error) {
+	doc, err := repository.FindDocumentByID(id)
+	if err != nil {
+		return "", errors.New("文档不存在")
+	}
+
+	if minioClient == nil {
+		return "", errors.New("MinIO client not initialized")
+	}
+
+	ctx := context.Background()
+	presignedURL, err := minioClient.GetPresignedURL(ctx, doc.FilePath, 2*time.Hour)
+	if err != nil {
+		return "", err
+	}
+
+	return presignedURL.String(), nil
 }
 
 // GetDocument 获取文档详情，返回内容预览（前 200 字符）
@@ -125,7 +174,7 @@ func UpdateDocument(id uint, req request.UpdateDocumentRequest) error {
 	return repository.UpdateDocument(doc)
 }
 
-// DeleteDocument 删除文档，包含归属校验和物理文件清理
+// DeleteDocument 删除文档，包含归属校验和 MinIO 文件清理
 func DeleteDocument(userID uint, id uint) error {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
@@ -135,9 +184,10 @@ func DeleteDocument(userID uint, id uint) error {
 	if doc.UserID != userID {
 		return errors.New("无权删除此文档")
 	}
-	// 删除物理文件
-	if doc.FilePath != "" {
-		os.Remove(doc.FilePath)
+	// 删除 MinIO 文件
+	if doc.FilePath != "" && minioClient != nil {
+		ctx := context.Background()
+		_ = minioClient.DeleteFile(ctx, doc.FilePath)
 	}
 	return repository.DeleteDocument(id)
 }

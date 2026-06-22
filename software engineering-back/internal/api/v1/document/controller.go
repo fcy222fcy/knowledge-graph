@@ -75,6 +75,17 @@ func GetDocument(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// GetDocumentDownload 获取文档下载 URL
+func GetDocumentDownload(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	url, err := service.GetDocumentDownloadURL(uint(id))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, err.Error())
+		return
+	}
+	response.Success(c, map[string]string{"url": url})
+}
+
 // GetDocumentContent 获取文档完整内容
 func GetDocumentContent(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))

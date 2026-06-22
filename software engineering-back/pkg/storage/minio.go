@@ -31,8 +31,9 @@ type MinIOConfig struct {
 func NewMinIOClient(cfg MinIOConfig) (*MinIOClient, error) {
 	// 初始化 MinIO 客户端
 	minioClient, err := minio.New(cfg.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: cfg.UseSSL,
+		Creds:        credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Secure:       cfg.UseSSL,
+		BucketLookup: minio.BucketLookupPath,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create minio client: %w", err)
@@ -123,10 +124,28 @@ func (c *MinIOClient) GetObjectInfo(ctx context.Context, objectName string) (min
 func (c *MinIOClient) CheckFileExists(ctx context.Context, objectName string) (bool, error) {
 	_, err := c.Client.StatObject(ctx, c.BucketName, objectName, minio.StatObjectOptions{})
 	if err != nil {
-		if minio.IsErrorResponse(err, 404) {
+		// 如果 StatObject 返回错误，检查是否是 "对象不存在" 类型的错误
+		// MinIO 客户端会返回包含 "NoSuchKey" 或 "NoSuchObject" 的错误信息
+		errMsg := err.Error()
+		if contains(errMsg, "NoSuchKey") || contains(errMsg, "NoSuchObject") || contains(errMsg, "not found") {
 			return false, nil
 		}
 		return false, err
 	}
 	return true, nil
+}
+
+// contains 检查字符串是否包含子串
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && searchString(s, substr)
+}
+
+// searchString 在字符串中搜索子串
+func searchString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

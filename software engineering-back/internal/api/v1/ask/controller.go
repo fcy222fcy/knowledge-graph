@@ -1,6 +1,8 @@
 package ask
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -80,4 +82,60 @@ func ListAskHistory(c *gin.Context) {
 		return
 	}
 	response.Paginated(c, list, total, page, size)
+}
+
+// AskQuestionStream 流式智能问答接口，使用 Server-Sent Events (SSE)
+func AskQuestionStream(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	var req request.AskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "参数错误: "+err.Error())
+		return
+	}
+
+	// 设置 SSE 响应头
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Accel-Buffering", "no")
+
+	// 调用流式服务
+	sessionID, ch, err := service.AskStream(userID, req)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// 先发送会话 ID
+	c.Writer.Write([]byte(fmt.Sprintf("data: %s\n\n", mustJSON(map[string]interface{}{
+		"type":        "session",
+		"session_id":  sessionID,
+	}))))
+	c.Writer.Flush()
+
+	// 逐个发送事件
+	for event := range ch {
+		data := map[string]interface{}{
+			"type":    event.Type,
+			"content": event.Content,
+		}
+		if event.Type == "done" {
+			data["confidence"] = event.Confidence
+			data["sources"] = event.Sources
+			data["related"] = event.Related
+		}
+		jsonData, _ := json.Marshal(data)
+		c.Writer.Write([]byte(fmt.Sprintf("data: %s\n\n", jsonData)))
+		c.Writer.Flush()
+	}
+
+	// 发送结束标记
+	c.Writer.Write([]byte("data: [DONE]\n\n"))
+	c.Writer.Flush()
+}
+
+// mustJSON JSON 序列化辅助函数
+func mustJSON(v interface{}) string {
+	data, _ := json.Marshal(v)
+	return string(data)
 }
