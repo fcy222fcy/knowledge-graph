@@ -1,21 +1,22 @@
 package response
 
-// User response structs (from user.go)
+// UserResponse 用户信息响应
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Nickname  string `json:"nickname"`
-	Avatar    string `json:"avatar"`
-	Status    int    `json:"status"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        uint   `json:"id"`         // 用户ID
+	Username  string `json:"username"`   // 用户名
+	Email     string `json:"email"`      // 邮箱
+	Nickname  string `json:"nickname"`   // 昵称
+	Avatar    string `json:"avatar"`     // 头像URL
+	Status    int    `json:"status"`     // 状态（1=启用, 0=禁用）
+	CreatedAt string `json:"created_at"` // 创建时间
+	UpdatedAt string `json:"updated_at"` // 更新时间
 }
 
+// UserListResponse 用户列表响应（分页）
 type UserListResponse struct {
-	List      []UserResponse `json:"list"`
-	Total     int64          `json:"total"`
-	Page      int            `json:"page"`
-	Size      int            `json:"size"`
-	TotalPage int            `json:"total_page"`
+	List      []UserResponse `json:"list"`       // 用户列表
+	Total     int64          `json:"total"`      // 总用户数
+	Page      int            `json:"page"`       // 当前页码
+	Size      int            `json:"size"`       // 每页数量
+	TotalPage int            `json:"total_page"` // 总页数
 }

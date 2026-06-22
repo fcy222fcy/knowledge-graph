@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterRoutes 注册学习分析模块路由
 func RegisterRoutes(protected *gin.RouterGroup) {
 	analytics := protected.Group("/analytics")
 	{

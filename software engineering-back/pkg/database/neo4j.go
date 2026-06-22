@@ -8,8 +8,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+// Neo4jDriver 全局 Neo4j 图数据库驱动实例，未配置时为 nil
 var Neo4jDriver neo4j.DriverWithContext
 
+// ConnectNeo4j 连接 Neo4j 图数据库，连接失败时自动跳过（不影响主服务启动）
 func ConnectNeo4j() {
 	uri := os.Getenv("NEO4J_URI")
 	user := os.Getenv("NEO4J_USER")
@@ -40,12 +42,14 @@ func ConnectNeo4j() {
 	log.Println("neo4j connected successfully")
 }
 
+// CloseNeo4j 关闭 Neo4j 连接
 func CloseNeo4j() {
 	if Neo4jDriver != nil {
 		Neo4jDriver.Close(context.Background())
 	}
 }
 
+// IsNeo4jAvailable 检查 Neo4j 是否可用
 func IsNeo4jAvailable() bool {
 	return Neo4jDriver != nil
 }

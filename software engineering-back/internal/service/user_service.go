@@ -9,6 +9,7 @@ import (
 	"software_engineering/pkg/bcrypt"
 )
 
+// GetProfile 获取用户个人信息
 func GetProfile(userID uint) (*response.UserResponse, error) {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
@@ -26,6 +27,7 @@ func GetProfile(userID uint) (*response.UserResponse, error) {
 	}, nil
 }
 
+// UpdateProfile 更新用户个人信息，仅更新非空字段
 func UpdateProfile(userID uint, req request.UpdateProfileRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
@@ -40,6 +42,7 @@ func UpdateProfile(userID uint, req request.UpdateProfileRequest) error {
 	return repository.UpdateUser(user)
 }
 
+// ChangePassword 修改用户密码，需验证旧密码
 func ChangePassword(userID uint, req request.ChangePasswordRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
@@ -56,6 +59,7 @@ func ChangePassword(userID uint, req request.ChangePasswordRequest) error {
 	return repository.UpdateUser(user)
 }
 
+// ListUsers 分页获取用户列表
 func ListUsers(page, size int) (*response.UserListResponse, error) {
 	users, total, err := repository.ListUsers(page, size)
 	if err != nil {

@@ -1,0 +1,7 @@
+./ask.go
+./base.go
+./document.go
+./knowledge.go
+./question.go
+./quiz.go
+./user.go

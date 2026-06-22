@@ -7,21 +7,24 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config 应用配置结构体，包含服务器端口、数据库连接、Neo4j 和 JWT 相关配置
 type Config struct {
-	ServerPort string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	Neo4jURI   string
-	Neo4jUser  string
-	Neo4jPass  string
-	JWTSecret  string
+	ServerPort string // 服务器端口
+	DBHost     string // 数据库主机
+	DBPort     string // 数据库端口
+	DBUser     string // 数据库用户名
+	DBPassword string // 数据库密码
+	DBName     string // 数据库名称
+	Neo4jURI   string // Neo4j 连接URI
+	Neo4jUser  string // Neo4j 用户名
+	Neo4jPass  string // Neo4j 密码
+	JWTSecret  string // JWT 签名密钥
 }
 
+// AppConfig 全局配置实例，程序启动时通过 Load() 初始化
 var AppConfig Config
 
+// Load 从环境变量加载配置，优先读取 .env 文件
 func Load() {
 	// 加载 .env 文件
 	if err := godotenv.Load(); err != nil {
@@ -42,6 +45,7 @@ func Load() {
 	}
 }
 
+// getEnv 获取环境变量值，不存在时返回默认值
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

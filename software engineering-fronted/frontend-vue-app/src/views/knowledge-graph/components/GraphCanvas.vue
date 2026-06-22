@@ -58,18 +58,18 @@ const renderGraph = () => {
   const maxDegree = Math.max(...Array.from(degreeMap.values()), 1)
 
   simulation = d3.forceSimulation<GraphNode>(nodes)
-    .force('link', d3.forceLink<GraphNode, GraphEdge>(edges).id(d => d.id).distance(80).strength(0.3))
-    .force('charge', d3.forceManyBody().strength(-100))
+    .force('link', d3.forceLink<GraphNode, GraphEdge>(edges).id(d => d.id).distance(60).strength(0.5))
+    .force('charge', d3.forceManyBody().strength(-60))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collide', d3.forceCollide().radius(25))
+    .force('collide', d3.forceCollide().radius(35))
 
   const link = g.append('g')
     .selectAll('line')
     .data(edges)
     .join('line')
-    .attr('stroke', '#cbd5e1')
-    .attr('stroke-width', 0.5)
-    .attr('stroke-opacity', 0.3)
+    .attr('stroke', '#64748b')
+    .attr('stroke-width', 1.2)
+    .attr('stroke-opacity', 0.6)
 
   const node = g.append('g')
     .selectAll('g')
@@ -98,26 +98,26 @@ const renderGraph = () => {
     const sortedDegrees = Array.from(degreeMap.values()).sort((a, b) => b - a)
     const coreThreshold = sortedDegrees[Math.floor(sortedDegrees.length * 0.2)] || 0
 
-    // 根据缩放级别调整线条样式 - 缩小时更黑更明显
+    // 根据缩放级别调整线条样式 - 更黑更明显
     link
-      .attr('stroke', scale < 0.5 ? '#94a3b8' : scale < 0.8 ? '#a1a1aa' : '#cbd5e1')
-      .attr('stroke-width', scale < 0.3 ? 1.5 : scale < 0.5 ? 1.2 : scale < 0.8 ? 0.8 : 0.5)
-      .attr('stroke-opacity', scale < 0.3 ? 0.8 : scale < 0.5 ? 0.6 : scale < 0.8 ? 0.5 : 0.3)
+      .attr('stroke', scale < 0.5 ? '#475569' : scale < 0.8 ? '#64748b' : '#94a3b8')
+      .attr('stroke-width', scale < 0.3 ? 2 : scale < 0.5 ? 1.5 : scale < 0.8 ? 1.2 : 1)
+      .attr('stroke-opacity', scale < 0.3 ? 0.9 : scale < 0.5 ? 0.7 : scale < 0.8 ? 0.6 : 0.5)
 
     node.select('text')
       .attr('opacity', (d: any) => {
         const degree = degreeMap.get(d.id) || 0
-        // 核心节点在中等缩放时就显示
+        // 核心节点在较低缩放时就显示
         if (degree >= coreThreshold && degree > 3) {
-          return scale > 0.6 ? 0.9 : 0
+          return scale > 0.35 ? 0.9 : 0
         }
-        // 普通节点放大后才显示
-        return scale > 1.2 ? 0.7 : 0
+        // 普通节点中等缩放时显示
+        return scale > 0.6 ? 0.7 : 0
       })
       .attr('font-size', (d: any) => {
         const degree = degreeMap.get(d.id) || 0
-        if (degree >= coreThreshold && degree > 3) return '10px'
-        return '8px'
+        if (degree >= coreThreshold && degree > 3) return '11px'
+        return '9px'
       })
       .attr('font-weight', (d: any) => {
         const degree = degreeMap.get(d.id) || 0
@@ -134,20 +134,20 @@ const renderGraph = () => {
     })
   svg.call(zoom)
 
-  // 初始居中
-  const initialTransform = d3.zoomIdentity.translate(width / 2, height / 2).scale(0.7).translate(-width / 2, -height / 2)
+  // 初始居中 - 缩小以显示更多内容
+  const initialTransform = d3.zoomIdentity.translate(width / 2, height / 2).scale(0.45).translate(-width / 2, -height / 2)
   svg.call(zoom!.transform, initialTransform)
 
   // 节点圆圈 - 统一小尺寸
   node.append('circle')
-    .attr('r', 5)
+    .attr('r', 8)
     .attr('fill', d => colorScale(d.category || '未知'))
     .attr('stroke', '#fff')
-    .attr('stroke-width', 1)
+    .attr('stroke-width', 1.5)
     .style('cursor', 'pointer')
     .on('click', (_, d) => emit('nodeClick', d))
     .on('mouseenter', function(_, d) {
-      d3.select(this).transition().duration(200).attr('r', 7)
+      d3.select(this).transition().duration(200).attr('r', 10)
       // 高亮关联边
       link.transition().duration(200)
         .attr('stroke', (l: any) => {
@@ -178,22 +178,22 @@ const renderGraph = () => {
         })
     })
     .on('mouseleave', function() {
-      d3.select(this).transition().duration(200).attr('r', 5)
+      d3.select(this).transition().duration(200).attr('r', 8)
       link.transition().duration(200)
-        .attr('stroke', '#e2e8f0')
-        .attr('stroke-width', 1)
-        .attr('stroke-opacity', 0.5)
+        .attr('stroke', '#64748b')
+        .attr('stroke-width', 1.2)
+        .attr('stroke-opacity', 0.6)
       updateLabels(currentScale)
     })
 
   // 标签 - Obsidian 风格：缩小隐藏，放大显示
   node.append('text')
     .text(d => d.name)
-    .attr('dy', 16)
+    .attr('dy', 20)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '8px')
+    .attr('font-size', '10px')
     .attr('font-weight', 400)
-    .attr('fill', '#475569')
+    .attr('fill', '#334155')
     .attr('pointer-events', 'none')
     .attr('opacity', 0)
 

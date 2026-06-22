@@ -7,6 +7,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// SeedAll 初始化种子数据，仅在数据库为空时插入默认数据
 func SeedAll() {
 	seedUsers()
 	seedKnowledgePoints()

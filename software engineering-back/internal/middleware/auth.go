@@ -8,6 +8,7 @@ import (
 	"software_engineering/pkg/jwt"
 )
 
+// RequireAuth JWT 认证中间件，验证请求头中的 Bearer Token 并解析用户信息
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

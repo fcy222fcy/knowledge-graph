@@ -1,0 +1,89 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e50]:
+    - complementary [ref=e51]:
+      - generic [ref=e53]:
+        - generic [ref=e54]: SE
+        - generic [ref=e55]: SE智图问答
+      - navigation [ref=e56]:
+        - link "首页" [ref=e57] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e59]
+          - generic [ref=e61]: 首页
+        - link "知识图谱" [ref=e62] [cursor=pointer]:
+          - /url: /knowledge-graph
+          - img [ref=e64]
+          - generic [ref=e66]: 知识图谱
+        - link "问答中心" [ref=e67] [cursor=pointer]:
+          - /url: /qa
+          - img [ref=e69]
+          - generic [ref=e72]: 问答中心
+        - link "资料管理" [ref=e73] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e75]
+          - generic [ref=e77]: 资料管理
+        - link "分析统计" [ref=e78] [cursor=pointer]:
+          - /url: /stats
+          - img [ref=e80]
+          - generic [ref=e82]: 分析统计
+      - generic [ref=e84] [cursor=pointer]:
+        - generic [ref=e85]: �
+        - generic [ref=e86]:
+          - generic [ref=e87]: ����Ա
+          - generic [ref=e88]: 软件工程专业
+    - main [ref=e89]:
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: "0"
+            - generic [ref=e97]: 今日学习时长
+          - generic [ref=e101]:
+            - generic [ref=e102]: "0"
+            - generic [ref=e103]: 今日提问数
+          - generic [ref=e107]:
+            - generic [ref=e108]: "0"
+            - generic [ref=e109]: 平均正确率
+          - generic [ref=e113]:
+            - generic [ref=e114]: 0/589
+            - generic [ref=e115]: 知识点掌握
+        - generic [ref=e116]:
+          - link "智能问答 向 AI 提问" [ref=e117] [cursor=pointer]:
+            - /url: /qa
+            - img [ref=e120]
+            - generic [ref=e123]: 智能问答
+            - generic [ref=e124]: 向 AI 提问
+          - link "上传资料 管理学习文档" [ref=e125] [cursor=pointer]:
+            - /url: /files
+            - img [ref=e128]
+            - generic [ref=e130]: 上传资料
+            - generic [ref=e131]: 管理学习文档
+          - link "知识图谱 可视化知识网络" [ref=e132] [cursor=pointer]:
+            - /url: /knowledge-graph
+            - img [ref=e135]
+            - generic [ref=e137]: 知识图谱
+            - generic [ref=e138]: 可视化知识网络
+          - link "学习统计 查看学习分析" [ref=e139] [cursor=pointer]:
+            - /url: /stats
+            - img [ref=e142]
+            - generic [ref=e144]: 学习统计
+            - generic [ref=e145]: 查看学习分析
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - heading "最近问答" [level=3] [ref=e148]
+            - generic [ref=e149]:
+              - link "2026-06-06 05:33:38" [ref=e150] [cursor=pointer]:
+                - /url: /qa
+                - generic [ref=e151]: 2026-06-06 05:33:38
+              - link "2026-06-06 05:31:43" [ref=e152] [cursor=pointer]:
+                - /url: /qa
+                - generic [ref=e153]: 2026-06-06 05:31:43
+              - link "2026-06-06 05:29:58" [ref=e154] [cursor=pointer]:
+                - /url: /qa
+                - generic [ref=e155]: 2026-06-06 05:29:58
+          - generic [ref=e156]:
+            - heading "学习趋势" [level=3] [ref=e157]
+            - generic [ref=e158]:
+              - img [ref=e160]
+              - paragraph [ref=e162]: 暂无趋势数据
+  - alert [ref=e163]:
+    - img [ref=e165]
+    - paragraph [ref=e167]: 登录成功

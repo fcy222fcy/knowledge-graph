@@ -11,7 +11,7 @@ import (
 
 // AuthController 认证控制器
 type AuthController struct {
-	authService service.AuthService
+	authService service.AuthService // 认证服务
 }
 
 // NewAuthController 创建认证控制器实例

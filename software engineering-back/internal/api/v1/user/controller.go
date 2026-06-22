@@ -10,6 +10,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// GetProfile 获取当前用户个人信息
 func GetProfile(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	resp, err := service.GetProfile(userID)
@@ -20,6 +21,7 @@ func GetProfile(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// UpdateProfile 更新用户个人信息
 func UpdateProfile(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var req request.UpdateProfileRequest
@@ -34,6 +36,7 @@ func UpdateProfile(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ChangePassword 修改用户密码
 func ChangePassword(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var req request.ChangePasswordRequest
@@ -48,6 +51,7 @@ func ChangePassword(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ListUsers 获取用户列表
 func ListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterRoutes 注册知识图谱模块路由
 func RegisterRoutes(protected *gin.RouterGroup) {
 	graph := protected.Group("/graph")
 	{

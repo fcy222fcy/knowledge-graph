@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterRoutes 注册知识点管理模块路由
 func RegisterRoutes(protected *gin.RouterGroup) {
 	kp := protected.Group("/knowledge")
 	{

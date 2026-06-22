@@ -11,6 +11,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// GetGraphData 获取知识图谱数据，优先从 AI 服务获取，失败则降级到 Neo4j/MySQL
 func GetGraphData(documentID uint, keyword string, relationType string) (*response.GraphDataResponse, error) {
 	// 优先从 Python AI 服务获取
 	if aiClient.IsAvailable() {
@@ -40,6 +41,7 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*respon
 	return filterAndConvertGraphData(points, rels, documentID, keyword, relationType), nil
 }
 
+// filterAndConvertGraphData 过滤节点和边，并转换为前端响应格式
 func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.KnowledgeRelation, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
 	// 过滤
 	var filteredPoints []entity.KnowledgePoint
@@ -102,6 +104,7 @@ func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.Kno
 	}
 }
 
+// convertAIGraphToDTO 将 AI 服务返回的图数据转换为前端 DTO，支持按文档/关键词/关系类型过滤
 func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
 	nodes := make([]response.GraphNode, 0)
 	filteredNodeIDs := make(map[uint]bool)
@@ -149,6 +152,7 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 	}
 }
 
+// BuildGraph 根据文档 ID 列表构建知识图谱，优先调用 AI 服务，降级时使用本地链式关系构建
 func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 	// 从 MySQL 读取文档内容
 	var totalPoints, totalRelations, totalChunks int
@@ -266,6 +270,7 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 	}, nil
 }
 
+// GetLatestBuildResult 获取最近一次知识图谱构建结果
 func GetLatestBuildResult() (*response.BuildGraphResponse, error) {
 	build, err := repository.GetLatestBuild()
 	if err != nil {
@@ -282,6 +287,7 @@ func GetLatestBuildResult() (*response.BuildGraphResponse, error) {
 	}, nil
 }
 
+// ListBuildHistory 分页获取知识图谱构建历史记录
 func ListBuildHistory(page, size int) (*response.BuildHistoryResponse, error) {
 	builds, total, err := repository.ListBuilds(page, size)
 	if err != nil {

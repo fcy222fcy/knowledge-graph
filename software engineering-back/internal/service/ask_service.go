@@ -11,6 +11,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// CreateSession 创建新的问答会话
 func CreateSession(userID uint, req request.CreateSessionRequest) (*response.AskSessionResponse, error) {
 	session := &entity.AskSession{
 		UserID: userID,
@@ -26,6 +27,7 @@ func CreateSession(userID uint, req request.CreateSessionRequest) (*response.Ask
 	}, nil
 }
 
+// ListSessions 分页获取用户的问答会话列表，包含最后一条消息摘要
 func ListSessions(userID uint, page, size int) ([]response.AskSessionResponse, int64, error) {
 	sessions, total, err := repository.ListAskSessionsByUser(userID, page, size)
 	if err != nil {
@@ -48,6 +50,7 @@ func ListSessions(userID uint, page, size int) ([]response.AskSessionResponse, i
 	return list, total, nil
 }
 
+// ListSessionMessages 分页获取指定会话的消息记录
 func ListSessionMessages(sessionID uint, page, size int) ([]response.AskMessageResponse, int64, error) {
 	messages, total, err := repository.ListAskMessages(sessionID, page, size)
 	if err != nil {
@@ -65,6 +68,8 @@ func ListSessionMessages(sessionID uint, page, size int) ([]response.AskMessageR
 	return list, total, nil
 }
 
+// Ask 智能问答核心方法，采用多级降级策略：
+// 1. 知识图谱问答（Graph RAG）→ 2. 普通 RAG 问答 → 3. 语义搜索 → 4. 本地关键词检索 → 5. 知识点匹配
 func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	// 自动创建或复用会话
 	sessionID := req.ConversationID
@@ -228,6 +233,7 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}, nil
 }
 
+// ListAskHistory 获取用户的问答历史记录列表
 func ListAskHistory(userID uint, page, size int, conversationID uint) ([]response.AskHistoryItem, int64, error) {
 	sessions, total, err := repository.ListAskSessionsByUser(userID, page, size)
 	if err != nil {

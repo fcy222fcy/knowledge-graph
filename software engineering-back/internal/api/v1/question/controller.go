@@ -10,6 +10,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// CreateQuestion 创建题目
 func CreateQuestion(c *gin.Context) {
 	var req request.CreateQuestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -24,6 +25,7 @@ func CreateQuestion(c *gin.Context) {
 	response.Success(c, gin.H{"id": id})
 }
 
+// GetQuestion 获取题目详情（含答案）
 func GetQuestion(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	resp, err := service.GetQuestion(uint(id), true)
@@ -34,6 +36,7 @@ func GetQuestion(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// UpdateQuestion 更新题目
 func UpdateQuestion(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var req request.UpdateQuestionRequest
@@ -48,6 +51,7 @@ func UpdateQuestion(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// DeleteQuestion 删除题目
 func DeleteQuestion(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := service.DeleteQuestion(uint(id)); err != nil {
@@ -57,6 +61,7 @@ func DeleteQuestion(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ListQuestions 获取题目列表
 func ListQuestions(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))

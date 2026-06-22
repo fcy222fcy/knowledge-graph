@@ -16,6 +16,7 @@ import (
 	"software_engineering/internal/middleware"
 )
 
+// SetupRoutes 注册所有 API 路由，分为公开路由和需要认证的受保护路由
 func SetupRoutes(r *gin.Engine) {
 	api := r.Group("/api/v1")
 	{
@@ -41,6 +42,7 @@ func SetupRoutes(r *gin.Engine) {
 	}
 }
 
+// healthCheck 健康检查端点，返回服务状态信息
 func healthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,

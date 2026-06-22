@@ -5,6 +5,7 @@ import (
 	"software_engineering/internal/model/entity"
 )
 
+// AutoMigrate 自动执行数据库迁移，创建或更新所有实体表
 func AutoMigrate() {
 	err := DB.AutoMigrate(
 		&entity.User{},

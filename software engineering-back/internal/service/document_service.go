@@ -13,8 +13,10 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// uploadDir 文档上传存储目录
 const uploadDir = "./uploads"
 
+// UploadDocument 上传文档，保存文件并提取文本内容（仅支持 .md 和 .txt）
 func UploadDocument(userID uint, title, description string, filename string, fileSize int64, fileType string, contentReader io.Reader) (*response.DocumentResponse, error) {
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		return nil, err
@@ -75,6 +77,7 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 	}, nil
 }
 
+// GetDocument 获取文档详情，返回内容预览（前 200 字符）
 func GetDocument(id uint) (*response.DocumentResponse, error) {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
@@ -98,6 +101,7 @@ func GetDocument(id uint) (*response.DocumentResponse, error) {
 	}, nil
 }
 
+// GetDocumentContent 获取文档完整内容
 func GetDocumentContent(id uint) (*response.DocumentContentResponse, error) {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
@@ -106,6 +110,7 @@ func GetDocumentContent(id uint) (*response.DocumentContentResponse, error) {
 	return &response.DocumentContentResponse{ID: doc.ID, Title: doc.Title, Content: doc.Content}, nil
 }
 
+// UpdateDocument 更新文档信息，仅更新非空字段
 func UpdateDocument(id uint, req request.UpdateDocumentRequest) error {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
@@ -120,6 +125,7 @@ func UpdateDocument(id uint, req request.UpdateDocumentRequest) error {
 	return repository.UpdateDocument(doc)
 }
 
+// DeleteDocument 删除文档，包含归属校验和物理文件清理
 func DeleteDocument(userID uint, id uint) error {
 	doc, err := repository.FindDocumentByID(id)
 	if err != nil {
@@ -136,6 +142,7 @@ func DeleteDocument(userID uint, id uint) error {
 	return repository.DeleteDocument(id)
 }
 
+// ListDocuments 分页获取所有文档列表，支持按关键词和状态过滤
 func ListDocuments(page, size int, keyword, status string) ([]response.DocumentResponse, int64, error) {
 	docs, total, err := repository.ListDocuments(page, size, keyword, status)
 	if err != nil {
@@ -158,6 +165,7 @@ func ListDocuments(page, size int, keyword, status string) ([]response.DocumentR
 	return list, total, nil
 }
 
+// ListUserDocuments 分页获取指定用户的文档列表
 func ListUserDocuments(userID uint, page, size int, keyword, status string) ([]response.DocumentResponse, int64, error) {
 	docs, total, err := repository.ListDocumentsByUser(userID, page, size, keyword, status)
 	if err != nil {

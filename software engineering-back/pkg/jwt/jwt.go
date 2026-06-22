@@ -8,8 +8,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// jwtSecret JWT 签名密钥，从环境变量读取，未配置时使用默认值
 var jwtSecret []byte
 
+// init 初始化 JWT 密钥
 func init() {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
@@ -18,12 +20,14 @@ func init() {
 	jwtSecret = []byte(secret)
 }
 
+// Claims JWT 声明结构体，包含用户 ID 和用户名
 type Claims struct {
-	UserID   uint   `json:"user_id"`
-	Username string `json:"username"`
+	UserID   uint   `json:"user_id"`   // 用户ID
+	Username string `json:"username"`  // 用户名
 	jwt.RegisteredClaims
 }
 
+// GenerateToken 生成 JWT Token，有效期 24 小时
 func GenerateToken(userID uint, username string) (string, error) {
 	claims := Claims{
 		UserID:   userID,
@@ -37,6 +41,7 @@ func GenerateToken(userID uint, username string) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
+// ParseToken 解析并验证 JWT Token，返回声明信息
 func ParseToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil

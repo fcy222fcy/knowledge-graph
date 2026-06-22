@@ -1,0 +1,4503 @@
+{
+  "40": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "软件工程",
+        "description": "软件工程是一门研究如何用工程化方法构建和维护有效、实用、高质量软件的学科",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 2,
+        "name": "是一门研究如何用工程",
+        "description": "软件工程是一门研究如何用工程化方法构建和维护有效、实用、高质量软件的学科",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 3,
+        "name": "工程化方法构建和维护",
+        "description": "软件工程是一门研究如何用工程化方法构建和维护有效、实用、高质量软件的学科",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 4,
+        "name": "维护",
+        "description": "软件工程是一门研究如何用工程化方法构建和维护有效、实用、高质量软件的学科",
+        "category": "软件生命周期",
+        "document_id": 40
+      },
+      {
+        "id": 5,
+        "name": "它涵盖了软件开发",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 6,
+        "name": "包括需求分析",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 7,
+        "name": "测试和维护",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "技术概念",
+        "document_id": 40
+      },
+      {
+        "id": 8,
+        "name": "需求分析",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "软件生命周期",
+        "document_id": 40
+      },
+      {
+        "id": 9,
+        "name": "编码",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "软件生命周期",
+        "document_id": 40
+      },
+      {
+        "id": 10,
+        "name": "测试",
+        "description": "它涵盖了软件开发的整个生命周期，包括需求分析、设计、编码、测试和维护等阶段",
+        "category": "软件生命周期",
+        "document_id": 40
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 2,
+        "relation_type": "RELATED",
+        "description": "软件工程 RELATED 是一门研究如何用工程"
+      },
+      {
+        "id": 2,
+        "source_id": 2,
+        "target_id": 3,
+        "relation_type": "RELATED",
+        "description": "是一门研究如何用工程 RELATED 工程化方法构建和维护"
+      },
+      {
+        "id": 3,
+        "source_id": 3,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "工程化方法构建和维护 RELATED 它涵盖了软件开发"
+      },
+      {
+        "id": 4,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "它涵盖了软件开发 RELATED 包括需求分析"
+      },
+      {
+        "id": 5,
+        "source_id": 6,
+        "target_id": 7,
+        "relation_type": "RELATED",
+        "description": "包括需求分析 RELATED 测试和维护"
+      },
+      {
+        "id": 6,
+        "source_id": 4,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "维护 RELATED 需求分析"
+      },
+      {
+        "id": 7,
+        "source_id": 8,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "需求分析 RELATED 编码"
+      },
+      {
+        "id": 8,
+        "source_id": 9,
+        "target_id": 10,
+        "relation_type": "DEPENDS_ON",
+        "description": "编码 DEPENDS_ON 测试"
+      },
+      {
+        "id": 9,
+        "source_id": 4,
+        "target_id": 3,
+        "relation_type": "PART_OF",
+        "description": "维护 是 工程化方法构建和维护 的一部分"
+      },
+      {
+        "id": 10,
+        "source_id": 4,
+        "target_id": 7,
+        "relation_type": "PART_OF",
+        "description": "维护 是 测试和维护 的一部分"
+      },
+      {
+        "id": 11,
+        "source_id": 8,
+        "target_id": 6,
+        "relation_type": "PART_OF",
+        "description": "需求分析 是 包括需求分析 的一部分"
+      },
+      {
+        "id": 12,
+        "source_id": 10,
+        "target_id": 7,
+        "relation_type": "PART_OF",
+        "description": "测试 是 测试和维护 的一部分"
+      }
+    ]
+  },
+  "1": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "软件工程",
+        "description": "# 软件工程课程讲义",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 2,
+        "name": "概要设计",
+        "description": "2. 概要设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 3,
+        "name": "详细设计",
+        "description": "3. 详细设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 4,
+        "name": "设计模式",
+        "description": "4. 设计模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 5,
+        "name": "软件测试",
+        "description": "5. 软件测试",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 6,
+        "name": "数据库设计",
+        "description": "7. 数据库设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 7,
+        "name": "瀑布模型",
+        "description": "8. 瀑布模型",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 8,
+        "name": "需求分析",
+        "description": "1. 需求分析",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 9,
+        "name": "软件维护",
+        "description": "6. 软件维护",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 10,
+        "name": "测试",
+        "description": "5. 软件测试",
+        "category": "软件生命周期",
+        "document_id": 1
+      },
+      {
+        "id": 11,
+        "name": "维护",
+        "description": "6. 软件维护",
+        "category": "软件生命周期",
+        "document_id": 1
+      },
+      {
+        "id": 12,
+        "name": "什么是需求分析",
+        "description": "### 1.1 什么是需求分析",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 13,
+        "name": "需求分析是软件开发",
+        "description": "需求分析是软件开发的第一步，主要包括：",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 14,
+        "name": "需求验证",
+        "description": "- **需求验证**：确认需求是否正确反映用户意图",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 15,
+        "name": "需求分析工具",
+        "description": "### 1.3 需求分析工具",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 16,
+        "name": "描述系统",
+        "description": "- **用例图**：描述系统与用户的交互",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 17,
+        "name": "描述数据在系统",
+        "description": "- **数据流图**：描述数据在系统中的流动",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 18,
+        "name": "什么是概要设计",
+        "description": "### 2.1 什么是概要设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 19,
+        "name": "也称高层设计或架构设计",
+        "description": "概要设计（也称高层设计或架构设计）是将需求转化为软件架构的过程",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 20,
+        "name": "是将需求转化为软件架构",
+        "description": "概要设计（也称高层设计或架构设计）是将需求转化为软件架构的过程",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 21,
+        "name": "架构设计",
+        "description": "概要设计（也称高层设计或架构设计）是将需求转化为软件架构的过程",
+        "category": "软件设计",
+        "document_id": 1
+      },
+      {
+        "id": 22,
+        "name": "模块内部实现",
+        "description": "- **信息隐藏**：模块内部实现对外不可见",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 23,
+        "name": "架构模式",
+        "description": "### 2.3 架构模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 24,
+        "name": "分层架构",
+        "description": "- 分层架构：适用于企业应用",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 25,
+        "name": "微服务架构",
+        "description": "- 微服务架构：适用于大型分布式系统",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 26,
+        "name": "适用于大型分布式系统",
+        "description": "- 微服务架构：适用于大型分布式系统",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 27,
+        "name": "适用于实时系统",
+        "description": "- 事件驱动：适用于实时系统",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 28,
+        "name": "什么是详细设计",
+        "description": "### 3.1 什么是详细设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 29,
+        "name": "对每个模块进行具体的设计",
+        "description": "详细设计是对每个模块进行具体的设计，包括：",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 30,
+        "name": "数据结构设计",
+        "description": "- 数据结构设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 31,
+        "name": "算法设计",
+        "description": "- 算法设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 32,
+        "name": "接口设计",
+        "description": "- 接口设计",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 33,
+        "name": "设计工具",
+        "description": "### 3.2 设计工具",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 34,
+        "name": "描述程序执行流程",
+        "description": "- **流程图**：描述程序执行流程",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 35,
+        "name": "结构化程序设计工具",
+        "description": "- **N-S图**：结构化程序设计工具",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 36,
+        "name": "问题分析",
+        "description": "- **PAD图**：问题分析图",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 37,
+        "name": "什么是设计模式",
+        "description": "### 4.1 什么是设计模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 38,
+        "name": "常见设计模式",
+        "description": "### 4.2 常见设计模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 39,
+        "name": "创建型模式",
+        "description": "#### 创建型模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 40,
+        "name": "单例模式",
+        "description": "- **单例模式**：确保一个类只有一个实例",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 41,
+        "name": "工厂模式",
+        "description": "- **工厂模式**：定义创建对象的接口",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 42,
+        "name": "定义创建对象的接口",
+        "description": "- **工厂模式**：定义创建对象的接口",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 43,
+        "name": "建造者模式",
+        "description": "- **建造者模式**：分步构建复杂对象",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 44,
+        "name": "结构型模式",
+        "description": "#### 结构型模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 45,
+        "name": "适配器模式",
+        "description": "- **适配器模式**：使接口不兼容的类能够合作",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 46,
+        "name": "装饰器模式",
+        "description": "- **装饰器模式**：动态添加功能",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 47,
+        "name": "代理模式",
+        "description": "- **代理模式**：为对象提供代理以控制访问",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 48,
+        "name": "行为型模式",
+        "description": "#### 行为型模式",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 49,
+        "name": "观察者模式",
+        "description": "- **观察者模式**：定义对象间的一对多依赖",
+        "category": "技术概念",
+        "document_id": 1
+      },
+      {
+        "id": 50,
+        "name": "策略模式",
+        "description": "- **策略模式**：定义算法族，使它们可以互换",
+        "category": "技术概念",
+        "document_id": 1
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 2,
+        "relation_type": "RELATED",
+        "description": "软件工程 RELATED 概要设计"
+      },
+      {
+        "id": 2,
+        "source_id": 2,
+        "target_id": 3,
+        "relation_type": "DEPENDS_ON",
+        "description": "概要设计 DEPENDS_ON 详细设计"
+      },
+      {
+        "id": 3,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "详细设计 RELATED 设计模式"
+      },
+      {
+        "id": 4,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "设计模式 RELATED 软件测试"
+      },
+      {
+        "id": 5,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "软件测试 RELATED 数据库设计"
+      },
+      {
+        "id": 6,
+        "source_id": 6,
+        "target_id": 7,
+        "relation_type": "RELATED",
+        "description": "数据库设计 RELATED 瀑布模型"
+      },
+      {
+        "id": 7,
+        "source_id": 7,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "瀑布模型 RELATED 需求分析"
+      },
+      {
+        "id": 8,
+        "source_id": 8,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "需求分析 RELATED 软件维护"
+      },
+      {
+        "id": 9,
+        "source_id": 9,
+        "target_id": 12,
+        "relation_type": "RELATED",
+        "description": "软件维护 RELATED 什么是需求分析"
+      },
+      {
+        "id": 10,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "RELATED",
+        "description": "什么是需求分析 RELATED 需求分析是软件开发"
+      },
+      {
+        "id": 11,
+        "source_id": 13,
+        "target_id": 14,
+        "relation_type": "RELATED",
+        "description": "需求分析是软件开发 RELATED 需求验证"
+      },
+      {
+        "id": 12,
+        "source_id": 14,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "需求验证 RELATED 需求分析工具"
+      },
+      {
+        "id": 13,
+        "source_id": 15,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "需求分析工具 RELATED 描述系统"
+      },
+      {
+        "id": 14,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "RELATED",
+        "description": "描述系统 RELATED 描述数据在系统"
+      },
+      {
+        "id": 15,
+        "source_id": 17,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "描述数据在系统 RELATED 什么是概要设计"
+      },
+      {
+        "id": 16,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "RELATED",
+        "description": "什么是概要设计 RELATED 也称高层设计或架构设计"
+      },
+      {
+        "id": 17,
+        "source_id": 19,
+        "target_id": 20,
+        "relation_type": "RELATED",
+        "description": "也称高层设计或架构设计 RELATED 是将需求转化为软件架构"
+      },
+      {
+        "id": 18,
+        "source_id": 20,
+        "target_id": 22,
+        "relation_type": "IMPLEMENTS",
+        "description": "是将需求转化为软件架构 IMPLEMENTS 模块内部实现"
+      },
+      {
+        "id": 19,
+        "source_id": 22,
+        "target_id": 23,
+        "relation_type": "IMPLEMENTS",
+        "description": "模块内部实现 IMPLEMENTS 架构模式"
+      },
+      {
+        "id": 20,
+        "source_id": 23,
+        "target_id": 24,
+        "relation_type": "RELATED",
+        "description": "架构模式 RELATED 分层架构"
+      },
+      {
+        "id": 21,
+        "source_id": 24,
+        "target_id": 25,
+        "relation_type": "RELATED",
+        "description": "分层架构 RELATED 微服务架构"
+      },
+      {
+        "id": 22,
+        "source_id": 25,
+        "target_id": 26,
+        "relation_type": "RELATED",
+        "description": "微服务架构 RELATED 适用于大型分布式系统"
+      },
+      {
+        "id": 23,
+        "source_id": 26,
+        "target_id": 27,
+        "relation_type": "RELATED",
+        "description": "适用于大型分布式系统 RELATED 适用于实时系统"
+      },
+      {
+        "id": 24,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "适用于实时系统 RELATED 什么是详细设计"
+      },
+      {
+        "id": 25,
+        "source_id": 28,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "什么是详细设计 RELATED 对每个模块进行具体的设计"
+      },
+      {
+        "id": 26,
+        "source_id": 29,
+        "target_id": 30,
+        "relation_type": "RELATED",
+        "description": "对每个模块进行具体的设计 RELATED 数据结构设计"
+      },
+      {
+        "id": 27,
+        "source_id": 30,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "数据结构设计 RELATED 算法设计"
+      },
+      {
+        "id": 28,
+        "source_id": 31,
+        "target_id": 32,
+        "relation_type": "RELATED",
+        "description": "算法设计 RELATED 接口设计"
+      },
+      {
+        "id": 29,
+        "source_id": 32,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "接口设计 RELATED 设计工具"
+      },
+      {
+        "id": 30,
+        "source_id": 33,
+        "target_id": 34,
+        "relation_type": "IMPLEMENTS",
+        "description": "设计工具 IMPLEMENTS 描述程序执行流程"
+      },
+      {
+        "id": 31,
+        "source_id": 34,
+        "target_id": 35,
+        "relation_type": "IMPLEMENTS",
+        "description": "描述程序执行流程 IMPLEMENTS 结构化程序设计工具"
+      },
+      {
+        "id": 32,
+        "source_id": 35,
+        "target_id": 36,
+        "relation_type": "RELATED",
+        "description": "结构化程序设计工具 RELATED 问题分析"
+      },
+      {
+        "id": 33,
+        "source_id": 36,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "问题分析 RELATED 什么是设计模式"
+      },
+      {
+        "id": 34,
+        "source_id": 37,
+        "target_id": 38,
+        "relation_type": "RELATED",
+        "description": "什么是设计模式 RELATED 常见设计模式"
+      },
+      {
+        "id": 35,
+        "source_id": 38,
+        "target_id": 39,
+        "relation_type": "RELATED",
+        "description": "常见设计模式 RELATED 创建型模式"
+      },
+      {
+        "id": 36,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "创建型模式 RELATED 单例模式"
+      },
+      {
+        "id": 37,
+        "source_id": 40,
+        "target_id": 41,
+        "relation_type": "RELATED",
+        "description": "单例模式 RELATED 工厂模式"
+      },
+      {
+        "id": 38,
+        "source_id": 41,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "工厂模式 RELATED 定义创建对象的接口"
+      },
+      {
+        "id": 39,
+        "source_id": 42,
+        "target_id": 43,
+        "relation_type": "RELATED",
+        "description": "定义创建对象的接口 RELATED 建造者模式"
+      },
+      {
+        "id": 40,
+        "source_id": 43,
+        "target_id": 44,
+        "relation_type": "RELATED",
+        "description": "建造者模式 RELATED 结构型模式"
+      },
+      {
+        "id": 41,
+        "source_id": 44,
+        "target_id": 45,
+        "relation_type": "RELATED",
+        "description": "结构型模式 RELATED 适配器模式"
+      },
+      {
+        "id": 42,
+        "source_id": 45,
+        "target_id": 46,
+        "relation_type": "RELATED",
+        "description": "适配器模式 RELATED 装饰器模式"
+      },
+      {
+        "id": 43,
+        "source_id": 46,
+        "target_id": 47,
+        "relation_type": "RELATED",
+        "description": "装饰器模式 RELATED 代理模式"
+      },
+      {
+        "id": 44,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "RELATED",
+        "description": "代理模式 RELATED 行为型模式"
+      },
+      {
+        "id": 45,
+        "source_id": 48,
+        "target_id": 49,
+        "relation_type": "RELATED",
+        "description": "行为型模式 RELATED 观察者模式"
+      },
+      {
+        "id": 46,
+        "source_id": 49,
+        "target_id": 50,
+        "relation_type": "RELATED",
+        "description": "观察者模式 RELATED 策略模式"
+      },
+      {
+        "id": 47,
+        "source_id": 10,
+        "target_id": 11,
+        "relation_type": "RELATED",
+        "description": "测试 RELATED 维护"
+      },
+      {
+        "id": 48,
+        "source_id": 8,
+        "target_id": 2,
+        "relation_type": "演化为",
+        "description": "需求分析 演化为 概要设计"
+      },
+      {
+        "id": 49,
+        "source_id": 2,
+        "target_id": 18,
+        "relation_type": "PART_OF",
+        "description": "概要设计 是 什么是概要设计 的一部分"
+      },
+      {
+        "id": 50,
+        "source_id": 3,
+        "target_id": 28,
+        "relation_type": "PART_OF",
+        "description": "详细设计 是 什么是详细设计 的一部分"
+      },
+      {
+        "id": 51,
+        "source_id": 4,
+        "target_id": 37,
+        "relation_type": "PART_OF",
+        "description": "设计模式 是 什么是设计模式 的一部分"
+      },
+      {
+        "id": 52,
+        "source_id": 4,
+        "target_id": 38,
+        "relation_type": "PART_OF",
+        "description": "设计模式 是 常见设计模式 的一部分"
+      },
+      {
+        "id": 53,
+        "source_id": 10,
+        "target_id": 5,
+        "relation_type": "PART_OF",
+        "description": "测试 是 软件测试 的一部分"
+      },
+      {
+        "id": 54,
+        "source_id": 8,
+        "target_id": 12,
+        "relation_type": "PART_OF",
+        "description": "需求分析 是 什么是需求分析 的一部分"
+      },
+      {
+        "id": 55,
+        "source_id": 8,
+        "target_id": 13,
+        "relation_type": "PART_OF",
+        "description": "需求分析 是 需求分析是软件开发 的一部分"
+      },
+      {
+        "id": 56,
+        "source_id": 8,
+        "target_id": 15,
+        "relation_type": "PART_OF",
+        "description": "需求分析 是 需求分析工具 的一部分"
+      },
+      {
+        "id": 57,
+        "source_id": 11,
+        "target_id": 9,
+        "relation_type": "PART_OF",
+        "description": "维护 是 软件维护 的一部分"
+      },
+      {
+        "id": 58,
+        "source_id": 21,
+        "target_id": 19,
+        "relation_type": "PART_OF",
+        "description": "架构设计 是 也称高层设计或架构设计 的一部分"
+      },
+      {
+        "id": 59,
+        "source_id": 33,
+        "target_id": 35,
+        "relation_type": "PART_OF",
+        "description": "设计工具 是 结构化程序设计工具 的一部分"
+      }
+    ]
+  },
+  "2": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "设计模式",
+        "description": "# 设计模式补充材料",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 2,
+        "name": "创建型模式",
+        "description": "## 1. 创建型模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 3,
+        "name": "单例模式",
+        "description": "### 1.1 单例模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 4,
+        "name": "公共静态方法",
+        "description": "- 公共静态方法获取实例",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 5,
+        "name": "配置管理",
+        "description": "- 配置管理器",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 6,
+        "name": "工厂模式",
+        "description": "### 1.2 工厂模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 7,
+        "name": "定义一个创建对象的接口",
+        "description": "定义一个创建对象的接口，但让子类决定实例化哪一个类",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 8,
+        "name": "工厂方法",
+        "description": "- 工厂方法",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 9,
+        "name": "需要封装",
+        "description": "- 需要封装对象创建逻辑时",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 10,
+        "name": "建造者模式",
+        "description": "### 1.3 建造者模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 11,
+        "name": "Builder",
+        "description": "- Builder：抽象接口",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 12,
+        "name": "Director",
+        "description": "- Director：使用建造者",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 13,
+        "name": "Product",
+        "description": "- Product：被构建的复杂对象",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 14,
+        "name": "抽象接口",
+        "description": "- Builder：抽象接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 15,
+        "name": "结构型模式",
+        "description": "## 2. 结构型模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 16,
+        "name": "适配器模式",
+        "description": "### 2.1 适配器模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 17,
+        "name": "将一个类的接口",
+        "description": "将一个类的接口转换成客户希望的另外一个接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 18,
+        "name": "成客户希望的另外一个接口",
+        "description": "将一个类的接口转换成客户希望的另外一个接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 19,
+        "name": "使用继承",
+        "description": "- 类适配器：使用继承",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 20,
+        "name": "但其接口",
+        "description": "- 想使用一个现有的类，但其接口与需求不匹配",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 21,
+        "name": "装饰器模式",
+        "description": "### 2.2 装饰器模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 22,
+        "name": "Component",
+        "description": "- Component：定义可动态添加职责的对象接口",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 23,
+        "name": "Decorator",
+        "description": "- Decorator：维护对组件的引用，实现组件接口",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 24,
+        "name": "可动态添加职责的对象接口",
+        "description": "- Component：定义可动态添加职责的对象接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 25,
+        "name": "实现组件接口",
+        "description": "- Decorator：维护对组件的引用，实现组件接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 26,
+        "name": "维护",
+        "description": "- Decorator：维护对组件的引用，实现组件接口",
+        "category": "软件生命周期",
+        "document_id": 2
+      },
+      {
+        "id": 27,
+        "name": "代理模式",
+        "description": "### 2.3 代理模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 28,
+        "name": "日志记录和监控",
+        "description": "- 日志记录和监控",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 29,
+        "name": "行为型模式",
+        "description": "## 3. 行为型模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 30,
+        "name": "观察者模式",
+        "description": "### 3.1 观察者模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 31,
+        "name": "Subject",
+        "description": "- Subject：维护观察者列表，通知它们状态变化",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 32,
+        "name": "Observer",
+        "description": "- Observer：定义更新接口",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 33,
+        "name": "定义更新接口",
+        "description": "- Observer：定义更新接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 34,
+        "name": "实现更新接口",
+        "description": "- ConcreteObserver：实现更新接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 35,
+        "name": "事件处理系统",
+        "description": "- 事件处理系统",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 36,
+        "name": "视图架构",
+        "description": "- 模型-视图架构",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 37,
+        "name": "策略模式",
+        "description": "### 3.2 策略模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 38,
+        "name": "把它们一个个封装",
+        "description": "定义一系列的算法，把它们一个个封装起来，并且使它们可相互替换",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 39,
+        "name": "Strategy",
+        "description": "- Strategy：算法接口",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 40,
+        "name": "Context",
+        "description": "- Context：维护对策略的引用",
+        "category": "技术术语",
+        "document_id": 2
+      },
+      {
+        "id": 41,
+        "name": "算法接口",
+        "description": "- Strategy：算法接口",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 42,
+        "name": "模板方法模式",
+        "description": "### 3.3 模板方法模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 43,
+        "name": "些步骤延迟到子类实现",
+        "description": "在操作中定义算法的骨架，将某些步骤延迟到子类实现",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 44,
+        "name": "定义模板方法和抽象方法",
+        "description": "- AbstractClass：定义模板方法和抽象方法",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 45,
+        "name": "实现抽象方法",
+        "description": "- ConcreteClass：实现抽象方法",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 46,
+        "name": "定义模板方法和抽象",
+        "description": "- AbstractClass：定义模板方法和抽象方法",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 47,
+        "name": "实现抽象",
+        "description": "- ConcreteClass：实现抽象方法",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 48,
+        "name": "何时使用每种模式",
+        "description": "### 4.1 何时使用每种模式",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 49,
+        "name": "需要让不兼容的接口",
+        "description": "| 适配器 | 需要让不兼容的接口兼容时 |",
+        "category": "技术概念",
+        "document_id": 2
+      },
+      {
+        "id": 50,
+        "name": "模板方法",
+        "description": "| 模板方法 | 想定义算法骨架时 |",
+        "category": "技术概念",
+        "document_id": 2
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 2,
+        "relation_type": "RELATED",
+        "description": "设计模式 RELATED 创建型模式"
+      },
+      {
+        "id": 2,
+        "source_id": 2,
+        "target_id": 3,
+        "relation_type": "RELATED",
+        "description": "创建型模式 RELATED 单例模式"
+      },
+      {
+        "id": 3,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "单例模式 RELATED 公共静态方法"
+      },
+      {
+        "id": 4,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "公共静态方法 RELATED 配置管理"
+      },
+      {
+        "id": 5,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "配置管理 RELATED 工厂模式"
+      },
+      {
+        "id": 6,
+        "source_id": 6,
+        "target_id": 7,
+        "relation_type": "RELATED",
+        "description": "工厂模式 RELATED 定义一个创建对象的接口"
+      },
+      {
+        "id": 7,
+        "source_id": 7,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "定义一个创建对象的接口 RELATED 工厂方法"
+      },
+      {
+        "id": 8,
+        "source_id": 8,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "工厂方法 RELATED 需要封装"
+      },
+      {
+        "id": 9,
+        "source_id": 9,
+        "target_id": 10,
+        "relation_type": "RELATED",
+        "description": "需要封装 RELATED 建造者模式"
+      },
+      {
+        "id": 10,
+        "source_id": 10,
+        "target_id": 14,
+        "relation_type": "RELATED",
+        "description": "建造者模式 RELATED 抽象接口"
+      },
+      {
+        "id": 11,
+        "source_id": 14,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "抽象接口 RELATED 结构型模式"
+      },
+      {
+        "id": 12,
+        "source_id": 15,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "结构型模式 RELATED 适配器模式"
+      },
+      {
+        "id": 13,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "RELATED",
+        "description": "适配器模式 RELATED 将一个类的接口"
+      },
+      {
+        "id": 14,
+        "source_id": 17,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "将一个类的接口 RELATED 成客户希望的另外一个接口"
+      },
+      {
+        "id": 15,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "USES",
+        "description": "成客户希望的另外一个接口 USES 使用继承"
+      },
+      {
+        "id": 16,
+        "source_id": 19,
+        "target_id": 20,
+        "relation_type": "USES",
+        "description": "使用继承 USES 但其接口"
+      },
+      {
+        "id": 17,
+        "source_id": 20,
+        "target_id": 21,
+        "relation_type": "RELATED",
+        "description": "但其接口 RELATED 装饰器模式"
+      },
+      {
+        "id": 18,
+        "source_id": 21,
+        "target_id": 24,
+        "relation_type": "RELATED",
+        "description": "装饰器模式 RELATED 可动态添加职责的对象接口"
+      },
+      {
+        "id": 19,
+        "source_id": 24,
+        "target_id": 25,
+        "relation_type": "IMPLEMENTS",
+        "description": "可动态添加职责的对象接口 IMPLEMENTS 实现组件接口"
+      },
+      {
+        "id": 20,
+        "source_id": 25,
+        "target_id": 27,
+        "relation_type": "IMPLEMENTS",
+        "description": "实现组件接口 IMPLEMENTS 代理模式"
+      },
+      {
+        "id": 21,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "代理模式 RELATED 日志记录和监控"
+      },
+      {
+        "id": 22,
+        "source_id": 28,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "日志记录和监控 RELATED 行为型模式"
+      },
+      {
+        "id": 23,
+        "source_id": 29,
+        "target_id": 30,
+        "relation_type": "RELATED",
+        "description": "行为型模式 RELATED 观察者模式"
+      },
+      {
+        "id": 24,
+        "source_id": 30,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "观察者模式 RELATED 定义更新接口"
+      },
+      {
+        "id": 25,
+        "source_id": 33,
+        "target_id": 34,
+        "relation_type": "IMPLEMENTS",
+        "description": "定义更新接口 IMPLEMENTS 实现更新接口"
+      },
+      {
+        "id": 26,
+        "source_id": 34,
+        "target_id": 35,
+        "relation_type": "IMPLEMENTS",
+        "description": "实现更新接口 IMPLEMENTS 事件处理系统"
+      },
+      {
+        "id": 27,
+        "source_id": 35,
+        "target_id": 36,
+        "relation_type": "RELATED",
+        "description": "事件处理系统 RELATED 视图架构"
+      },
+      {
+        "id": 28,
+        "source_id": 36,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "视图架构 RELATED 策略模式"
+      },
+      {
+        "id": 29,
+        "source_id": 37,
+        "target_id": 38,
+        "relation_type": "RELATED",
+        "description": "策略模式 RELATED 把它们一个个封装"
+      },
+      {
+        "id": 30,
+        "source_id": 38,
+        "target_id": 41,
+        "relation_type": "RELATED",
+        "description": "把它们一个个封装 RELATED 算法接口"
+      },
+      {
+        "id": 31,
+        "source_id": 41,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "算法接口 RELATED 模板方法模式"
+      },
+      {
+        "id": 32,
+        "source_id": 42,
+        "target_id": 43,
+        "relation_type": "IMPLEMENTS",
+        "description": "模板方法模式 IMPLEMENTS 些步骤延迟到子类实现"
+      },
+      {
+        "id": 33,
+        "source_id": 43,
+        "target_id": 44,
+        "relation_type": "IMPLEMENTS",
+        "description": "些步骤延迟到子类实现 IMPLEMENTS 定义模板方法和抽象方法"
+      },
+      {
+        "id": 34,
+        "source_id": 44,
+        "target_id": 45,
+        "relation_type": "IMPLEMENTS",
+        "description": "定义模板方法和抽象方法 IMPLEMENTS 实现抽象方法"
+      },
+      {
+        "id": 35,
+        "source_id": 45,
+        "target_id": 46,
+        "relation_type": "IMPLEMENTS",
+        "description": "实现抽象方法 IMPLEMENTS 定义模板方法和抽象"
+      },
+      {
+        "id": 36,
+        "source_id": 46,
+        "target_id": 47,
+        "relation_type": "IMPLEMENTS",
+        "description": "定义模板方法和抽象 IMPLEMENTS 实现抽象"
+      },
+      {
+        "id": 37,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "USES",
+        "description": "实现抽象 USES 何时使用每种模式"
+      },
+      {
+        "id": 38,
+        "source_id": 48,
+        "target_id": 49,
+        "relation_type": "USES",
+        "description": "何时使用每种模式 USES 需要让不兼容的接口"
+      },
+      {
+        "id": 39,
+        "source_id": 49,
+        "target_id": 50,
+        "relation_type": "RELATED",
+        "description": "需要让不兼容的接口 RELATED 模板方法"
+      },
+      {
+        "id": 40,
+        "source_id": 11,
+        "target_id": 12,
+        "relation_type": "RELATED",
+        "description": "Builder RELATED Director"
+      },
+      {
+        "id": 41,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "RELATED",
+        "description": "Director RELATED Product"
+      },
+      {
+        "id": 42,
+        "source_id": 13,
+        "target_id": 22,
+        "relation_type": "RELATED",
+        "description": "Product RELATED Component"
+      },
+      {
+        "id": 43,
+        "source_id": 22,
+        "target_id": 23,
+        "relation_type": "RELATED",
+        "description": "Component RELATED Decorator"
+      },
+      {
+        "id": 44,
+        "source_id": 23,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "Decorator RELATED Subject"
+      },
+      {
+        "id": 45,
+        "source_id": 31,
+        "target_id": 32,
+        "relation_type": "RELATED",
+        "description": "Subject RELATED Observer"
+      },
+      {
+        "id": 46,
+        "source_id": 32,
+        "target_id": 39,
+        "relation_type": "RELATED",
+        "description": "Observer RELATED Strategy"
+      },
+      {
+        "id": 47,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "Strategy RELATED Context"
+      },
+      {
+        "id": 48,
+        "source_id": 50,
+        "target_id": 42,
+        "relation_type": "PART_OF",
+        "description": "模板方法 是 模板方法模式 的一部分"
+      },
+      {
+        "id": 49,
+        "source_id": 46,
+        "target_id": 44,
+        "relation_type": "PART_OF",
+        "description": "定义模板方法和抽象 是 定义模板方法和抽象方法 的一部分"
+      },
+      {
+        "id": 50,
+        "source_id": 50,
+        "target_id": 44,
+        "relation_type": "PART_OF",
+        "description": "模板方法 是 定义模板方法和抽象方法 的一部分"
+      },
+      {
+        "id": 51,
+        "source_id": 47,
+        "target_id": 45,
+        "relation_type": "PART_OF",
+        "description": "实现抽象 是 实现抽象方法 的一部分"
+      },
+      {
+        "id": 52,
+        "source_id": 50,
+        "target_id": 46,
+        "relation_type": "PART_OF",
+        "description": "模板方法 是 定义模板方法和抽象 的一部分"
+      }
+    ]
+  },
+  "3": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "SQL",
+        "description": "3. MySQL数据库的SQl语句不区分大小写,关键字建议使用大写",
+        "category": "数据库",
+        "document_id": 3
+      },
+      {
+        "id": 2,
+        "name": "MySQL",
+        "description": "3. MySQL数据库的SQl语句不区分大小写,关键字建议使用大写",
+        "category": "数据库",
+        "document_id": 3
+      },
+      {
+        "id": 3,
+        "name": "Data Definition Language",
+        "description": "| DDL | Data Definition Language   | 数据定义语言,用来定义数据库对象(数据库,表,字段)  |",
+        "category": "技术术语",
+        "document_id": 3
+      },
+      {
+        "id": 4,
+        "name": "Data Manipulation Language",
+        "description": "| DML | Data Manipulation Language | 数据操作语言,用来对数据库表中的数据进行增删改     |",
+        "category": "技术术语",
+        "document_id": 3
+      },
+      {
+        "id": 5,
+        "name": "Data Query Language",
+        "description": "| DQL | Data Query Language        | 数据查询语言,用来查询数据库中表的记录         |",
+        "category": "技术术语",
+        "document_id": 3
+      },
+      {
+        "id": 6,
+        "name": "Data Control Language",
+        "description": "| DCL | Data Control Language      | 数据控制语言,用来创建数据库用户,控制数据库的访问权限 |",
+        "category": "技术术语",
+        "document_id": 3
+      },
+      {
+        "id": 7,
+        "name": "DDL",
+        "description": "| DDL | Data Definition Language   | 数据定义语言,用来定义数据库对象(数据库,表,字段)  |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 8,
+        "name": "DML",
+        "description": "| DML | Data Manipulation Language | 数据操作语言,用来对数据库表中的数据进行增删改     |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 9,
+        "name": "DQL",
+        "description": "| DQL | Data Query Language        | 数据查询语言,用来查询数据库中表的记录         |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 10,
+        "name": "DCL",
+        "description": "| DCL | Data Control Language      | 数据控制语言,用来创建数据库用户,控制数据库的访问权限 |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 11,
+        "name": "用来定义数据库",
+        "description": "| DDL | Data Definition Language   | 数据定义语言,用来定义数据库对象(数据库,表,字段)  |",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 12,
+        "name": "用来对数据库",
+        "description": "| DML | Data Manipulation Language | 数据操作语言,用来对数据库表中的数据进行增删改     |",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 13,
+        "name": "用来查询数据库",
+        "description": "| DQL | Data Query Language        | 数据查询语言,用来查询数据库中表的记录         |",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 14,
+        "name": "用来创建数据库",
+        "description": "| DCL | Data Control Language      | 数据控制语言,用来创建数据库用户,控制数据库的访问权限 |",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 15,
+        "name": "控制数据库",
+        "description": "| DCL | Data Control Language      | 数据控制语言,用来创建数据库用户,控制数据库的访问权限 |",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 16,
+        "name": "CREATE",
+        "description": "CREATE table emp (",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 17,
+        "name": "INSERT",
+        "description": "INSERT INTO emp (id, workno, name, gender, age, idcard, workaddress, entrydate) VALUES (1, '00001', '柳岩666', '女', 20, '123456789012345678', '北京', '2000-01-01');",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 18,
+        "name": "INTO",
+        "description": "INSERT INTO emp (id, workno, name, gender, age, idcard, workaddress, entrydate) VALUES (1, '00001', '柳岩666', '女', 20, '123456789012345678', '北京', '2000-01-01');",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 19,
+        "name": "VALUES",
+        "description": "INSERT INTO emp (id, workno, name, gender, age, idcard, workaddress, entrydate) VALUES (1, '00001', '柳岩666', '女', 20, '123456789012345678', '北京', '2000-01-01');",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 20,
+        "name": "查询所有数据库",
+        "description": "1. 查询所有数据库",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 21,
+        "name": "查询当前数据库",
+        "description": "2. 查询当前数据库",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 22,
+        "name": "创建数据库",
+        "description": "3. 创建数据库",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 23,
+        "name": "使用数据库",
+        "description": "# 创建一个itcast数据库,使用数据库默认的字符集",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 24,
+        "name": "在同一个数据库服务器",
+        "description": "# 在同一个数据库服务器中,不能创建两个名称相同的数据库,否则将会报错",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 25,
+        "name": "能创建两个名称相同的数据库",
+        "description": "# 在同一个数据库服务器中,不能创建两个名称相同的数据库,否则将会报错",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 26,
+        "name": "如果数据库",
+        "description": "通过 if not exists 参数来解决这个问题,如果数据库不存在,则创建该数据库,如果存在,则不创建",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 27,
+        "name": "则创建该数据库",
+        "description": "通过 if not exists 参数来解决这个问题,如果数据库不存在,则创建该数据库,如果存在,则不创建",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 28,
+        "name": "创建一个数据库",
+        "description": "# 创建一个数据库,并使用指定字符集",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 29,
+        "name": "删除数据库",
+        "description": "4. 删除数据库",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 30,
+        "name": "uft8",
+        "description": "create database itheima default charset uft8mb4;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 31,
+        "name": "mb4",
+        "description": "create database itheima default charset uft8mb4;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 32,
+        "name": "如果删除一个不存在的数据库",
+        "description": "# 如果删除一个不存在的数据库,将会报错.此时,可以添加上参数 if exists ,如果数据库存在,再执行删除,否则不执行删除",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 33,
+        "name": "切换数据库",
+        "description": "5. 切换数据库",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 34,
+        "name": "并查看系统数据库",
+        "description": "# 例如 切换到sys,并查看系统数据库中所有表的结构",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 35,
+        "name": "TABLE",
+        "description": "CREATE TABLE 表名(",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 36,
+        "name": "因为这部分是数据库",
+        "description": "# 通过这条指令,主要是用来查看建表语句的,而有部分参数我们在创建表的时候,并未指定也会查询到,因为这部分是数据库的默认值,比如存储引擎,字符集等;",
+        "category": "技术概念",
+        "document_id": 3
+      },
+      {
+        "id": 37,
+        "name": "LIKE",
+        "description": "CREATE TABLE copy1 LIKE author;",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 38,
+        "name": "copy1",
+        "description": "CREATE TABLE copy1 LIKE author;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 39,
+        "name": "SELECT",
+        "description": "CREATE TABLE copy2 SELECT * FROM author;",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 40,
+        "name": "FROM",
+        "description": "CREATE TABLE copy2 SELECT * FROM author;",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 41,
+        "name": "copy2",
+        "description": "CREATE TABLE copy2 SELECT * FROM author;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 42,
+        "name": "WHERE",
+        "description": "CREATE TABLE copy3 SELECT id,au_name FROM author WHERE nation ='中国';",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 43,
+        "name": "copy3",
+        "description": "CREATE TABLE copy3 SELECT id,au_name FROM author WHERE nation ='中国';",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 44,
+        "name": "copy4",
+        "description": "CREATE TABLE copy4 SELECT id,au_name FROM author WHERE 1=2;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 45,
+        "name": "WHERE 1",
+        "description": "CREATE TABLE copy4 SELECT id,au_name FROM author WHERE 1=2;",
+        "category": "版本号",
+        "document_id": 3
+      },
+      {
+        "id": 46,
+        "name": "SIGNED",
+        "description": "| 类型          | 大小     | 有符号(SIGNED)范围                                        | 无符号(UNSIGNED)范围                                       | 描述         |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 47,
+        "name": "INT",
+        "description": "| TINYINT     | 1byte  | (-128,127)                                           | (0,255)                                               | 小整数值       |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 48,
+        "name": "BIGINT",
+        "description": "| BIGINT      | 8bytes | (-2~63,2~63-1)                                       | (0,2~64-1)                                            | 极大整数值      |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 49,
+        "name": "FLOAT",
+        "description": "| FLOAT       | 4bytes | (-3.402823466 E+38,3.402823466351 E+38)              | 0和(1.175494351 E-38,3.402823466 E+38)                 | 单精度浮点数值    |",
+        "category": "缩写",
+        "document_id": 3
+      },
+      {
+        "id": 50,
+        "name": "DOUBLE",
+        "description": "| DOUBLE      | 8bytes | (-1.7976931348623157 E+308,1.7976931348623157 E+308) | 0和(2.2250738585072014 E-308,1.7976931348623157 E+308) | 双精度浮点数值    |",
+        "category": "缩写",
+        "document_id": 3
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 2,
+        "relation_type": "PART_OF",
+        "description": "SQL PART_OF MySQL"
+      },
+      {
+        "id": 2,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "Data Definition Language RELATED Data Manipulation Language"
+      },
+      {
+        "id": 3,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "Data Manipulation Language RELATED Data Query Language"
+      },
+      {
+        "id": 4,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "Data Query Language RELATED Data Control Language"
+      },
+      {
+        "id": 5,
+        "source_id": 7,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "DDL RELATED DML"
+      },
+      {
+        "id": 6,
+        "source_id": 8,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "DML RELATED DQL"
+      },
+      {
+        "id": 7,
+        "source_id": 9,
+        "target_id": 10,
+        "relation_type": "RELATED",
+        "description": "DQL RELATED DCL"
+      },
+      {
+        "id": 8,
+        "source_id": 10,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "DCL RELATED CREATE"
+      },
+      {
+        "id": 9,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "RELATED",
+        "description": "CREATE RELATED INSERT"
+      },
+      {
+        "id": 10,
+        "source_id": 17,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "INSERT RELATED INTO"
+      },
+      {
+        "id": 11,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "RELATED",
+        "description": "INTO RELATED VALUES"
+      },
+      {
+        "id": 12,
+        "source_id": 19,
+        "target_id": 35,
+        "relation_type": "RELATED",
+        "description": "VALUES RELATED TABLE"
+      },
+      {
+        "id": 13,
+        "source_id": 35,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "TABLE RELATED LIKE"
+      },
+      {
+        "id": 14,
+        "source_id": 37,
+        "target_id": 39,
+        "relation_type": "RELATED",
+        "description": "LIKE RELATED SELECT"
+      },
+      {
+        "id": 15,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "SELECT RELATED FROM"
+      },
+      {
+        "id": 16,
+        "source_id": 40,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "FROM RELATED WHERE"
+      },
+      {
+        "id": 17,
+        "source_id": 42,
+        "target_id": 46,
+        "relation_type": "RELATED",
+        "description": "WHERE RELATED SIGNED"
+      },
+      {
+        "id": 18,
+        "source_id": 46,
+        "target_id": 47,
+        "relation_type": "RELATED",
+        "description": "SIGNED RELATED INT"
+      },
+      {
+        "id": 19,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "PART_OF",
+        "description": "INT PART_OF BIGINT"
+      },
+      {
+        "id": 20,
+        "source_id": 48,
+        "target_id": 49,
+        "relation_type": "RELATED",
+        "description": "BIGINT RELATED FLOAT"
+      },
+      {
+        "id": 21,
+        "source_id": 49,
+        "target_id": 50,
+        "relation_type": "RELATED",
+        "description": "FLOAT RELATED DOUBLE"
+      },
+      {
+        "id": 22,
+        "source_id": 11,
+        "target_id": 12,
+        "relation_type": "RELATED",
+        "description": "用来定义数据库 RELATED 用来对数据库"
+      },
+      {
+        "id": 23,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "RELATED",
+        "description": "用来对数据库 RELATED 用来查询数据库"
+      },
+      {
+        "id": 24,
+        "source_id": 13,
+        "target_id": 14,
+        "relation_type": "RELATED",
+        "description": "用来查询数据库 RELATED 用来创建数据库"
+      },
+      {
+        "id": 25,
+        "source_id": 14,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "用来创建数据库 RELATED 控制数据库"
+      },
+      {
+        "id": 26,
+        "source_id": 15,
+        "target_id": 20,
+        "relation_type": "RELATED",
+        "description": "控制数据库 RELATED 查询所有数据库"
+      },
+      {
+        "id": 27,
+        "source_id": 20,
+        "target_id": 21,
+        "relation_type": "RELATED",
+        "description": "查询所有数据库 RELATED 查询当前数据库"
+      },
+      {
+        "id": 28,
+        "source_id": 21,
+        "target_id": 22,
+        "relation_type": "RELATED",
+        "description": "查询当前数据库 RELATED 创建数据库"
+      },
+      {
+        "id": 29,
+        "source_id": 22,
+        "target_id": 23,
+        "relation_type": "USES",
+        "description": "创建数据库 USES 使用数据库"
+      },
+      {
+        "id": 30,
+        "source_id": 23,
+        "target_id": 24,
+        "relation_type": "USES",
+        "description": "使用数据库 USES 在同一个数据库服务器"
+      },
+      {
+        "id": 31,
+        "source_id": 24,
+        "target_id": 25,
+        "relation_type": "RELATED",
+        "description": "在同一个数据库服务器 RELATED 能创建两个名称相同的数据库"
+      },
+      {
+        "id": 32,
+        "source_id": 25,
+        "target_id": 26,
+        "relation_type": "RELATED",
+        "description": "能创建两个名称相同的数据库 RELATED 如果数据库"
+      },
+      {
+        "id": 33,
+        "source_id": 26,
+        "target_id": 27,
+        "relation_type": "RELATED",
+        "description": "如果数据库 RELATED 则创建该数据库"
+      },
+      {
+        "id": 34,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "则创建该数据库 RELATED 创建一个数据库"
+      },
+      {
+        "id": 35,
+        "source_id": 28,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "创建一个数据库 RELATED 删除数据库"
+      },
+      {
+        "id": 36,
+        "source_id": 29,
+        "target_id": 32,
+        "relation_type": "RELATED",
+        "description": "删除数据库 RELATED 如果删除一个不存在的数据库"
+      },
+      {
+        "id": 37,
+        "source_id": 32,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "如果删除一个不存在的数据库 RELATED 切换数据库"
+      },
+      {
+        "id": 38,
+        "source_id": 33,
+        "target_id": 34,
+        "relation_type": "RELATED",
+        "description": "切换数据库 RELATED 并查看系统数据库"
+      },
+      {
+        "id": 39,
+        "source_id": 34,
+        "target_id": 36,
+        "relation_type": "RELATED",
+        "description": "并查看系统数据库 RELATED 因为这部分是数据库"
+      },
+      {
+        "id": 40,
+        "source_id": 30,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "uft8 RELATED mb4"
+      },
+      {
+        "id": 41,
+        "source_id": 31,
+        "target_id": 38,
+        "relation_type": "RELATED",
+        "description": "mb4 RELATED copy1"
+      },
+      {
+        "id": 42,
+        "source_id": 38,
+        "target_id": 41,
+        "relation_type": "RELATED",
+        "description": "copy1 RELATED copy2"
+      },
+      {
+        "id": 43,
+        "source_id": 41,
+        "target_id": 43,
+        "relation_type": "RELATED",
+        "description": "copy2 RELATED copy3"
+      },
+      {
+        "id": 44,
+        "source_id": 43,
+        "target_id": 44,
+        "relation_type": "RELATED",
+        "description": "copy3 RELATED copy4"
+      },
+      {
+        "id": 45,
+        "source_id": 44,
+        "target_id": 45,
+        "relation_type": "RELATED",
+        "description": "copy4 RELATED WHERE 1"
+      },
+      {
+        "id": 46,
+        "source_id": 22,
+        "target_id": 14,
+        "relation_type": "PART_OF",
+        "description": "创建数据库 是 用来创建数据库 的一部分"
+      },
+      {
+        "id": 47,
+        "source_id": 47,
+        "target_id": 18,
+        "relation_type": "PART_OF",
+        "description": "INT 是 INTO 的一部分"
+      },
+      {
+        "id": 48,
+        "source_id": 42,
+        "target_id": 45,
+        "relation_type": "PART_OF",
+        "description": "WHERE 是 WHERE 1 的一部分"
+      }
+    ]
+  },
+  "4": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "可持久化的数据库",
+        "description": "Redis是一个基于内存的key-value 键值存储的、可持久化的数据库，并且提供了非常丰富的数据结构，同时还支持非常丰富的功能特性",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 2,
+        "name": "Redis",
+        "description": "Redis是一个基于内存的key-value 键值存储的、可持久化的数据库，并且提供了非常丰富的数据结构，同时还支持非常丰富的功能特性",
+        "category": "数据库",
+        "document_id": 4
+      },
+      {
+        "id": 3,
+        "name": "会话管理",
+        "description": "这使得Redis成为处理高并发请求的理想选择，尤其是在需要快速响应的场景中，如缓存、会话管理、排行榜等",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 4,
+        "name": "这些数据类型为开发",
+        "description": "这些数据类型为开发者提供了灵活的数据操作能力，使得Redis可以适应各种不同的应用场景",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 5,
+        "name": "以便在系统",
+        "description": "- **持久化：** Redis 支持数据的持久化，可以将内存中的数据保存到磁盘中，以便在系统重启后恢复数据",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 6,
+        "name": "确保数据不会因为系统",
+        "description": "这为 Redis 提供了数据安全性，确保数据不会因为系统故障而丢失",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 7,
+        "name": "Pub",
+        "description": "- **支持发布/订阅模式：** Redis 内置了发布/订阅模式（Pub/Sub），允许客户端之间通过消息传递进行通信",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 8,
+        "name": "Sub",
+        "description": "- **支持发布/订阅模式：** Redis 内置了发布/订阅模式（Pub/Sub），允许客户端之间通过消息传递进行通信",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 9,
+        "name": "订阅模式",
+        "description": "- **支持发布/订阅模式：** Redis 内置了发布/订阅模式（Pub/Sub），允许客户端之间通过消息传递进行通信",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 10,
+        "name": "队列和实时数据传输的平台",
+        "description": "这使得 Redis 可以作为消息队列和实时数据传输的平台",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 11,
+        "name": "单线程模型",
+        "description": "- **单线程模型：** 尽管 Redis 是单线程的，但它通过高效的事件驱动模型来处理并发请求，确保了高性能和低延迟",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 12,
+        "name": "它通过高效的事件驱动模型",
+        "description": "- **单线程模型：** 尽管 Redis 是单线程的，但它通过高效的事件驱动模型来处理并发请求，确保了高性能和低延迟",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 13,
+        "name": "提高数据的可用性和系统",
+        "description": "- **主从复制：** Redis 支持主从复制，可以通过从节点来备份数据或分担读请求，提高数据的可用性和系统的伸缩性",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 14,
+        "name": "包括但不限于缓存系统",
+        "description": "- **应用场景广泛：** Redis 被广泛应用于各种场景，包括但不限于缓存系统、会话存储、排行榜、实时分析、地理空间数据索引等",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 15,
+        "name": "实时分析",
+        "description": "- **应用场景广泛：** Redis 被广泛应用于各种场景，包括但不限于缓存系统、会话存储、排行榜、实时分析、地理空间数据索引等",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 16,
+        "name": "拥有一个活跃的开发",
+        "description": "- **社区支持：** Redis 拥有一个活跃的开发者社区，提供了大量的文档、教程和第三方库，这为开发者提供了强大的支持和丰富的资源",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 17,
+        "name": "这为开发",
+        "description": "- **社区支持：** Redis 拥有一个活跃的开发者社区，提供了大量的文档、教程和第三方库，这为开发者提供了强大的支持和丰富的资源",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 18,
+        "name": "Linux",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 19,
+        "name": "Windows",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 20,
+        "name": "可以在多种操作系统",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 21,
+        "name": "这使得它能够在不同的技术",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 22,
+        "name": "同的技术栈中灵活部署",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 23,
+        "name": "部署",
+        "description": "- **跨平台兼容性：** Redis 可以在多种操作系统上运行，包括 Linux、macOS 和 Windows，这使得它能够在不同的技术栈中灵活部署",
+        "category": "软件生命周期",
+        "document_id": 4
+      },
+      {
+        "id": 24,
+        "name": "String",
+        "description": "- 字符串 String",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 25,
+        "name": "List",
+        "description": "- 列表 List",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 26,
+        "name": "Set",
+        "description": "- 集合 Set",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 27,
+        "name": "Hash",
+        "description": "- 哈希 Hash",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 28,
+        "name": "Stream",
+        "description": "- 消息队列 Stream",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 29,
+        "name": "Geospatial",
+        "description": "- 地理空间 Geospatial",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 30,
+        "name": "Bitma",
+        "description": "- 位图 Bitma",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 31,
+        "name": "Bitfield",
+        "description": "- 位域 Bitfield",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 32,
+        "name": "Command Line Interface",
+        "description": "命令行界面 CLI (Command Line Interface)",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 33,
+        "name": "Application Programming Interface",
+        "description": "应用程序接口 APl (Application Programming Interface)",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 34,
+        "name": "Graphical User Interface",
+        "description": "图形化界面 GUl (Graphical User Interface)",
+        "category": "技术术语",
+        "document_id": 4
+      },
+      {
+        "id": 35,
+        "name": "CLI",
+        "description": "命令行界面 CLI (Command Line Interface)",
+        "category": "缩写",
+        "document_id": 4
+      },
+      {
+        "id": 36,
+        "name": "应用程序接口",
+        "description": "应用程序接口 APl (Application Programming Interface)",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 37,
+        "name": "哨兵模式",
+        "description": "- 支持数据持久化、主从复制、哨兵模式等高可用特性",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 38,
+        "name": "查看数据库",
+        "description": "# 查看数据库中都有哪些键",
+        "category": "技术概念",
+        "document_id": 4
+      },
+      {
+        "id": 39,
+        "name": "TTL",
+        "description": "TTL key",
+        "category": "缩写",
+        "document_id": 4
+      },
+      {
+        "id": 40,
+        "name": "OK",
+        "description": "OK",
+        "category": "缩写",
+        "document_id": 4
+      },
+      {
+        "id": 41,
+        "name": "bash\n127.0.0.1",
+        "description": "bash\n127.0.0.1相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 42,
+        "name": "OK\n127.0.0.1",
+        "description": "OK\n127.0.0.1相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 43,
+        "name": "runoob\n1",
+        "description": "runoob\n1相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 44,
+        "name": "runoob 30",
+        "description": "127.0.0.1:6379> expire runoob 30",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 45,
+        "name": "runoob\n23",
+        "description": "runoob\n23相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 46,
+        "name": "runoob\n17",
+        "description": "runoob\n17相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 47,
+        "name": "runoob\n8688",
+        "description": "runoob\n8688相关概念",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 48,
+        "name": "key 0",
+        "description": "lrange key 0 -1",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 49,
+        "name": "letter 2",
+        "description": "lpop letter 2",
+        "category": "版本号",
+        "document_id": 4
+      },
+      {
+        "id": 50,
+        "name": "组合命令实现",
+        "description": "# 组合命令实现先进先出队列",
+        "category": "技术概念",
+        "document_id": 4
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 3,
+        "relation_type": "RELATED",
+        "description": "可持久化的数据库 RELATED 会话管理"
+      },
+      {
+        "id": 2,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "会话管理 RELATED 这些数据类型为开发"
+      },
+      {
+        "id": 3,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "这些数据类型为开发 RELATED 以便在系统"
+      },
+      {
+        "id": 4,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "以便在系统 RELATED 确保数据不会因为系统"
+      },
+      {
+        "id": 5,
+        "source_id": 6,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "确保数据不会因为系统 RELATED 订阅模式"
+      },
+      {
+        "id": 6,
+        "source_id": 9,
+        "target_id": 10,
+        "relation_type": "RELATED",
+        "description": "订阅模式 RELATED 队列和实时数据传输的平台"
+      },
+      {
+        "id": 7,
+        "source_id": 10,
+        "target_id": 11,
+        "relation_type": "RELATED",
+        "description": "队列和实时数据传输的平台 RELATED 单线程模型"
+      },
+      {
+        "id": 8,
+        "source_id": 11,
+        "target_id": 12,
+        "relation_type": "RELATED",
+        "description": "单线程模型 RELATED 它通过高效的事件驱动模型"
+      },
+      {
+        "id": 9,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "RELATED",
+        "description": "它通过高效的事件驱动模型 RELATED 提高数据的可用性和系统"
+      },
+      {
+        "id": 10,
+        "source_id": 13,
+        "target_id": 14,
+        "relation_type": "RELATED",
+        "description": "提高数据的可用性和系统 RELATED 包括但不限于缓存系统"
+      },
+      {
+        "id": 11,
+        "source_id": 14,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "包括但不限于缓存系统 RELATED 实时分析"
+      },
+      {
+        "id": 12,
+        "source_id": 15,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "实时分析 RELATED 拥有一个活跃的开发"
+      },
+      {
+        "id": 13,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "RELATED",
+        "description": "拥有一个活跃的开发 RELATED 这为开发"
+      },
+      {
+        "id": 14,
+        "source_id": 17,
+        "target_id": 20,
+        "relation_type": "RELATED",
+        "description": "这为开发 RELATED 可以在多种操作系统"
+      },
+      {
+        "id": 15,
+        "source_id": 20,
+        "target_id": 21,
+        "relation_type": "RELATED",
+        "description": "可以在多种操作系统 RELATED 这使得它能够在不同的技术"
+      },
+      {
+        "id": 16,
+        "source_id": 21,
+        "target_id": 22,
+        "relation_type": "RELATED",
+        "description": "这使得它能够在不同的技术 RELATED 同的技术栈中灵活部署"
+      },
+      {
+        "id": 17,
+        "source_id": 22,
+        "target_id": 36,
+        "relation_type": "RELATED",
+        "description": "同的技术栈中灵活部署 RELATED 应用程序接口"
+      },
+      {
+        "id": 18,
+        "source_id": 36,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "应用程序接口 RELATED 哨兵模式"
+      },
+      {
+        "id": 19,
+        "source_id": 37,
+        "target_id": 38,
+        "relation_type": "RELATED",
+        "description": "哨兵模式 RELATED 查看数据库"
+      },
+      {
+        "id": 20,
+        "source_id": 38,
+        "target_id": 50,
+        "relation_type": "IMPLEMENTS",
+        "description": "查看数据库 IMPLEMENTS 组合命令实现"
+      },
+      {
+        "id": 21,
+        "source_id": 7,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "Pub RELATED Sub"
+      },
+      {
+        "id": 22,
+        "source_id": 8,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "Sub RELATED Linux"
+      },
+      {
+        "id": 23,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "RELATED",
+        "description": "Linux RELATED Windows"
+      },
+      {
+        "id": 24,
+        "source_id": 19,
+        "target_id": 24,
+        "relation_type": "RELATED",
+        "description": "Windows RELATED String"
+      },
+      {
+        "id": 25,
+        "source_id": 24,
+        "target_id": 25,
+        "relation_type": "RELATED",
+        "description": "String RELATED List"
+      },
+      {
+        "id": 26,
+        "source_id": 25,
+        "target_id": 26,
+        "relation_type": "RELATED",
+        "description": "List RELATED Set"
+      },
+      {
+        "id": 27,
+        "source_id": 26,
+        "target_id": 27,
+        "relation_type": "RELATED",
+        "description": "Set RELATED Hash"
+      },
+      {
+        "id": 28,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "Hash RELATED Stream"
+      },
+      {
+        "id": 29,
+        "source_id": 28,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "Stream RELATED Geospatial"
+      },
+      {
+        "id": 30,
+        "source_id": 29,
+        "target_id": 30,
+        "relation_type": "RELATED",
+        "description": "Geospatial RELATED Bitma"
+      },
+      {
+        "id": 31,
+        "source_id": 30,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "Bitma RELATED Bitfield"
+      },
+      {
+        "id": 32,
+        "source_id": 31,
+        "target_id": 32,
+        "relation_type": "RELATED",
+        "description": "Bitfield RELATED Command Line Interface"
+      },
+      {
+        "id": 33,
+        "source_id": 32,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "Command Line Interface RELATED Application Programming Interface"
+      },
+      {
+        "id": 34,
+        "source_id": 33,
+        "target_id": 34,
+        "relation_type": "RELATED",
+        "description": "Application Programming Interface RELATED Graphical User Interface"
+      },
+      {
+        "id": 35,
+        "source_id": 35,
+        "target_id": 39,
+        "relation_type": "RELATED",
+        "description": "CLI RELATED TTL"
+      },
+      {
+        "id": 36,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "TTL RELATED OK"
+      },
+      {
+        "id": 37,
+        "source_id": 41,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "bash\n127.0.0.1 RELATED OK\n127.0.0.1"
+      },
+      {
+        "id": 38,
+        "source_id": 42,
+        "target_id": 43,
+        "relation_type": "RELATED",
+        "description": "OK\n127.0.0.1 RELATED runoob\n1"
+      },
+      {
+        "id": 39,
+        "source_id": 43,
+        "target_id": 44,
+        "relation_type": "RELATED",
+        "description": "runoob\n1 RELATED runoob 30"
+      },
+      {
+        "id": 40,
+        "source_id": 44,
+        "target_id": 45,
+        "relation_type": "RELATED",
+        "description": "runoob 30 RELATED runoob\n23"
+      },
+      {
+        "id": 41,
+        "source_id": 45,
+        "target_id": 46,
+        "relation_type": "RELATED",
+        "description": "runoob\n23 RELATED runoob\n17"
+      },
+      {
+        "id": 42,
+        "source_id": 46,
+        "target_id": 47,
+        "relation_type": "RELATED",
+        "description": "runoob\n17 RELATED runoob\n8688"
+      },
+      {
+        "id": 43,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "RELATED",
+        "description": "runoob\n8688 RELATED key 0"
+      },
+      {
+        "id": 44,
+        "source_id": 48,
+        "target_id": 49,
+        "relation_type": "RELATED",
+        "description": "key 0 RELATED letter 2"
+      },
+      {
+        "id": 45,
+        "source_id": 2,
+        "target_id": 14,
+        "relation_type": "用于",
+        "description": "Redis 用于 包括但不限于缓存系统"
+      },
+      {
+        "id": 46,
+        "source_id": 23,
+        "target_id": 22,
+        "relation_type": "PART_OF",
+        "description": "部署 是 同的技术栈中灵活部署 的一部分"
+      },
+      {
+        "id": 47,
+        "source_id": 40,
+        "target_id": 42,
+        "relation_type": "PART_OF",
+        "description": "OK 是 OK\n127.0.0.1 的一部分"
+      },
+      {
+        "id": 48,
+        "source_id": 43,
+        "target_id": 46,
+        "relation_type": "PART_OF",
+        "description": "runoob\n1 是 runoob\n17 的一部分"
+      }
+    ]
+  },
+  "5": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "Terminology Examples",
+        "description": "AI Terminology Examples",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 2,
+        "name": "AI",
+        "description": "AI Terminology Examples",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 3,
+        "name": "Basic Concepts",
+        "description": "## 1. Basic Concepts",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 4,
+        "name": "Artificial Intelligence",
+        "description": "### 1.1 Artificial Intelligence (AI)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 5,
+        "name": "Machine Learning",
+        "description": "### 1.2 Machine Learning (ML)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 6,
+        "name": "ML",
+        "description": "### 1.2 Machine Learning (ML)",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 7,
+        "name": "Deep Learning",
+        "description": "### 1.3 Deep Learning (DL)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 8,
+        "name": "DL",
+        "description": "### 1.3 Deep Learning (DL)",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 9,
+        "name": "Supervised Learning",
+        "description": "### 2.1 Supervised Learning",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 10,
+        "name": "Uses",
+        "description": "Uses labeled training data to learn input-output mappings.",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 11,
+        "name": "Classification",
+        "description": "- Classification: Predict discrete labels (e.g., spam detection)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 12,
+        "name": "Predict",
+        "description": "- Classification: Predict discrete labels (e.g., spam detection)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 13,
+        "name": "Regression",
+        "description": "- Regression: Predict continuous values (e.g., house price prediction)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 14,
+        "name": "Unsupervised Learning",
+        "description": "### 2.2 Unsupervised Learning",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 15,
+        "name": "Discovers",
+        "description": "Discovers hidden patterns from unlabeled data.",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 16,
+        "name": "Clustering",
+        "description": "- Clustering: Group data (e.g., customer segmentation)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 17,
+        "name": "Group",
+        "description": "- Clustering: Group data (e.g., customer segmentation)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 18,
+        "name": "Dimensionality Reduction",
+        "description": "- Dimensionality Reduction: Reduce data dimensions (e.g., visualization)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 19,
+        "name": "Reduce",
+        "description": "- Dimensionality Reduction: Reduce data dimensions (e.g., visualization)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 20,
+        "name": "Reinforcement Learning",
+        "description": "### 2.3 Reinforcement Learning",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 21,
+        "name": "Learns",
+        "description": "Learns optimal policies through interaction with the environment.",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 22,
+        "name": "Exploration",
+        "description": "- Exploration: Try new actions",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 23,
+        "name": "Try",
+        "description": "- Exploration: Try new actions",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 24,
+        "name": "Exploitation",
+        "description": "- Exploitation: Use known best actions",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 25,
+        "name": "Use",
+        "description": "- Exploitation: Use known best actions",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 26,
+        "name": "Neural Networks",
+        "description": "### 3.1 Neural Networks",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 27,
+        "name": "Network",
+        "description": "Network structure composed of multiple layers of nodes (neurons).",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 28,
+        "name": "Input Layer",
+        "description": "- Input Layer: Receives raw data",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 29,
+        "name": "Receives",
+        "description": "- Input Layer: Receives raw data",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 30,
+        "name": "Hidden Layer",
+        "description": "- Hidden Layer: Processes data",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 31,
+        "name": "Processes",
+        "description": "- Hidden Layer: Processes data",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 32,
+        "name": "Output Layer",
+        "description": "- Output Layer: Produces results",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 33,
+        "name": "Produces",
+        "description": "- Output Layer: Produces results",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 34,
+        "name": "Convolutional Neural Networks",
+        "description": "### 3.2 Convolutional Neural Networks (CNN)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 35,
+        "name": "CNN",
+        "description": "### 3.2 Convolutional Neural Networks (CNN)",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 36,
+        "name": "Neural",
+        "description": "Neural networks specifically designed for processing grid-structured data (e.g., images).",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 37,
+        "name": "Applications",
+        "description": "Applications:",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 38,
+        "name": "Image",
+        "description": "- Image classification",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 39,
+        "name": "Object",
+        "description": "- Object detection",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 40,
+        "name": "Recurrent Neural Networks",
+        "description": "### 3.3 Recurrent Neural Networks (RNN)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 41,
+        "name": "RNN",
+        "description": "### 3.3 Recurrent Neural Networks (RNN)",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 42,
+        "name": "Speech",
+        "description": "- Speech recognition",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 43,
+        "name": "Natural",
+        "description": "- Natural language processing",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 44,
+        "name": "Time",
+        "description": "- Time series prediction",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 45,
+        "name": "Natural Language Processing",
+        "description": "## 4. Natural Language Processing (NLP)",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 46,
+        "name": "NLP",
+        "description": "## 4. Natural Language Processing (NLP)",
+        "category": "缩写",
+        "document_id": 5
+      },
+      {
+        "id": 47,
+        "name": "What",
+        "description": "### 4.1 What is NLP",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 48,
+        "name": "Common",
+        "description": "### 4.2 Common NLP Tasks",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 49,
+        "name": "Tasks",
+        "description": "### 4.2 Common NLP Tasks",
+        "category": "技术术语",
+        "document_id": 5
+      },
+      {
+        "id": 50,
+        "name": "Text Classification",
+        "description": "- Text Classification: Assign text to predefined categories",
+        "category": "技术术语",
+        "document_id": 5
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 3,
+        "relation_type": "RELATED",
+        "description": "Terminology Examples RELATED Basic Concepts"
+      },
+      {
+        "id": 2,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "Basic Concepts RELATED Artificial Intelligence"
+      },
+      {
+        "id": 3,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "Artificial Intelligence RELATED Machine Learning"
+      },
+      {
+        "id": 4,
+        "source_id": 5,
+        "target_id": 7,
+        "relation_type": "RELATED",
+        "description": "Machine Learning RELATED Deep Learning"
+      },
+      {
+        "id": 5,
+        "source_id": 7,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "Deep Learning RELATED Supervised Learning"
+      },
+      {
+        "id": 6,
+        "source_id": 9,
+        "target_id": 10,
+        "relation_type": "RELATED",
+        "description": "Supervised Learning RELATED Uses"
+      },
+      {
+        "id": 7,
+        "source_id": 10,
+        "target_id": 11,
+        "relation_type": "RELATED",
+        "description": "Uses RELATED Classification"
+      },
+      {
+        "id": 8,
+        "source_id": 11,
+        "target_id": 12,
+        "relation_type": "RELATED",
+        "description": "Classification RELATED Predict"
+      },
+      {
+        "id": 9,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "RELATED",
+        "description": "Predict RELATED Regression"
+      },
+      {
+        "id": 10,
+        "source_id": 13,
+        "target_id": 14,
+        "relation_type": "RELATED",
+        "description": "Regression RELATED Unsupervised Learning"
+      },
+      {
+        "id": 11,
+        "source_id": 14,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "Unsupervised Learning RELATED Discovers"
+      },
+      {
+        "id": 12,
+        "source_id": 15,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "Discovers RELATED Clustering"
+      },
+      {
+        "id": 13,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "RELATED",
+        "description": "Clustering RELATED Group"
+      },
+      {
+        "id": 14,
+        "source_id": 17,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "Group RELATED Dimensionality Reduction"
+      },
+      {
+        "id": 15,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "RELATED",
+        "description": "Dimensionality Reduction RELATED Reduce"
+      },
+      {
+        "id": 16,
+        "source_id": 19,
+        "target_id": 20,
+        "relation_type": "RELATED",
+        "description": "Reduce RELATED Reinforcement Learning"
+      },
+      {
+        "id": 17,
+        "source_id": 20,
+        "target_id": 21,
+        "relation_type": "RELATED",
+        "description": "Reinforcement Learning RELATED Learns"
+      },
+      {
+        "id": 18,
+        "source_id": 21,
+        "target_id": 22,
+        "relation_type": "RELATED",
+        "description": "Learns RELATED Exploration"
+      },
+      {
+        "id": 19,
+        "source_id": 22,
+        "target_id": 23,
+        "relation_type": "RELATED",
+        "description": "Exploration RELATED Try"
+      },
+      {
+        "id": 20,
+        "source_id": 23,
+        "target_id": 24,
+        "relation_type": "RELATED",
+        "description": "Try RELATED Exploitation"
+      },
+      {
+        "id": 21,
+        "source_id": 24,
+        "target_id": 25,
+        "relation_type": "RELATED",
+        "description": "Exploitation RELATED Use"
+      },
+      {
+        "id": 22,
+        "source_id": 25,
+        "target_id": 26,
+        "relation_type": "RELATED",
+        "description": "Use RELATED Neural Networks"
+      },
+      {
+        "id": 23,
+        "source_id": 26,
+        "target_id": 27,
+        "relation_type": "PART_OF",
+        "description": "Neural Networks PART_OF Network"
+      },
+      {
+        "id": 24,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "Network RELATED Input Layer"
+      },
+      {
+        "id": 25,
+        "source_id": 28,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "Input Layer RELATED Receives"
+      },
+      {
+        "id": 26,
+        "source_id": 29,
+        "target_id": 30,
+        "relation_type": "RELATED",
+        "description": "Receives RELATED Hidden Layer"
+      },
+      {
+        "id": 27,
+        "source_id": 30,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "Hidden Layer RELATED Processes"
+      },
+      {
+        "id": 28,
+        "source_id": 31,
+        "target_id": 32,
+        "relation_type": "RELATED",
+        "description": "Processes RELATED Output Layer"
+      },
+      {
+        "id": 29,
+        "source_id": 32,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "Output Layer RELATED Produces"
+      },
+      {
+        "id": 30,
+        "source_id": 33,
+        "target_id": 34,
+        "relation_type": "RELATED",
+        "description": "Produces RELATED Convolutional Neural Networks"
+      },
+      {
+        "id": 31,
+        "source_id": 34,
+        "target_id": 36,
+        "relation_type": "PART_OF",
+        "description": "Convolutional Neural Networks PART_OF Neural"
+      },
+      {
+        "id": 32,
+        "source_id": 36,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "Neural RELATED Applications"
+      },
+      {
+        "id": 33,
+        "source_id": 37,
+        "target_id": 38,
+        "relation_type": "RELATED",
+        "description": "Applications RELATED Image"
+      },
+      {
+        "id": 34,
+        "source_id": 38,
+        "target_id": 39,
+        "relation_type": "RELATED",
+        "description": "Image RELATED Object"
+      },
+      {
+        "id": 35,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "Object RELATED Recurrent Neural Networks"
+      },
+      {
+        "id": 36,
+        "source_id": 40,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "Recurrent Neural Networks RELATED Speech"
+      },
+      {
+        "id": 37,
+        "source_id": 42,
+        "target_id": 43,
+        "relation_type": "RELATED",
+        "description": "Speech RELATED Natural"
+      },
+      {
+        "id": 38,
+        "source_id": 43,
+        "target_id": 44,
+        "relation_type": "RELATED",
+        "description": "Natural RELATED Time"
+      },
+      {
+        "id": 39,
+        "source_id": 44,
+        "target_id": 45,
+        "relation_type": "RELATED",
+        "description": "Time RELATED Natural Language Processing"
+      },
+      {
+        "id": 40,
+        "source_id": 45,
+        "target_id": 47,
+        "relation_type": "RELATED",
+        "description": "Natural Language Processing RELATED What"
+      },
+      {
+        "id": 41,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "RELATED",
+        "description": "What RELATED Common"
+      },
+      {
+        "id": 42,
+        "source_id": 48,
+        "target_id": 49,
+        "relation_type": "RELATED",
+        "description": "Common RELATED Tasks"
+      },
+      {
+        "id": 43,
+        "source_id": 49,
+        "target_id": 50,
+        "relation_type": "RELATED",
+        "description": "Tasks RELATED Text Classification"
+      },
+      {
+        "id": 44,
+        "source_id": 2,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "AI RELATED ML"
+      },
+      {
+        "id": 45,
+        "source_id": 6,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "ML RELATED DL"
+      },
+      {
+        "id": 46,
+        "source_id": 8,
+        "target_id": 35,
+        "relation_type": "RELATED",
+        "description": "DL RELATED CNN"
+      },
+      {
+        "id": 47,
+        "source_id": 35,
+        "target_id": 41,
+        "relation_type": "RELATED",
+        "description": "CNN RELATED RNN"
+      },
+      {
+        "id": 48,
+        "source_id": 41,
+        "target_id": 46,
+        "relation_type": "RELATED",
+        "description": "RNN RELATED NLP"
+      },
+      {
+        "id": 49,
+        "source_id": 25,
+        "target_id": 10,
+        "relation_type": "PART_OF",
+        "description": "Use 是 Uses 的一部分"
+      },
+      {
+        "id": 50,
+        "source_id": 11,
+        "target_id": 50,
+        "relation_type": "PART_OF",
+        "description": "Classification 是 Text Classification 的一部分"
+      },
+      {
+        "id": 51,
+        "source_id": 26,
+        "target_id": 34,
+        "relation_type": "PART_OF",
+        "description": "Neural Networks 是 Convolutional Neural Networks 的一部分"
+      },
+      {
+        "id": 52,
+        "source_id": 36,
+        "target_id": 26,
+        "relation_type": "PART_OF",
+        "description": "Neural 是 Neural Networks 的一部分"
+      },
+      {
+        "id": 53,
+        "source_id": 26,
+        "target_id": 40,
+        "relation_type": "PART_OF",
+        "description": "Neural Networks 是 Recurrent Neural Networks 的一部分"
+      },
+      {
+        "id": 54,
+        "source_id": 27,
+        "target_id": 34,
+        "relation_type": "PART_OF",
+        "description": "Network 是 Convolutional Neural Networks 的一部分"
+      },
+      {
+        "id": 55,
+        "source_id": 27,
+        "target_id": 40,
+        "relation_type": "PART_OF",
+        "description": "Network 是 Recurrent Neural Networks 的一部分"
+      },
+      {
+        "id": 56,
+        "source_id": 36,
+        "target_id": 40,
+        "relation_type": "PART_OF",
+        "description": "Neural 是 Recurrent Neural Networks 的一部分"
+      },
+      {
+        "id": 57,
+        "source_id": 43,
+        "target_id": 45,
+        "relation_type": "PART_OF",
+        "description": "Natural 是 Natural Language Processing 的一部分"
+      }
+    ]
+  },
+  "21": {
+    "nodes": [
+      {
+        "id": 1,
+        "name": "Docker",
+        "description": "# Docker 与容器技术完全指南",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 2,
+        "name": "与容器技术",
+        "description": "# Docker 与容器技术完全指南",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 3,
+        "name": "容器技术",
+        "description": "## 一、容器技术概述",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 4,
+        "name": "什么是容器",
+        "description": "### 1.1 什么是容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 5,
+        "name": "是一种轻量级的虚拟化技术",
+        "description": "容器是一种轻量级的虚拟化技术，它将应用程序及其所有依赖（库、配置文件、运行时环境）打包在一起，确保应用在任何环境中都能以相同的方式运行",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 6,
+        "name": "容器共享宿主机的操作系统",
+        "description": "与传统虚拟机不同，容器共享宿主机的操作系统内核，因此更加轻量高效",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 7,
+        "name": "Namespace",
+        "description": "| 隔离级别 | 进程级（Namespace + Cgroup） | 硬件级（Hypervisor） |",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 8,
+        "name": "Cgroup",
+        "description": "| 隔离级别 | 进程级（Namespace + Cgroup） | 硬件级（Hypervisor） |",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 9,
+        "name": "Hypervisor",
+        "description": "| 隔离级别 | 进程级（Namespace + Cgroup） | 硬件级（Hypervisor） |",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 10,
+        "name": "MB",
+        "description": "| 资源占用 | MB 级别 | GB 级别 |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 11,
+        "name": "GB",
+        "description": "| 资源占用 | MB 级别 | GB 级别 |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 12,
+        "name": "操作系统",
+        "description": "| 操作系统 | 共享宿主机内核 | 独立内核 |",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 13,
+        "name": "单机可运行数百容器",
+        "description": "| 密度 | 单机可运行数百容器 | 单机通常数十虚拟机 |",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 14,
+        "name": "容器核心技术",
+        "description": "### 1.3 容器核心技术",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 15,
+        "name": "Linux Namespace",
+        "description": "**Linux Namespace（命名空间）**：实现资源隔离",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 16,
+        "name": "PID",
+        "description": "| PID | 进程 ID | CLONE_NEWPID |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 17,
+        "name": "ID",
+        "description": "| PID | 进程 ID | CLONE_NEWPID |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 18,
+        "name": "NET",
+        "description": "| NET | 网络设备、IP 地址、端口 | CLONE_NEWNET |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 19,
+        "name": "IP",
+        "description": "| NET | 网络设备、IP 地址、端口 | CLONE_NEWNET |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 20,
+        "name": "MNT",
+        "description": "| MNT | 文件系统挂载点 | CLONE_NEWNS |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 21,
+        "name": "UTS",
+        "description": "| UTS | 主机名和域名 | CLONE_NEWUTS |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 22,
+        "name": "IPC",
+        "description": "| IPC | 进程间通信 | CLONE_NEWIPC |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 23,
+        "name": "USER",
+        "description": "| USER | 用户和组 ID | CLONE_NEWUSER |",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 24,
+        "name": "文件系统",
+        "description": "| MNT | 文件系统挂载点 | CLONE_NEWNS |",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 25,
+        "name": "Linux Cgroup",
+        "description": "**Linux Cgroup（控制组）**：实现资源限制",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 26,
+        "name": "CPU",
+        "description": "- CPU 使用率限制",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 27,
+        "name": "Image",
+        "description": "### 2.1 镜像（Image）",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 28,
+        "name": "Dockerfile",
+        "description": "│   依赖安装层 (只读)       │  ← Dockerfile RUN",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 29,
+        "name": "RUN",
+        "description": "│   依赖安装层 (只读)       │  ← Dockerfile RUN",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 30,
+        "name": "FROM",
+        "description": "│   基础镜像层 (只读)       │  ← Dockerfile FROM",
+        "category": "缩写",
+        "document_id": 21
+      },
+      {
+        "id": 31,
+        "name": "多个容器",
+        "description": "多个容器可以共享下面的只读层，节省磁盘空间",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 32,
+        "name": "v1.0",
+        "description": "docker build -t myapp:v1.0 .",
+        "category": "版本号",
+        "document_id": 21
+      },
+      {
+        "id": 33,
+        "name": "Container",
+        "description": "### 2.2 容器（Container）",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 34,
+        "name": "一个镜像可以创建多个容器",
+        "description": "一个镜像可以创建多个容器，每个容器都有自己的可写层",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 35,
+        "name": "每个容器",
+        "description": "一个镜像可以创建多个容器，每个容器都有自己的可写层",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 36,
+        "name": "运行容器",
+        "description": "运行容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 37,
+        "name": "p 80",
+        "description": "docker run -d --name web -p 80:80 nginx:1.24",
+        "category": "版本号",
+        "document_id": 21
+      },
+      {
+        "id": 38,
+        "name": "查看运行中的容器",
+        "description": "# 查看运行中的容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 39,
+        "name": "查看所有容器",
+        "description": "# 查看所有容器（包括已停止的）",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 40,
+        "name": "进入容器",
+        "description": "# 进入容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 41,
+        "name": "查看容器",
+        "description": "# 查看容器日志",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 42,
+        "name": "启动容器",
+        "description": "# 停止/启动容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 43,
+        "name": "删除容器",
+        "description": "# 删除容器",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 44,
+        "name": "Volume",
+        "description": "### 2.3 数据卷（Volume）",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 45,
+        "name": "数据卷用于持久化容器",
+        "description": "数据卷用于持久化容器数据，即使容器被删除，数据仍然保留",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 46,
+        "name": "即使容器",
+        "description": "数据卷用于持久化容器数据，即使容器被删除，数据仍然保留",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 47,
+        "name": "Bind Mount",
+        "description": "**Volume vs Bind Mount vs tmpfs**：",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 48,
+        "name": "Network",
+        "description": "### 2.4 网络（Network）",
+        "category": "技术术语",
+        "document_id": 21
+      },
+      {
+        "id": 49,
+        "name": "提供多种网络模式",
+        "description": "Docker 提供多种网络模式：",
+        "category": "技术概念",
+        "document_id": 21
+      },
+      {
+        "id": 50,
+        "name": "Docker Swarm",
+        "description": "| overlay | 跨主机容器通信 | Docker Swarm 集群 |",
+        "category": "技术术语",
+        "document_id": 21
+      }
+    ],
+    "relations": [
+      {
+        "id": 1,
+        "source_id": 1,
+        "target_id": 7,
+        "relation_type": "RELATED",
+        "description": "Docker RELATED Namespace"
+      },
+      {
+        "id": 2,
+        "source_id": 7,
+        "target_id": 8,
+        "relation_type": "RELATED",
+        "description": "Namespace RELATED Cgroup"
+      },
+      {
+        "id": 3,
+        "source_id": 8,
+        "target_id": 9,
+        "relation_type": "RELATED",
+        "description": "Cgroup RELATED Hypervisor"
+      },
+      {
+        "id": 4,
+        "source_id": 9,
+        "target_id": 15,
+        "relation_type": "RELATED",
+        "description": "Hypervisor RELATED Linux Namespace"
+      },
+      {
+        "id": 5,
+        "source_id": 15,
+        "target_id": 25,
+        "relation_type": "RELATED",
+        "description": "Linux Namespace RELATED Linux Cgroup"
+      },
+      {
+        "id": 6,
+        "source_id": 25,
+        "target_id": 27,
+        "relation_type": "RELATED",
+        "description": "Linux Cgroup RELATED Image"
+      },
+      {
+        "id": 7,
+        "source_id": 27,
+        "target_id": 28,
+        "relation_type": "RELATED",
+        "description": "Image RELATED Dockerfile"
+      },
+      {
+        "id": 8,
+        "source_id": 28,
+        "target_id": 33,
+        "relation_type": "RELATED",
+        "description": "Dockerfile RELATED Container"
+      },
+      {
+        "id": 9,
+        "source_id": 33,
+        "target_id": 44,
+        "relation_type": "RELATED",
+        "description": "Container RELATED Volume"
+      },
+      {
+        "id": 10,
+        "source_id": 44,
+        "target_id": 47,
+        "relation_type": "RELATED",
+        "description": "Volume RELATED Bind Mount"
+      },
+      {
+        "id": 11,
+        "source_id": 47,
+        "target_id": 48,
+        "relation_type": "RELATED",
+        "description": "Bind Mount RELATED Network"
+      },
+      {
+        "id": 12,
+        "source_id": 48,
+        "target_id": 50,
+        "relation_type": "RELATED",
+        "description": "Network RELATED Docker Swarm"
+      },
+      {
+        "id": 13,
+        "source_id": 2,
+        "target_id": 3,
+        "relation_type": "PART_OF",
+        "description": "与容器技术 PART_OF 容器技术"
+      },
+      {
+        "id": 14,
+        "source_id": 3,
+        "target_id": 4,
+        "relation_type": "RELATED",
+        "description": "容器技术 RELATED 什么是容器"
+      },
+      {
+        "id": 15,
+        "source_id": 4,
+        "target_id": 5,
+        "relation_type": "RELATED",
+        "description": "什么是容器 RELATED 是一种轻量级的虚拟化技术"
+      },
+      {
+        "id": 16,
+        "source_id": 5,
+        "target_id": 6,
+        "relation_type": "RELATED",
+        "description": "是一种轻量级的虚拟化技术 RELATED 容器共享宿主机的操作系统"
+      },
+      {
+        "id": 17,
+        "source_id": 6,
+        "target_id": 12,
+        "relation_type": "PART_OF",
+        "description": "容器共享宿主机的操作系统 PART_OF 操作系统"
+      },
+      {
+        "id": 18,
+        "source_id": 12,
+        "target_id": 13,
+        "relation_type": "IMPLEMENTS",
+        "description": "操作系统 IMPLEMENTS 单机可运行数百容器"
+      },
+      {
+        "id": 19,
+        "source_id": 13,
+        "target_id": 14,
+        "relation_type": "IMPLEMENTS",
+        "description": "单机可运行数百容器 IMPLEMENTS 容器核心技术"
+      },
+      {
+        "id": 20,
+        "source_id": 14,
+        "target_id": 24,
+        "relation_type": "RELATED",
+        "description": "容器核心技术 RELATED 文件系统"
+      },
+      {
+        "id": 21,
+        "source_id": 24,
+        "target_id": 31,
+        "relation_type": "RELATED",
+        "description": "文件系统 RELATED 多个容器"
+      },
+      {
+        "id": 22,
+        "source_id": 31,
+        "target_id": 34,
+        "relation_type": "PART_OF",
+        "description": "多个容器 PART_OF 一个镜像可以创建多个容器"
+      },
+      {
+        "id": 23,
+        "source_id": 34,
+        "target_id": 35,
+        "relation_type": "RELATED",
+        "description": "一个镜像可以创建多个容器 RELATED 每个容器"
+      },
+      {
+        "id": 24,
+        "source_id": 35,
+        "target_id": 36,
+        "relation_type": "IMPLEMENTS",
+        "description": "每个容器 IMPLEMENTS 运行容器"
+      },
+      {
+        "id": 25,
+        "source_id": 36,
+        "target_id": 38,
+        "relation_type": "IMPLEMENTS",
+        "description": "运行容器 IMPLEMENTS 查看运行中的容器"
+      },
+      {
+        "id": 26,
+        "source_id": 38,
+        "target_id": 39,
+        "relation_type": "IMPLEMENTS",
+        "description": "查看运行中的容器 IMPLEMENTS 查看所有容器"
+      },
+      {
+        "id": 27,
+        "source_id": 39,
+        "target_id": 40,
+        "relation_type": "RELATED",
+        "description": "查看所有容器 RELATED 进入容器"
+      },
+      {
+        "id": 28,
+        "source_id": 40,
+        "target_id": 41,
+        "relation_type": "RELATED",
+        "description": "进入容器 RELATED 查看容器"
+      },
+      {
+        "id": 29,
+        "source_id": 41,
+        "target_id": 42,
+        "relation_type": "RELATED",
+        "description": "查看容器 RELATED 启动容器"
+      },
+      {
+        "id": 30,
+        "source_id": 42,
+        "target_id": 43,
+        "relation_type": "RELATED",
+        "description": "启动容器 RELATED 删除容器"
+      },
+      {
+        "id": 31,
+        "source_id": 43,
+        "target_id": 45,
+        "relation_type": "RELATED",
+        "description": "删除容器 RELATED 数据卷用于持久化容器"
+      },
+      {
+        "id": 32,
+        "source_id": 45,
+        "target_id": 46,
+        "relation_type": "RELATED",
+        "description": "数据卷用于持久化容器 RELATED 即使容器"
+      },
+      {
+        "id": 33,
+        "source_id": 46,
+        "target_id": 49,
+        "relation_type": "RELATED",
+        "description": "即使容器 RELATED 提供多种网络模式"
+      },
+      {
+        "id": 34,
+        "source_id": 10,
+        "target_id": 11,
+        "relation_type": "RELATED",
+        "description": "MB RELATED GB"
+      },
+      {
+        "id": 35,
+        "source_id": 11,
+        "target_id": 16,
+        "relation_type": "RELATED",
+        "description": "GB RELATED PID"
+      },
+      {
+        "id": 36,
+        "source_id": 16,
+        "target_id": 17,
+        "relation_type": "PART_OF",
+        "description": "PID PART_OF ID"
+      },
+      {
+        "id": 37,
+        "source_id": 17,
+        "target_id": 18,
+        "relation_type": "RELATED",
+        "description": "ID RELATED NET"
+      },
+      {
+        "id": 38,
+        "source_id": 18,
+        "target_id": 19,
+        "relation_type": "RELATED",
+        "description": "NET RELATED IP"
+      },
+      {
+        "id": 39,
+        "source_id": 19,
+        "target_id": 20,
+        "relation_type": "RELATED",
+        "description": "IP RELATED MNT"
+      },
+      {
+        "id": 40,
+        "source_id": 20,
+        "target_id": 21,
+        "relation_type": "RELATED",
+        "description": "MNT RELATED UTS"
+      },
+      {
+        "id": 41,
+        "source_id": 21,
+        "target_id": 22,
+        "relation_type": "RELATED",
+        "description": "UTS RELATED IPC"
+      },
+      {
+        "id": 42,
+        "source_id": 22,
+        "target_id": 23,
+        "relation_type": "RELATED",
+        "description": "IPC RELATED USER"
+      },
+      {
+        "id": 43,
+        "source_id": 23,
+        "target_id": 26,
+        "relation_type": "RELATED",
+        "description": "USER RELATED CPU"
+      },
+      {
+        "id": 44,
+        "source_id": 26,
+        "target_id": 29,
+        "relation_type": "RELATED",
+        "description": "CPU RELATED RUN"
+      },
+      {
+        "id": 45,
+        "source_id": 29,
+        "target_id": 30,
+        "relation_type": "RELATED",
+        "description": "RUN RELATED FROM"
+      },
+      {
+        "id": 46,
+        "source_id": 32,
+        "target_id": 37,
+        "relation_type": "RELATED",
+        "description": "v1.0 RELATED p 80"
+      },
+      {
+        "id": 47,
+        "source_id": 1,
+        "target_id": 28,
+        "relation_type": "PART_OF",
+        "description": "Docker 是 Dockerfile 的一部分"
+      },
+      {
+        "id": 48,
+        "source_id": 1,
+        "target_id": 50,
+        "relation_type": "PART_OF",
+        "description": "Docker 是 Docker Swarm 的一部分"
+      },
+      {
+        "id": 49,
+        "source_id": 7,
+        "target_id": 15,
+        "relation_type": "PART_OF",
+        "description": "Namespace 是 Linux Namespace 的一部分"
+      },
+      {
+        "id": 50,
+        "source_id": 8,
+        "target_id": 25,
+        "relation_type": "PART_OF",
+        "description": "Cgroup 是 Linux Cgroup 的一部分"
+      },
+      {
+        "id": 51,
+        "source_id": 19,
+        "target_id": 22,
+        "relation_type": "PART_OF",
+        "description": "IP 是 IPC 的一部分"
+      }
+    ]
+  }
+}

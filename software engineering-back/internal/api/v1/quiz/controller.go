@@ -10,6 +10,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// SubmitQuiz 提交答题
 func SubmitQuiz(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var req request.SubmitQuizRequest
@@ -25,6 +26,7 @@ func SubmitQuiz(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// GetQuizDetail 获取答题记录详情
 func GetQuizDetail(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	resp, err := service.GetQuizDetail(uint(id))
@@ -35,6 +37,7 @@ func GetQuizDetail(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// ListQuizHistory 获取答题历史记录
 func ListQuizHistory(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))

@@ -9,6 +9,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// CreateKnowledgePoint 创建新的知识点
 func CreateKnowledgePoint(req request.CreateKnowledgePointRequest) (uint, error) {
 	kp := &entity.KnowledgePoint{
 		Name:        req.Name,
@@ -22,6 +23,7 @@ func CreateKnowledgePoint(req request.CreateKnowledgePointRequest) (uint, error)
 	return kp.ID, nil
 }
 
+// GetKnowledgePoint 根据 ID 获取知识点详情
 func GetKnowledgePoint(id uint) (*response.KnowledgePointResponse, error) {
 	kp, err := repository.FindKnowledgePointByID(id)
 	if err != nil {
@@ -38,6 +40,7 @@ func GetKnowledgePoint(id uint) (*response.KnowledgePointResponse, error) {
 	}, nil
 }
 
+// UpdateKnowledgePoint 更新知识点信息，仅更新非空字段
 func UpdateKnowledgePoint(id uint, req request.UpdateKnowledgePointRequest) error {
 	kp, err := repository.FindKnowledgePointByID(id)
 	if err != nil {
@@ -55,6 +58,7 @@ func UpdateKnowledgePoint(id uint, req request.UpdateKnowledgePointRequest) erro
 	return repository.UpdateKnowledgePoint(kp)
 }
 
+// DeleteKnowledgePoint 删除知识点
 func DeleteKnowledgePoint(id uint) error {
 	_, err := repository.FindKnowledgePointByID(id)
 	if err != nil {
@@ -63,6 +67,7 @@ func DeleteKnowledgePoint(id uint) error {
 	return repository.DeleteKnowledgePoint(id)
 }
 
+// ListKnowledgePoints 分页查询知识点列表，支持按关键词和文档 ID 过滤
 func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]response.KnowledgePointResponse, int64, error) {
 	points, total, err := repository.ListKnowledgePoints(page, size, keyword, documentID)
 	if err != nil {
@@ -85,6 +90,7 @@ func ListKnowledgePoints(page, size int, keyword string, documentID uint) ([]res
 
 // --- 关系 ---
 
+// CreateRelation 创建知识点之间的关系，会验证源和目标知识点是否存在
 func CreateRelation(req request.CreateRelationRequest) (uint, error) {
 	// 验证源和目标知识点存在
 	if _, err := repository.FindKnowledgePointByID(req.SourceID); err != nil {
@@ -105,6 +111,7 @@ func CreateRelation(req request.CreateRelationRequest) (uint, error) {
 	return rel.ID, nil
 }
 
+// UpdateRelation 更新知识点关系，仅更新非空字段
 func UpdateRelation(id uint, req request.UpdateRelationRequest) error {
 	rel, err := repository.FindRelationByID(id)
 	if err != nil {
@@ -119,6 +126,7 @@ func UpdateRelation(id uint, req request.UpdateRelationRequest) error {
 	return repository.UpdateRelation(rel)
 }
 
+// DeleteRelation 删除知识点关系
 func DeleteRelation(id uint) error {
 	_, err := repository.FindRelationByID(id)
 	if err != nil {
@@ -127,6 +135,7 @@ func DeleteRelation(id uint) error {
 	return repository.DeleteRelation(id)
 }
 
+// ListRelations 分页查询知识点关系列表，返回时附带源/目标知识点名称
 func ListRelations(page, size int, pointID uint) ([]response.KnowledgeRelationResponse, int64, error) {
 	rels, total, err := repository.ListRelations(page, size, pointID)
 	if err != nil {

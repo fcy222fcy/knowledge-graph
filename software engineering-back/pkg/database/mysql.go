@@ -10,8 +10,10 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// DB 全局 MySQL 数据库连接实例
 var DB *gorm.DB
 
+// Connect 连接 MySQL 数据库并配置连接池参数
 func Connect() {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")

@@ -8,9 +8,9 @@ import (
 
 // MockUserRepository 用户仓库的 Mock 实现
 type MockUserRepository struct {
-	Users   map[uint]*entity.User
-	NextID  uint
-	Err     error // 模拟错误
+	Users   map[uint]*entity.User // 用户数据存储
+	NextID  uint                   // 下一个自增ID
+	Err     error                  // 模拟错误
 }
 
 // NewMockUserRepository 创建 Mock 用户仓库
@@ -114,10 +114,10 @@ func (m *MockUserRepository) ClearError() {
 
 // MockAuthService 认证服务的 Mock 实现
 type MockAuthService struct {
-	RegisterFunc  func(req interface{}) error
-	LoginFunc     func(req interface{}) (interface{}, error)
-	RefreshFunc   func(token string) (string, error)
-	Err           error
+	RegisterFunc  func(req interface{}) error            // 注册函数模拟
+	LoginFunc     func(req interface{}) (interface{}, error) // 登录函数模拟
+	RefreshFunc   func(token string) (string, error)     // 刷新令牌函数模拟
+	Err           error                                  // 模拟错误
 }
 
 func (m *MockAuthService) Register(req interface{}) error {

@@ -10,63 +10,65 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/transform"
 )
 
+// AIClient Python AI 服务客户端，负责调用知识图谱构建、语义搜索和智能问答接口
 type AIClient struct {
-	BaseURL string
-	Client  *http.Client
+	BaseURL string      // AI 服务基础URL
+	Client  *http.Client // HTTP 客户端
 }
 
+// AIAnswerRequest AI 问答请求
 type AIAnswerRequest struct {
-	Query string `json:"query"`
-	TopK  int    `json:"top_k"`
+	Query string `json:"query"` // 用户查询
+	TopK  int    `json:"top_k"` // 返回结果数量
 }
 
+// AIAnswerSource AI 问答参考来源
 type AIAnswerSource struct {
-	DocumentID    int    `json:"document_id"`
-	DocumentTitle string `json:"document_title"`
-	Content       string `json:"content"`
+	DocumentID    int    `json:"document_id"`    // 文档ID
+	DocumentTitle string `json:"document_title"` // 文档标题
+	Content       string `json:"content"`        // 引用内容
 }
 
+// AIAnswerResponse AI 问答响应
 type AIAnswerResponse struct {
-	Answer     string           `json:"answer"`
-	Confidence float64          `json:"confidence"`
-	Sources    []AIAnswerSource `json:"sources"`
+	Answer     string           `json:"answer"`      // 生成的回答
+	Confidence float64          `json:"confidence"`  // 置信度
+	Sources    []AIAnswerSource `json:"sources"`     // 参考来源
 }
 
 // AIKnowledgePoint 相关知识点
 type AIKnowledgePoint struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          uint   `json:"id"`          // 知识点ID
+	Name        string `json:"name"`        // 知识点名称
+	Description string `json:"description"` // 知识点描述
 }
 
 // AIAnswerWithGraphResponse 基于知识图谱的回答响应
 type AIAnswerWithGraphResponse struct {
-	Answer                   string              `json:"answer"`
-	Confidence               float64             `json:"confidence"`
-	Sources                  []AIAnswerSource    `json:"sources"`
-	RelatedKnowledgePoints   []AIKnowledgePoint  `json:"related_knowledge_points"`
-	GraphNodesCount          int                 `json:"graph_nodes_count"`
-	GraphRelationsCount      int                 `json:"graph_relations_count"`
+	Answer                  string             `json:"answer"`                   // 生成的回答
+	Confidence              float64            `json:"confidence"`               // 置信度
+	Sources                 []AIAnswerSource   `json:"sources"`                  // 参考来源
+	RelatedKnowledgePoints  []AIKnowledgePoint `json:"related_knowledge_points"` // 相关知识点
+	GraphNodesCount         int                `json:"graph_nodes_count"`        // 图谱节点数
+	GraphRelationsCount     int                `json:"graph_relations_count"`    // 图谱关系数
 }
 
 // ChatMessage 对话消息，用于传递历史上下文
 type ChatMessage struct {
-	Role    string `json:"role"`    // user / assistant
-	Content string `json:"content"`
+	Role    string `json:"role"`    // 消息角色：user / assistant
+	Content string `json:"content"` // 消息内容
 }
 
 // AIAnswerWithHistoryRequest 带历史上下文的请求
 type AIAnswerWithHistoryRequest struct {
-	Query   string        `json:"query"`
-	History []ChatMessage `json:"history"`
-	TopK    int           `json:"top_k"`
+	Query   string        `json:"query"`   // 用户查询
+	History []ChatMessage `json:"history"` // 对话历史
+	TopK    int           `json:"top_k"`   // 返回结果数量
 }
 
+// NewAIClient 创建 AI 客户端，从 AI_SERVICE_URL 环境变量读取服务地址
 func NewAIClient() *AIClient {
 	return &AIClient{
 		BaseURL: os.Getenv("AI_SERVICE_URL"),
@@ -76,66 +78,76 @@ func NewAIClient() *AIClient {
 	}
 }
 
+// AIBuildRequest AI 知识图谱构建请求
 type AIBuildRequest struct {
-	DocumentID uint   `json:"document_id"`
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	Source     string `json:"source"`
+	DocumentID uint   `json:"document_id"` // 文档ID
+	Title      string `json:"title"`       // 文档标题
+	Content    string `json:"content"`     // 文档内容
+	Source     string `json:"source"`      // 来源标识
 }
 
+// AIBuildResponse AI 知识图谱构建响应
 type AIBuildResponse struct {
-	DocumentID       uint          `json:"document_id"`
-	DocumentTitle    string        `json:"document_title"`
-	CreatedPoints    int           `json:"created_points"`
-	CreatedRelations int           `json:"created_relations"`
-	ChunkCount       int           `json:"chunk_count"`
-	VectorCount      int           `json:"vector_count"`
-	Status           string        `json:"status"`
-	Message          string        `json:"message"`
-	Points           []AIGraphNode `json:"points"`
-	Relations        []AIGraphEdge `json:"relations"`
+	DocumentID       uint          `json:"document_id"`       // 文档ID
+	DocumentTitle    string        `json:"document_title"`    // 文档标题
+	CreatedPoints    int           `json:"created_points"`    // 创建的知识点数
+	CreatedRelations int           `json:"created_relations"` // 创建的关系数
+	ChunkCount       int           `json:"chunk_count"`       // 文档分块数
+	VectorCount      int           `json:"vector_count"`      // 向量数
+	Status           string        `json:"status"`            // 构建状态
+	Message          string        `json:"message"`           // 构建结果描述
+	Points           []AIGraphNode `json:"points"`            // 知识点列表
+	Relations        []AIGraphEdge `json:"relations"`         // 关系列表
 }
 
+// AISearchRequest AI 语义搜索请求
 type AISearchRequest struct {
-	Query string `json:"query"`
-	TopK  int    `json:"top_k"`
+	Query string `json:"query"` // 搜索查询
+	TopK  int    `json:"top_k"` // 返回结果数量
 }
 
+// AISearchResult AI 语义搜索结果
 type AISearchResult struct {
-	ChunkText         string  `json:"chunk_text"`
-	Score             float64 `json:"score"`
-	DocumentID        int     `json:"document_id"`
-	KnowledgePointIDs []int   `json:"knowledge_point_ids"`
+	ChunkText         string  `json:"chunk_text"`          // 文档片段文本
+	Score             float64 `json:"score"`               // 相似度分数
+	DocumentID        int     `json:"document_id"`         // 文档ID
+	KnowledgePointIDs []int   `json:"knowledge_point_ids"` // 关联的知识点ID列表
 }
 
+// AISearchResponse AI 语义搜索响应
 type AISearchResponse struct {
-	Results []AISearchResult `json:"results"`
+	Results []AISearchResult `json:"results"` // 搜索结果列表
 }
 
+// AIGraphResponse AI 知识图谱响应
 type AIGraphResponse struct {
-	Nodes []AIGraphNode `json:"nodes"`
-	Edges []AIGraphEdge `json:"edges"`
+	Nodes []AIGraphNode `json:"nodes"` // 节点列表
+	Edges []AIGraphEdge `json:"edges"` // 边列表
 }
 
+// AIGraphNode AI 知识图谱节点
 type AIGraphNode struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Category    string `json:"category"`
-	DocumentID  uint   `json:"document_id"`
+	ID          uint   `json:"id"`          // 节点ID
+	Name        string `json:"name"`        // 节点名称
+	Description string `json:"description"` // 节点描述
+	Category    string `json:"category"`    // 节点分类
+	DocumentID  uint   `json:"document_id"` // 关联的文档ID
 }
 
+// AIGraphEdge AI 知识图谱边（关系）
 type AIGraphEdge struct {
-	Source       uint   `json:"source"`
-	Target       uint   `json:"target"`
-	RelationType string `json:"relation_type"`
-	Description  string `json:"description"`
+	Source       uint   `json:"source"`       // 源节点ID
+	Target       uint   `json:"target"`       // 目标节点ID
+	RelationType string `json:"relation_type"` // 关系类型
+	Description  string `json:"description"`  // 关系描述
 }
 
+// IsAvailable 检查 AI 服务是否已配置
 func (c *AIClient) IsAvailable() bool {
 	return c.BaseURL != ""
 }
 
+// BuildGraph 调用 AI 服务构建知识图谱，返回创建的节点和边数量
 func (c *AIClient) BuildGraph(req AIBuildRequest) (*AIBuildResponse, error) {
 	if !c.IsAvailable() {
 		return nil, fmt.Errorf("AI service not configured")
@@ -160,6 +172,7 @@ func (c *AIClient) BuildGraph(req AIBuildRequest) (*AIBuildResponse, error) {
 	return &result, nil
 }
 
+// Search 调用 AI 服务进行语义搜索，返回与查询最相关的文档片段
 func (c *AIClient) Search(query string, topK int) (*AISearchResponse, error) {
 	if !c.IsAvailable() {
 		return nil, fmt.Errorf("AI service not configured")
@@ -185,6 +198,7 @@ func (c *AIClient) Search(query string, topK int) (*AISearchResponse, error) {
 	return &result, nil
 }
 
+// SearchAndAnswer 调用 AI 服务进行语义搜索并生成回答（不带历史上下文）
 func (c *AIClient) SearchAndAnswer(query string, topK int) (*AIAnswerResponse, error) {
 	if !c.IsAvailable() {
 		return nil, fmt.Errorf("AI service not configured")
@@ -245,19 +259,7 @@ func (c *AIClient) SearchAndAnswerWithGraph(query string, history []ChatMessage,
 	req := AIAnswerWithHistoryRequest{Query: query, History: history, TopK: topK}
 	body, _ := json.Marshal(req)
 
-	// 将 UTF-8 JSON 转换为 GBK 编码
-	var gbkBody bytes.Buffer
-	encoder := simplifiedchinese.GBK.NewEncoder()
-	transformer := transform.NewWriter(&gbkBody, encoder)
-	if _, err := transformer.Write(body); err != nil {
-		// 如果转换失败，使用原始 UTF-8
-		log.Printf("GBK encoding failed, using UTF-8: %v", err)
-		gbkBody.Reset()
-		gbkBody.Write(body)
-	}
-	transformer.Close()
-
-	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", &gbkBody)
+	resp, err := c.Client.Post(c.BaseURL+"/search_and_answer_with_graph", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("failed to call AI search_and_answer_with_graph: %w", err)
 	}
@@ -292,6 +294,7 @@ func BuildConversationContext(history []ChatMessage) string {
 	return sb.String()
 }
 
+// GetGraph 从 AI 服务获取完整知识图谱数据（节点和边）
 func (c *AIClient) GetGraph() (*AIGraphResponse, error) {
 	if !c.IsAvailable() {
 		return nil, fmt.Errorf("AI service not configured")
@@ -315,8 +318,10 @@ func (c *AIClient) GetGraph() (*AIGraphResponse, error) {
 	return &result, nil
 }
 
+// aiClient 全局 AI 客户端单例
 var aiClient *AIClient
 
+// InitAIClient 初始化全局 AI 客户端，日志输出连接状态
 func InitAIClient() {
 	aiClient = NewAIClient()
 	if aiClient.IsAvailable() {

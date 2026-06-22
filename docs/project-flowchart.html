@@ -1,0 +1,450 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>软件工程知识问答平台 - 系统架构流程图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #F5F0E8;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    padding: 40px 30px;
+    width: 1400px;
+    overflow-x: hidden;
+  }
+  .title {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .title h1 {
+    font-size: 42px;
+    color: #2D3436;
+    font-weight: 900;
+    display: inline-block;
+    position: relative;
+    padding: 0 20px;
+  }
+  .title h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FF6B6B, #FECA57, #48DBFB, #FF9FF3);
+    border-radius: 2px;
+  }
+  .subtitle {
+    font-size: 16px;
+    color: #636E72;
+    margin-top: 12px;
+  }
+  .row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .step {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 18px 18px;
+    width: 220px;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border: 2px solid transparent;
+  }
+  .step .num {
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 900;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .step .icon {
+    font-size: 52px;
+    text-align: center;
+    margin: 8px 0 12px;
+    line-height: 1;
+  }
+  .step .step-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2D3436;
+    text-align: center;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .step .step-desc {
+    font-size: 12px;
+    color: #636E72;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .step .api-tag {
+    display: inline-block;
+    background: #DFE6E9;
+    color: #2D3436;
+    font-size: 10px;
+    font-family: "Consolas", "Courier New", monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+    text-align: center;
+  }
+  .step .detail-box {
+    background: #F8F9FA;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #636E72;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .theme-blue { border-color: #74B9FF; }
+  .theme-blue .num { background: #0984E3; }
+  .theme-orange { border-color: #FDCB6E; }
+  .theme-orange .num { background: #E17055; }
+  .theme-purple { border-color: #A29BFE; }
+  .theme-purple .num { background: #6C5CE7; }
+  .theme-teal { border-color: #81ECEC; }
+  .theme-teal .num { background: #00CEC9; }
+  .section-group {
+    border-radius: 16px;
+    padding: 24px 20px 20px;
+    margin: 0 10px 30px;
+    position: relative;
+  }
+  .section-group .section-label {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+  .section-user { background: rgba(116, 185, 255, 0.08); border: 2px dashed #74B9FF; }
+  .section-user .section-label { background: #0984E3; }
+  .section-ai { background: rgba(253, 203, 110, 0.1); border: 2px dashed #FDCB6E; }
+  .section-ai .section-label { background: #E17055; }
+  .section-core { background: rgba(108, 92, 231, 0.06); border: 2px dashed #A29BFE; }
+  .section-core .section-label { background: #6C5CE7; }
+  .section-analytics { background: rgba(0, 184, 148, 0.06); border: 2px dashed #55EFC4; }
++  .section-analytics .section-label { background: #00B894; }
+  .arrow-row {
+    display: flex;
+    justify-content: center;
+    margin: -10px 0 10px;
+  }
+  .arrow-down-long {
+    width: 3px;
+    height: 50px;
+    background: #B2BEC3;
+    position: relative;
+    margin: 0 auto;
+  }
+  .arrow-down-long::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: -5px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #B2BEC3;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 15px;
+  }
+  .flow-arrow {
+    color: #B2BEC3;
+    font-size: 26px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .wide-step { width: 300px; }
+  .extra-wide-step { width: 340px; }
+  .degrade-path {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .degrade-item {
+    background: #F8F9FA;
+    border: 1px solid #DFE6E9;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #636E72;
+    white-space: nowrap;
+  }
+  .degrade-arrow {
+    color: #B2BEC3;
+    font-size: 14px;
+  }
+  .tech-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .badge-go { background: #00ADD8; color: #fff; }
+  .badge-python { background: #3776AB; color: #fff; }
+  .badge-mysql { background: #4479A1; color: #fff; }
+  .badge-neo4j { background: #018BFF; color: #fff; }
+  .badge-vue { background: #42B883; color: #fff; }
+  .callout {
+    background: #FFF3CD;
+    border: 2px solid #FDCB6E;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: #856404;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px auto;
+    max-width: 900px;
+    text-align: center;
+    justify-content: center;
+  }
+  .callout-icon { font-size: 22px; }
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #DFE6E9;
+    color: #B2BEC3;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="title">
+  <h1>&#x2728; 软件工程知识问答平台 &#x2728;</h1>
+  <div class="subtitle">基于 Go + Vue 3 + Python AI 的课程演示系统 — 全栈架构流程图</div>
+</div>
+<div class="section-group section-user">
+  <div class="section-label">USER ENTRY 用户入口</div>
+  <div class="flow-row" style="margin-top: 10px;">
+    <div class="step theme-blue">
+      <div class="num">1</div>
+      <div class="icon">&#x1F464;</div>
+      <div class="step-title">用户登录 / 注册</div>
+      <div class="step-desc">用户名 + 密码认证</div>
+      <div class="api-tag">POST /api/v1/auth/login</div>
+      <div class="detail-box">
+        <span class="tech-badge badge-go">Go Gin</span>
+        <span class="tech-badge badge-vue">Vue 3</span>
+        <br>JWT Token · bcrypt 加密
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-blue">
+      <div class="num">2</div>
+      <div class="icon">&#x1F3E0;</div>
+      <div class="step-title">系统首页</div>
+      <div class="step-desc">今日统计 · 学习概览 · 快捷入口</div>
+      <div class="api-tag">GET /api/v1/analytics/overview</div>
+      <div class="detail-box">
+        学习时长 · 问答次数<br>知识点掌握率 · 答题正确率
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-blue wide-step">
+      <div class="num">3</div>
+      <div class="icon">&#x1F4C4;</div>
+      <div class="step-title">上传课程资料</div>
+      <div class="step-desc">上传 .md / .txt 文档，自动读取文本内容</div>
+      <div class="api-tag">POST /api/v1/documents</div>
+      <div class="detail-box">
+        <span class="tech-badge badge-mysql">MySQL</span>
+        文件存入 uploads/ 目录<br>元数据 + 文本内容写入数据库
+      </div>
+    </div>
+  </div>
+</div>
+<div class="arrow-row"><div class="arrow-down-long"></div></div>
+<div class="section-group section-ai">
+  <div class="section-label">AI PROCESSING 知识图谱构建</div>
+  <div class="flow-row" style="margin-top: 10px;">
+    <div class="step theme-orange wide-step">
+      <div class="num">4</div>
+      <div class="icon">&#x1F9E0;</div>
+      <div class="step-title">Python AI 服务抽取知识点</div>
+      <div class="step-desc">文档分块 → 实体识别 → 关系抽取 → 向量化</div>
+      <div class="api-tag">POST http://localhost:5000/build</div>
+      <div class="detail-box">
+        <span class="tech-badge badge-python">Python FastAPI</span><br>
+        LLM 驱动的知识抽取 · 向量索引
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-orange extra-wide-step">
+      <div class="num">5</div>
+      <div class="icon">&#x1F4CA;</div>
+      <div class="step-title">双存储写入 MySQL + Neo4j</div>
+      <div class="step-desc">知识点和关系同步写入关系库和图数据库</div>
+      <div class="detail-box">
+        <span class="tech-badge badge-mysql">MySQL</span>
+        <span class="tech-badge badge-neo4j">Neo4j</span><br>
+        结构化存储 + 图遍历查询<br>
+        ID 映射：Python ID → MySQL ID
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-orange wide-step">
+      <div class="num">6</div>
+      <div class="icon">&#x1F517;</div>
+      <div class="step-title">知识图谱可视化</div>
+      <div class="step-desc">节点 + 边的有向图展示</div>
+      <div class="api-tag">GET /api/v1/graph</div>
+      <div class="detail-box">
+        支持按文档 / 关键词 / 关系类型筛选<br>
+        Nodes &amp; Edges → 前端图渲染
+      </div>
+    </div>
+  </div>
+</div>
+<div class="arrow-row"><div class="arrow-down-long"></div></div>
+<div class="section-group section-core">
+  <div class="section-label">CORE QA 知识问答核心</div>
+  <div class="flow-row" style="margin-top: 10px;">
+    <div class="step theme-purple extra-wide-step">
+      <div class="num">7</div>
+      <div class="icon">&#x1F4AC;</div>
+      <div class="step-title">智能问答 — 多级降级策略</div>
+      <div class="step-desc">用户提问 → 自动创建/复用会话 → 多轮对话</div>
+      <div class="api-tag">POST /api/v1/ask</div>
+      <div class="detail-box" style="text-align:center;">
+        <div class="degrade-path">
+          <div class="degrade-item" style="border-color:#6C5CE7;color:#6C5CE7;font-weight:700;">图谱问答</div>
+          <div class="degrade-arrow">→</div>
+          <div class="degrade-item">RAG 检索增强</div>
+          <div class="degrade-arrow">→</div>
+          <div class="degrade-item">关键词搜索</div>
+          <div class="degrade-arrow">→</div>
+          <div class="degrade-item">知识点匹配</div>
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:#636E72;">
+          任意一级成功即返回，失败自动降级<br>
+          带历史对话上下文 · 返回置信度 + 引用来源
+        </div>
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-purple wide-step">
+      <div class="num">8</div>
+      <div class="icon">&#x1F4D6;</div>
+      <div class="step-title">题库练习</div>
+      <div class="step-desc">单选 / 多选题 → 提交答案 → 自动判分</div>
+      <div class="api-tag">POST /api/v1/quizzes/submit</div>
+      <div class="detail-box">
+        返回正确答案 + 解析<br>
+        按知识点 / 难度筛选题目<br>
+        答题历史分页查询
+      </div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-purple wide-step">
+      <div class="num">9</div>
+      <div class="icon">&#x1F4DD;</div>
+      <div class="step-title">问答 &amp; 答题记录</div>
+      <div class="step-desc">会话列表 · 消息历史 · 分页浏览</div>
+      <div class="api-tag">GET /api/v1/ask/sessions</div>
+      <div class="detail-box">
+        每个会话独立保存<br>
+        最近 10 条对话作为上下文
+      </div>
+    </div>
+  </div>
+</div>
+<div class="arrow-row"><div class="arrow-down-long"></div></div>
+<div class="section-group section-analytics">
+  <div class="section-label">ANALYTICS 学习分析</div>
+  <div class="flow-row" style="margin-top: 10px;">
+    <div class="step theme-teal">
+      <div class="num">10</div>
+      <div class="icon">&#x1F4CA;</div>
+      <div class="step-title">总览统计</div>
+      <div class="step-desc">今日/累计学习时长、问答次数、正确率</div>
+      <div class="api-tag">GET /analytics/overview</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-teal">
+      <div class="num">11</div>
+      <div class="icon">&#x1F525;</div>
+      <div class="step-title">热门知识点</div>
+      <div class="step-desc">按热度排序，展示高频知识点</div>
+      <div class="api-tag">GET /analytics/hot-kp</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-teal">
+      <div class="num">12</div>
+      <div class="icon">&#x1F4C8;</div>
+      <div class="step-title">知识点掌握度</div>
+      <div class="step-desc">mastered / learning / weak 三级判定</div>
+      <div class="api-tag">GET /analytics/knowledge-mastery</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-teal">
+      <div class="num">13</div>
+      <div class="icon">&#x1F4A1;</div>
+      <div class="step-title">薄弱知识点</div>
+      <div class="step-desc">自动推荐薄弱点的练习题</div>
+      <div class="api-tag">GET /analytics/weak-points</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="step theme-teal">
+      <div class="num">14</div>
+      <div class="icon">&#x1F4C9;</div>
+      <div class="step-title">趋势数据</div>
+      <div class="step-desc">每日答题量、正确率变化曲线</div>
+      <div class="api-tag">GET /analytics/trends</div>
+    </div>
+  </div>
+</div>
+<div class="callout">
+  <span class="callout-icon">&#x1F527;</span>
+  <strong>技术栈：</strong>
+  <span class="tech-badge badge-go">Go 1.25 + Gin + GORM</span>
+  <span class="tech-badge badge-python">Python + FastAPI</span>
+  <span class="tech-badge badge-mysql">MySQL</span>
+  <span class="tech-badge badge-neo4j">Neo4j (可选)</span>
+  <span class="tech-badge badge-vue">Vue 3 + Vite + Element Plus</span>
+</div>
+<div class="callout" style="background:#E8F8F5; border-color:#55EFC4; color:#0E6655;">
+  <span class="callout-icon">&#x26A1;</span>
+  <strong>核心设计：</strong>
+  多级降级容错 · 图谱+RAG 双引擎 · MySQL+Neo4j 双存储 · JWT 无状态认证 · 分层架构 (Controller → Service → Repository)
+</div>
+<div class="footer">
+  软件工程知识问答平台 — 系统架构流程图 — 2026
+</div>
+</body>
+</html>

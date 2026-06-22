@@ -7,6 +7,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// GetOverview 获取用户学习概览数据，包括答题统计、知识点掌握率等
 func GetOverview(userID uint) (*response.OverviewResponse, error) {
 	totalQuizzes, _ := repository.CountQuizzesByUser(userID)
 	correctQuizzes, _ := repository.CountCorrectQuizzesByUser(userID)
@@ -50,6 +51,7 @@ func GetOverview(userID uint) (*response.OverviewResponse, error) {
 	}, nil
 }
 
+// GetHotKnowledgePoints 获取热门知识点列表，按答题热度排序
 func GetHotKnowledgePoints(limit int) ([]response.HotKnowledgePoint, error) {
 	points, _ := repository.GetAllKnowledgePointsForGraph()
 	totalMap, correctMap, _ := repository.GetQuizzesByKnowledgePoint(0)
@@ -83,6 +85,7 @@ func GetHotKnowledgePoints(limit int) ([]response.HotKnowledgePoint, error) {
 	return result, nil
 }
 
+// GetKnowledgeMastery 获取用户各知识点的掌握程度
 func GetKnowledgeMastery(userID uint) ([]response.KnowledgeMastery, error) {
 	points, _ := repository.GetAllKnowledgePointsForGraph()
 	totalMap, correctMap, _ := repository.GetQuizzesByKnowledgePoint(userID)
@@ -113,6 +116,7 @@ func GetKnowledgeMastery(userID uint) ([]response.KnowledgeMastery, error) {
 	return result, nil
 }
 
+// GetWeakPoints 获取用户的薄弱知识点，附带推荐练习题目
 func GetWeakPoints(userID uint, limit int) ([]response.WeakPoint, error) {
 	masteries, _ := GetKnowledgeMastery(userID)
 
@@ -143,6 +147,7 @@ func GetWeakPoints(userID uint, limit int) ([]response.WeakPoint, error) {
 	return result, nil
 }
 
+// GetTrends 获取用户近 N 天的学习趋势数据
 func GetTrends(userID uint, days int) (*response.TrendData, error) {
 	dailyStats, _ := repository.GetDailyQuizStats(userID, days)
 

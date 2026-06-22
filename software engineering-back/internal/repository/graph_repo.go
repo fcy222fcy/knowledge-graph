@@ -11,18 +11,22 @@ import (
 	"software_engineering/pkg/database"
 )
 
+// neo4jQueryTimeout Neo4j 查询超时时间
 const neo4jQueryTimeout = 3 * time.Second
 
+// CreateKnowledgeBuild 创建知识图谱构建记录
 func CreateKnowledgeBuild(build *entity.KnowledgeBuild) error {
 	return database.DB.Create(build).Error
 }
 
+// GetLatestBuild 获取最近一次构建记录
 func GetLatestBuild() (*entity.KnowledgeBuild, error) {
 	var build entity.KnowledgeBuild
 	err := database.DB.Order("created_at DESC").First(&build).Error
 	return &build, err
 }
 
+// ListBuilds 分页查询构建历史记录
 func ListBuilds(page, size int) ([]entity.KnowledgeBuild, int64, error) {
 	var builds []entity.KnowledgeBuild
 	var total int64
@@ -31,18 +35,21 @@ func ListBuilds(page, size int) ([]entity.KnowledgeBuild, int64, error) {
 	return builds, total, err
 }
 
+// GetAllKnowledgePointsForGraph 获取所有知识点（用于图谱展示）
 func GetAllKnowledgePointsForGraph() ([]entity.KnowledgePoint, error) {
 	var points []entity.KnowledgePoint
 	err := database.DB.Find(&points).Error
 	return points, err
 }
 
+// GetAllRelationsForGraph 获取所有知识点关系（用于图谱展示）
 func GetAllRelationsForGraph() ([]entity.KnowledgeRelation, error) {
 	var rels []entity.KnowledgeRelation
 	err := database.DB.Find(&rels).Error
 	return rels, err
 }
 
+// FindKnowledgePointsByIDs 批量根据 ID 查找知识点
 func FindKnowledgePointsByIDs(ids []uint) ([]entity.KnowledgePoint, error) {
 	var points []entity.KnowledgePoint
 	err := database.DB.Where("id IN ?", ids).Find(&points).Error
@@ -51,6 +58,7 @@ func FindKnowledgePointsByIDs(ids []uint) ([]entity.KnowledgePoint, error) {
 
 // --- Neo4j Cypher queries ---
 
+// GetAllGraphDataFromNeo4j 从 Neo4j 获取完整图谱数据，不可用时自动降级到 MySQL
 func GetAllGraphDataFromNeo4j() ([]entity.KnowledgePoint, []entity.KnowledgeRelation, error) {
 	if !database.IsNeo4jAvailable() {
 		points, err := GetAllKnowledgePointsForGraph()
@@ -126,6 +134,7 @@ func GetAllGraphDataFromNeo4j() ([]entity.KnowledgePoint, []entity.KnowledgeRela
 	return points, rels, nil
 }
 
+// CreateKnowledgePointInNeo4j 在 Neo4j 中创建知识点节点
 func CreateKnowledgePointInNeo4j(kp *entity.KnowledgePoint) error {
 	if !database.IsNeo4jAvailable() {
 		return nil
@@ -157,6 +166,7 @@ func CreateKnowledgePointInNeo4j(kp *entity.KnowledgePoint) error {
 	return err
 }
 
+// CreateRelationInNeo4j 在 Neo4j 中创建知识点关系，包含关系类型白名单校验防止注入
 func CreateRelationInNeo4j(rel *entity.KnowledgeRelation) error {
 	if !database.IsNeo4jAvailable() {
 		return nil
@@ -201,6 +211,7 @@ func CreateRelationInNeo4j(rel *entity.KnowledgeRelation) error {
 	return err
 }
 
+// DeleteKnowledgePointFromNeo4j 从 Neo4j 删除知识点节点及其所有关系
 func DeleteKnowledgePointFromNeo4j(id uint) error {
 	if !database.IsNeo4jAvailable() {
 		return nil
@@ -227,6 +238,7 @@ func DeleteKnowledgePointFromNeo4j(id uint) error {
 	return err
 }
 
+// DeleteRelationFromNeo4j 从 Neo4j 删除指定关系
 func DeleteRelationFromNeo4j(id uint) error {
 	if !database.IsNeo4jAvailable() {
 		return nil
@@ -255,6 +267,7 @@ func DeleteRelationFromNeo4j(id uint) error {
 
 // --- helper functions ---
 
+// recordToMap 将 Neo4j Record 转换为 map
 func recordToMap(record *neo4j.Record) map[string]any {
 	m := make(map[string]any)
 	for _, key := range record.Keys {
@@ -264,6 +277,7 @@ func recordToMap(record *neo4j.Record) map[string]any {
 	return m
 }
 
+// toString 将 interface{} 转换为 string
 func toString(v any) string {
 	if v == nil {
 		return ""
@@ -274,6 +288,7 @@ func toString(v any) string {
 	return fmt.Sprintf("%v", v)
 }
 
+// toUint 将 interface{} 转换为 uint
 func toUint(v any) uint {
 	if v == nil {
 		return 0

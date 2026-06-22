@@ -10,12 +10,14 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// parseOptions 解析题目选项 JSON 字符串
 func parseOptions(optionsJSON string) []response.QuestionOption {
 	var options []response.QuestionOption
 	json.Unmarshal([]byte(optionsJSON), &options)
 	return options
 }
 
+// CreateQuestion 创建题目
 func CreateQuestion(req request.CreateQuestionRequest) (uint, error) {
 	optionsJSON, _ := json.Marshal(req.Options)
 	q := &entity.Question{
@@ -33,6 +35,7 @@ func CreateQuestion(req request.CreateQuestionRequest) (uint, error) {
 	return q.ID, nil
 }
 
+// GetQuestion 获取题目详情，可选是否包含答案和解析
 func GetQuestion(id uint, includeAnswer bool) (*response.QuestionResponse, error) {
 	q, err := repository.FindQuestionByID(id)
 	if err != nil {
@@ -54,6 +57,7 @@ func GetQuestion(id uint, includeAnswer bool) (*response.QuestionResponse, error
 	return resp, nil
 }
 
+// UpdateQuestion 更新题目信息，仅更新非空字段
 func UpdateQuestion(id uint, req request.UpdateQuestionRequest) error {
 	q, err := repository.FindQuestionByID(id)
 	if err != nil {
@@ -81,6 +85,7 @@ func UpdateQuestion(id uint, req request.UpdateQuestionRequest) error {
 	return repository.UpdateQuestion(q)
 }
 
+// DeleteQuestion 删除题目
 func DeleteQuestion(id uint) error {
 	_, err := repository.FindQuestionByID(id)
 	if err != nil {
@@ -89,6 +94,7 @@ func DeleteQuestion(id uint) error {
 	return repository.DeleteQuestion(id)
 }
 
+// ListQuestions 分页查询题目列表，支持按标题、知识点和难度过滤
 func ListQuestions(page, size int, keyword string, knowledgePointID uint, difficulty string) ([]response.QuestionResponse, int64, error) {
 	questions, total, err := repository.ListQuestions(page, size, keyword, knowledgePointID, difficulty)
 	if err != nil {

@@ -15,14 +15,14 @@ import (
 
 // AuthService 定义认证服务接口
 type AuthService interface {
-	Register(req request.RegisterRequest) error
-	Login(req request.LoginRequest) (*response.LoginResponse, error)
-	RefreshToken(oldToken string) (string, error)
+	Register(req request.RegisterRequest) error                        // 用户注册
+	Login(req request.LoginRequest) (*response.LoginResponse, error)   // 用户登录
+	RefreshToken(oldToken string) (string, error)                     // 刷新令牌
 }
 
 // AuthServiceImpl 认证服务实现
 type AuthServiceImpl struct {
-	userRepo repository.UserRepository
+	userRepo repository.UserRepository // 用户仓库
 }
 
 // NewAuthService 创建认证服务实例
@@ -30,6 +30,7 @@ func NewAuthService(userRepo repository.UserRepository) *AuthServiceImpl {
 	return &AuthServiceImpl{userRepo: userRepo}
 }
 
+// Register 用户注册，验证用户名和邮箱唯一性后创建用户
 func (s *AuthServiceImpl) Register(req request.RegisterRequest) error {
 	existing, _ := s.userRepo.FindByUsername(req.Username)
 	if existing.ID != 0 {
@@ -55,6 +56,7 @@ func (s *AuthServiceImpl) Register(req request.RegisterRequest) error {
 	return s.userRepo.Create(user)
 }
 
+// Login 用户登录，验证用户名密码后生成 JWT Token
 func (s *AuthServiceImpl) Login(req request.LoginRequest) (*response.LoginResponse, error) {
 	user, err := s.userRepo.FindByUsername(req.Username)
 	if err != nil {
@@ -92,6 +94,7 @@ func (s *AuthServiceImpl) Login(req request.LoginRequest) (*response.LoginRespon
 	}, nil
 }
 
+// RefreshToken 刷新 JWT Token，验证旧 Token 有效性后生成新 Token
 func (s *AuthServiceImpl) RefreshToken(oldToken string) (string, error) {
 	claims, err := jwt.ParseToken(oldToken)
 	if err != nil {

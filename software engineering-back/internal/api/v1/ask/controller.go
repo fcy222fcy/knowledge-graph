@@ -10,6 +10,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// CreateSession 创建新的问答会话
 func CreateSession(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var req request.CreateSessionRequest
@@ -25,6 +26,7 @@ func CreateSession(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// ListSessions 获取用户的问答会话列表
 func ListSessions(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -37,6 +39,7 @@ func ListSessions(c *gin.Context) {
 	response.Paginated(c, list, total, page, size)
 }
 
+// ListSessionMessages 获取指定会话的消息记录
 func ListSessionMessages(c *gin.Context) {
 	sessionID, _ := strconv.Atoi(c.Param("id"))
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -49,6 +52,7 @@ func ListSessionMessages(c *gin.Context) {
 	response.Paginated(c, list, total, page, size)
 }
 
+// AskQuestion 智能问答接口，支持多轮对话
 func AskQuestion(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var req request.AskRequest
@@ -64,6 +68,7 @@ func AskQuestion(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// ListAskHistory 获取用户的问答历史记录
 func ListAskHistory(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))

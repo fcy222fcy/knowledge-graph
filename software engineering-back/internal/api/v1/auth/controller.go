@@ -9,6 +9,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// Register 用户注册接口
 func Register(c *gin.Context) {
 	var req request.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -22,6 +23,7 @@ func Register(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// Login 用户登录接口，返回 JWT Token
 func Login(c *gin.Context) {
 	var req request.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -36,6 +38,7 @@ func Login(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// Refresh 刷新 JWT Token 接口
 func Refresh(c *gin.Context) {
 	var req request.RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -18,15 +18,18 @@ import (
 	"software_engineering/pkg/database"
 )
 
+// App 应用主结构体，封装 Gin 路由引擎和 HTTP 服务器
 type App struct {
-	router     *gin.Engine
-	httpServer *http.Server
+	router     *gin.Engine   // Gin 路由引擎
+	httpServer *http.Server  // HTTP 服务器
 }
 
+// New 创建应用实例
 func New() *App {
 	return &App{}
 }
 
+// Initialize 初始化应用：加载配置、连接数据库、注册路由、创建 HTTP 服务器
 func (a *App) Initialize() {
 	// 1. 加载配置
 	config.Load()
@@ -62,6 +65,7 @@ func (a *App) Initialize() {
 	}
 }
 
+// Run 启动 HTTP 服务器并监听优雅退出信号（SIGINT/SIGTERM）
 func (a *App) Run() {
 	// 启动服务器
 	go func() {
@@ -78,6 +82,7 @@ func (a *App) Run() {
 	a.Shutdown()
 }
 
+// Shutdown 优雅关闭服务器，等待 5 秒完成在途请求后断开数据库连接
 func (a *App) Shutdown() {
 	log.Println("shutting down server...")
 

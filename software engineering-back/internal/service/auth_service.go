@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Register 用户注册，验证用户名和邮箱唯一性后创建用户
 func Register(req request.RegisterRequest) error {
 	existing, _ := repository.FindUserByUsername(req.Username)
 	if existing.ID != 0 {
@@ -38,6 +39,7 @@ func Register(req request.RegisterRequest) error {
 	return repository.CreateUser(user)
 }
 
+// Login 用户登录，验证用户名密码后生成 JWT Token
 func Login(req request.LoginRequest) (*response.LoginResponse, error) {
 	user, err := repository.FindUserByUsername(req.Username)
 	if err != nil {
@@ -75,6 +77,7 @@ func Login(req request.LoginRequest) (*response.LoginResponse, error) {
 	}, nil
 }
 
+// RefreshToken 刷新 JWT Token，验证旧 Token 有效性后生成新 Token
 func RefreshToken(oldToken string) (string, error) {
 	claims, err := jwt.ParseToken(oldToken)
 	if err != nil {

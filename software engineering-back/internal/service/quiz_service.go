@@ -9,6 +9,7 @@ import (
 	"software_engineering/internal/repository"
 )
 
+// SubmitQuiz 提交答题，自动判断对错并保存记录
 func SubmitQuiz(userID uint, req request.SubmitQuizRequest) (*response.QuizResponse, error) {
 	question, err := repository.FindQuestionByID(req.QuestionID)
 	if err != nil {
@@ -38,6 +39,7 @@ func SubmitQuiz(userID uint, req request.SubmitQuizRequest) (*response.QuizRespo
 	}, nil
 }
 
+// GetQuizDetail 获取答题记录详情，包含题目信息和用户答案
 func GetQuizDetail(id uint) (*response.QuizResponse, error) {
 	quiz, err := repository.FindQuizByID(id)
 	if err != nil {
@@ -63,6 +65,7 @@ func GetQuizDetail(id uint) (*response.QuizResponse, error) {
 	}, nil
 }
 
+// ListQuizHistory 分页获取用户答题历史，支持按知识点和正确性过滤
 func ListQuizHistory(userID uint, page, size int, knowledgePointID uint, isCorrect *bool) ([]response.QuizResponse, int64, error) {
 	quizzes, total, err := repository.ListQuizzesByUser(userID, page, size, knowledgePointID, isCorrect)
 	if err != nil {

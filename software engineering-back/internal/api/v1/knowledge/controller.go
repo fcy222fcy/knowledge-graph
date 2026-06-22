@@ -10,6 +10,7 @@ import (
 	"software_engineering/pkg/response"
 )
 
+// CreateKnowledgePoint 创建知识点
 func CreateKnowledgePoint(c *gin.Context) {
 	var req request.CreateKnowledgePointRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -24,6 +25,7 @@ func CreateKnowledgePoint(c *gin.Context) {
 	response.Success(c, gin.H{"id": id})
 }
 
+// GetKnowledgePoint 获取知识点详情
 func GetKnowledgePoint(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	resp, err := service.GetKnowledgePoint(uint(id))
@@ -34,6 +36,7 @@ func GetKnowledgePoint(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// UpdateKnowledgePoint 更新知识点
 func UpdateKnowledgePoint(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var req request.UpdateKnowledgePointRequest
@@ -48,6 +51,7 @@ func UpdateKnowledgePoint(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// DeleteKnowledgePoint 删除知识点
 func DeleteKnowledgePoint(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := service.DeleteKnowledgePoint(uint(id)); err != nil {
@@ -57,6 +61,7 @@ func DeleteKnowledgePoint(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ListKnowledgePoints 获取知识点列表
 func ListKnowledgePoints(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
@@ -70,6 +75,7 @@ func ListKnowledgePoints(c *gin.Context) {
 	response.Paginated(c, list, total, page, size)
 }
 
+// CreateRelation 创建知识点关系
 func CreateRelation(c *gin.Context) {
 	var req request.CreateRelationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -84,6 +90,7 @@ func CreateRelation(c *gin.Context) {
 	response.Success(c, gin.H{"id": id})
 }
 
+// UpdateRelation 更新知识点关系
 func UpdateRelation(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var req request.UpdateRelationRequest
@@ -98,6 +105,7 @@ func UpdateRelation(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// DeleteRelation 删除知识点关系
 func DeleteRelation(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := service.DeleteRelation(uint(id)); err != nil {
@@ -107,6 +115,7 @@ func DeleteRelation(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ListRelations 获取知识点关系列表
 func ListRelations(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))

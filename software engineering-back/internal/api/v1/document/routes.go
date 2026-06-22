@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterRoutes 注册文档管理模块路由
 func RegisterRoutes(protected *gin.RouterGroup) {
 	docs := protected.Group("/documents")
 	{

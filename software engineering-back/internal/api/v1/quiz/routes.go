@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RegisterRoutes 注册答题模块路由
 func RegisterRoutes(protected *gin.RouterGroup) {
 	quiz := protected.Group("/quizzes")
 	{

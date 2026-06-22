@@ -7,18 +7,21 @@ import (
 	"software_engineering/internal/model/entity"
 )
 
+// CountQuizzesByUser 统计用户答题总数
 func CountQuizzesByUser(userID uint) (int64, error) {
 	var count int64
 	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
 }
 
+// CountCorrectQuizzesByUser 统计用户答对的题目数量
 func CountCorrectQuizzesByUser(userID uint) (int64, error) {
 	var count int64
 	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ? AND is_correct = ?", userID, true).Count(&count).Error
 	return count, err
 }
 
+// CountTodayQuizzesByUser 统计用户今日答题数量
 func CountTodayQuizzesByUser(userID uint) (int64, error) {
 	var count int64
 	today := time.Now().Format("2006-01-02")
@@ -26,6 +29,7 @@ func CountTodayQuizzesByUser(userID uint) (int64, error) {
 	return count, err
 }
 
+// CountTodayMessagesByUser 统计用户今日提问数量
 func CountTodayMessagesByUser(userID uint) (int64, error) {
 	var count int64
 	today := time.Now().Format("2006-01-02")
@@ -36,6 +40,7 @@ func CountTodayMessagesByUser(userID uint) (int64, error) {
 	return count, err
 }
 
+// CountTotalMessagesByUser 统计用户历史提问总数
 func CountTotalMessagesByUser(userID uint) (int64, error) {
 	var count int64
 	err := database.DB.Model(&entity.AskMessage{}).
@@ -45,6 +50,7 @@ func CountTotalMessagesByUser(userID uint) (int64, error) {
 	return count, err
 }
 
+// GetQuizzesByKnowledgePoint 按知识点统计用户答题情况，返回各知识点的总数和正确数
 func GetQuizzesByKnowledgePoint(userID uint) (map[uint]int, map[uint]int, error) {
 	var results []struct {
 		KnowledgePointID uint
@@ -68,6 +74,7 @@ func GetQuizzesByKnowledgePoint(userID uint) (map[uint]int, map[uint]int, error)
 	return totalMap, correctMap, err
 }
 
+// GetDailyQuizStats 获取用户近 N 天的每日答题统计
 func GetDailyQuizStats(userID uint, days int) ([]struct {
 	Date    string
 	Correct int
@@ -88,6 +95,7 @@ func GetDailyQuizStats(userID uint, days int) ([]struct {
 	return results, err
 }
 
+// FindQuestionsByKnowledgePoint 根据知识点 ID 获取题目列表
 func FindQuestionsByKnowledgePoint(kpID uint, limit int) ([]entity.Question, error) {
 	var questions []entity.Question
 	err := database.DB.Where("knowledge_point_id = ?", kpID).Limit(limit).Find(&questions).Error
