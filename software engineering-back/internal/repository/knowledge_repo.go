@@ -114,3 +114,35 @@ func GetAllKnowledgePoints() ([]entity.KnowledgePoint, error) {
 	err := database.DB.Find(&points).Error
 	return points, err
 }
+
+// CountKnowledgePoints 统计知识点总数
+func CountKnowledgePoints() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.KnowledgePoint{}).Count(&count).Error
+	return count, err
+}
+
+// CountRelations 统计知识点关系总数
+func CountRelations() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.KnowledgeRelation{}).Count(&count).Error
+	return count, err
+}
+
+// ListKnowledgePointsAdmin 管理员获取知识点列表
+func ListKnowledgePointsAdmin(page, size int) ([]entity.KnowledgePoint, int64, error) {
+	var points []entity.KnowledgePoint
+	var total int64
+	database.DB.Model(&entity.KnowledgePoint{}).Count(&total)
+	err := database.DB.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&points).Error
+	return points, total, err
+}
+
+// ListRelationsAdmin 管理员获取关系列表
+func ListRelationsAdmin(page, size int) ([]entity.KnowledgeRelation, int64, error) {
+	var rels []entity.KnowledgeRelation
+	var total int64
+	database.DB.Model(&entity.KnowledgeRelation{}).Count(&total)
+	err := database.DB.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&rels).Error
+	return rels, total, err
+}

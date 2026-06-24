@@ -20,18 +20,20 @@ func init() {
 	jwtSecret = []byte(secret)
 }
 
-// Claims JWT 声明结构体，包含用户 ID 和用户名
+// Claims JWT 声明结构体，包含用户 ID、用户名和角色
 type Claims struct {
 	UserID   uint   `json:"user_id"`   // 用户ID
 	Username string `json:"username"`  // 用户名
+	Role     string `json:"role"`      // 角色: admin, teacher, student
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成 JWT Token，有效期 24 小时
-func GenerateToken(userID uint, username string) (string, error) {
+func GenerateToken(userID uint, username, role string) (string, error) {
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

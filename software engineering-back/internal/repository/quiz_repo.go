@@ -46,3 +46,10 @@ func CountTotalByUser(userID uint) (int64, error) {
 	err := database.DB.Model(&entity.Quiz{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
 }
+
+// CountQuizzes 统计答题记录总数
+func CountQuizzes() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.Quiz{}).Count(&count).Error
+	return count, err
+}

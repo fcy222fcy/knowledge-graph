@@ -5,6 +5,7 @@
       v-model:relationType="filterRelationType"
       @search="handleSearch"
       @build="buildVisible = true"
+      @upload="uploadVisible = true"
       @refresh="fetchGraphData"
     />
 
@@ -24,6 +25,7 @@
 
     <NodeDetail v-model="detailVisible" :node="selectedNode" />
     <BuildDialog v-model="buildVisible" :loading="buildLoading" @confirm="handleBuild" />
+    <UploadDialog v-model="uploadVisible" @success="fetchGraphData" />
   </div>
 </template>
 
@@ -37,6 +39,7 @@ import GraphToolbar from './components/GraphToolbar.vue'
 import GraphCanvas from './components/GraphCanvas.vue'
 import NodeDetail from './components/NodeDetail.vue'
 import BuildDialog from './components/BuildDialog.vue'
+import UploadDialog from './components/UploadDialog.vue'
 
 const graphData = ref<GraphData | null>(null)
 const loading = ref(false)
@@ -46,6 +49,7 @@ const selectedNode = ref<GraphNode | null>(null)
 const detailVisible = ref(false)
 const buildVisible = ref(false)
 const buildLoading = ref(false)
+const uploadVisible = ref(false)
 
 const fetchGraphData = async () => {
   loading.value = true

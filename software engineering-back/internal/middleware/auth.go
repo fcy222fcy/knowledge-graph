@@ -34,6 +34,37 @@ func RequireAuth() gin.HandlerFunc {
 
 		c.Set("user_id", claims.UserID)
 		c.Set("username", claims.Username)
+		c.Set("role", claims.Role)
 		c.Next()
+	}
+}
+
+// RequireRole 角色权限中间件，检查用户是否具有指定角色
+func RequireRole(roles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "无权限访问", "data": nil})
+			c.Abort()
+			return
+		}
+
+		roleStr, ok := role.(string)
+		if !ok {
+			c.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "角色信息无效", "data": nil})
+			c.Abort()
+			return
+		}
+
+		// 检查用户角色是否在允许列表中
+		for _, allowedRole := range roles {
+			if roleStr == allowedRole {
+				c.Next()
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "权限不足", "data": nil})
+		c.Abort()
 	}
 }

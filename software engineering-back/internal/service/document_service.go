@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -87,10 +88,15 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		FileSize:    fileSize,
 		FileType:    fileType,
 		Content:     fileContent,
-		Status:      "completed",
+		Status:      "pending",
 	}
 	if err := repository.CreateDocument(doc); err != nil {
 		return nil, err
+	}
+
+	// 构建向量索引（仅对文本文件）
+	if fileContent != "" {
+		go buildVectorIndex(doc.ID, fileContent)
 	}
 
 	return &response.DocumentResponse{
@@ -104,6 +110,36 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		CreatedAt:   doc.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:   doc.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	}, nil
+}
+
+// buildVectorIndex 为文档构建向量索引
+func buildVectorIndex(documentID uint, content string) {
+	extractionSvc := &ExtractionService{}
+	chunks := extractionSvc.GenerateChunkIndex(content, documentID)
+
+	vecSvc := GetVectorService()
+	if vecSvc == nil {
+		log.Printf("Vector service not initialized, skipping index build for document %d", documentID)
+		return
+	}
+
+	for i, chunk := range chunks {
+		embedding, err := vecSvc.Embed(chunk.ChunkText)
+		if err != nil {
+			log.Printf("Failed to embed chunk %d for document %d: %v", i, documentID, err)
+			continue
+		}
+		if err := vecSvc.AddVector(embedding, chunk); err != nil {
+			log.Printf("Failed to add vector for chunk %d: %v", i, err)
+			continue
+		}
+	}
+
+	if err := vecSvc.SaveIndex(); err != nil {
+		log.Printf("Failed to save vector index: %v", err)
+	} else {
+		log.Printf("Built vector index for document %d: %d chunks", documentID, len(chunks))
+	}
 }
 
 // GetDocumentDownloadURL 获取文档的下载 URL
@@ -236,4 +272,63 @@ func ListUserDocuments(userID uint, page, size int, keyword, status string) ([]r
 		}
 	}
 	return list, total, nil
+}
+
+// ListDocumentsAdmin 管理员获取所有文档列表
+func ListDocumentsAdmin(page, size int, keyword string) ([]response.DocumentResponse, int64, error) {
+	docs, total, err := repository.ListDocumentsAdmin(page, size, keyword)
+	if err != nil {
+		return nil, 0, err
+	}
+	list := make([]response.DocumentResponse, len(docs))
+	for i, d := range docs {
+		list[i] = response.DocumentResponse{
+			ID:          d.ID,
+			Title:       d.Title,
+			Description: d.Description,
+			Filename:    d.Filename,
+			FileSize:    d.FileSize,
+			FileType:    d.FileType,
+			Status:      d.Status,
+			CreatedAt:   d.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			UpdatedAt:   d.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+		}
+	}
+	return list, total, nil
+}
+
+// ReviewDocument 教师/管理员审核文档，更新审核状态和意见
+func ReviewDocument(id uint, req request.ReviewDocumentRequest) error {
+	doc, err := repository.FindDocumentByID(id)
+	if err != nil {
+		return errors.New("文档不存在")
+	}
+
+	doc.Status = req.Status
+	doc.ReviewComment = req.Comment
+
+	if err := repository.UpdateDocument(doc); err != nil {
+		return err
+	}
+
+	// 审核通过时构建向量索引
+	if req.Status == "approved" && doc.Content != "" {
+		go buildVectorIndex(doc.ID, doc.Content)
+	}
+
+	return nil
+}
+
+// DeleteDocumentAdmin 管理员删除文档（无需归属校验）
+func DeleteDocumentAdmin(id uint) error {
+	doc, err := repository.FindDocumentByID(id)
+	if err != nil {
+		return errors.New("文档不存在")
+	}
+	// 删除 MinIO 文件
+	if doc.FilePath != "" && minioClient != nil {
+		ctx := context.Background()
+		_ = minioClient.DeleteFile(ctx, doc.FilePath)
+	}
+	return repository.DeleteDocument(id)
 }

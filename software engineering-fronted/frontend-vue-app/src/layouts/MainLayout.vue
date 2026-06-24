@@ -20,6 +20,16 @@
           <el-icon><component :is="item.icon" /></el-icon>
           <span>{{ item.title }}</span>
         </router-link>
+
+        <!-- 后台管理入口 -->
+        <router-link
+          v-if="isAdminOrTeacher"
+          to="/admin"
+          class="nav-item admin-link"
+        >
+          <el-icon><Setting /></el-icon>
+          <span>后台管理</span>
+        </router-link>
       </nav>
 
       <div class="sidebar-footer">
@@ -27,7 +37,7 @@
           <div class="user-avatar">{{ userAvatar }}</div>
           <div class="user-info">
             <div class="user-name">{{ userName }}</div>
-            <div class="user-role">软件工程专业</div>
+            <div class="user-role">{{ roleLabel }}</div>
           </div>
         </div>
       </div>
@@ -49,8 +59,9 @@ import {
   HomeFilled,
   Share,
   ChatDotRound,
-  Folder,
-  DataAnalysis
+  DataAnalysis,
+  Setting,
+  Edit
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -61,11 +72,25 @@ const currentPath = computed(() => route.path)
 const userName = computed(() => userStore.userInfo?.nickname || userStore.userInfo?.username || '用户')
 const userAvatar = computed(() => userName.value.charAt(0))
 
+const isAdminOrTeacher = computed(() => {
+  const role = userStore.userInfo?.role
+  return role === 'admin' || role === 'teacher'
+})
+
+const roleLabel = computed(() => {
+  const roles: Record<string, string> = {
+    admin: '管理员',
+    teacher: '教师',
+    student: '学生'
+  }
+  return roles[userStore.userInfo?.role || 'student'] || '软件工程专业'
+})
+
 const navItems = [
   { path: '/home', title: '首页', icon: HomeFilled },
   { path: '/knowledge-graph', title: '知识图谱', icon: Share },
   { path: '/qa', title: '问答中心', icon: ChatDotRound },
-  { path: '/files', title: '资料管理', icon: Folder },
+  { path: '/quiz', title: '答题', icon: Edit },
   { path: '/stats', title: '分析统计', icon: DataAnalysis }
 ]
 
@@ -161,6 +186,12 @@ const handleLogout = () => {
   background: #eff6ff;
   color: #2563eb;
   font-weight: 500;
+}
+
+.nav-item.admin-link {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .sidebar-footer {

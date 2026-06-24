@@ -170,3 +170,13 @@ func ListRelations(page, size int, pointID uint) ([]response.KnowledgeRelationRe
 	}
 	return list, total, nil
 }
+
+// ListKnowledgePointsSimple 简化的知识点列表查询（管理员使用）
+func ListKnowledgePointsSimple(page, size int) ([]response.KnowledgePointResponse, int64, error) {
+	return ListKnowledgePoints(page, size, "", 0)
+}
+
+// ListKnowledgeRelationsSimple 简化的关系列表查询（管理员使用）
+func ListKnowledgeRelationsSimple(page, size int) ([]response.KnowledgeRelationResponse, int64, error) {
+	return ListRelations(page, size, 0)
+}

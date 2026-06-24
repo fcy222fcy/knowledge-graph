@@ -7,6 +7,7 @@ type UserResponse struct {
 	Email     string `json:"email"`      // 邮箱
 	Nickname  string `json:"nickname"`   // 昵称
 	Avatar    string `json:"avatar"`     // 头像URL
+	Role      string `json:"role"`       // 角色: admin, teacher, student
 	Status    int    `json:"status"`     // 状态（1=启用, 0=禁用）
 	CreatedAt string `json:"created_at"` // 创建时间
 	UpdatedAt string `json:"updated_at"` // 更新时间

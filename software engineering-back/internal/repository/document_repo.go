@@ -65,3 +65,23 @@ func GetAllDocumentsContent() ([]entity.Document, error) {
 	err := database.DB.Where("content != '' AND status = ?", "completed").Find(&docs).Error
 	return docs, err
 }
+
+// CountDocuments 统计文档总数
+func CountDocuments() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.Document{}).Count(&count).Error
+	return count, err
+}
+
+// ListDocumentsAdmin 管理员获取文档列表（所有用户的）
+func ListDocumentsAdmin(page, size int, keyword string) ([]entity.Document, int64, error) {
+	var docs []entity.Document
+	var total int64
+	query := database.DB.Model(&entity.Document{})
+	if keyword != "" {
+		query = query.Where("title LIKE ?", "%"+keyword+"%")
+	}
+	query.Count(&total)
+	err := query.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&docs).Error
+	return docs, total, err
+}

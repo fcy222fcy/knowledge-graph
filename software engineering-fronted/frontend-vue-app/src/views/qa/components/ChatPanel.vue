@@ -3,7 +3,7 @@
     <div class="messages-area" ref="messagesRef">
       <EmptyChat v-if="!messages.length && !loading" @ask="(q) => $emit('ask', q)" />
       <template v-else>
-        <MessageBubble v-for="msg in messages" :key="msg.message_id" :message="msg" />
+        <MessageBubble v-for="msg in visibleMessages" :key="msg.message_id" :message="msg" />
         <SourceReference
           v-if="lastAssistantMsg"
           :sources="lastAssistantMsg.sources || []"
@@ -63,6 +63,11 @@ const messagesRef = ref<HTMLDivElement>()
 const lastAssistantMsg = computed(() => {
   const assistantMsgs = props.messages.filter(m => m.role === 'assistant')
   return assistantMsgs[assistantMsgs.length - 1] || null
+})
+
+// 过滤掉内容为空的 assistant 消息
+const visibleMessages = computed(() => {
+  return props.messages.filter(m => m.role !== 'assistant' || m.content)
 })
 
 const handleSend = () => {

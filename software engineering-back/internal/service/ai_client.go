@@ -410,3 +410,17 @@ func InitAIClient() {
 func GetAIClient() *AIClient {
 	return aiClient
 }
+
+// Generate 调用 LLM 生成回答
+func (c *AIClient) Generate(prompt, system string, options interface{}) (string, error) {
+	if !c.IsAvailable() {
+		return "", fmt.Errorf("AI service not available")
+	}
+
+	answerService := GetAnswerService()
+	if answerService == nil || answerService.ollamaClient == nil {
+		return "", fmt.Errorf("answer service not initialized")
+	}
+
+	return answerService.ollamaClient.Generate(prompt, system, nil)
+}

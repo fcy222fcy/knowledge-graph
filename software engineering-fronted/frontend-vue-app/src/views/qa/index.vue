@@ -74,6 +74,7 @@ const handleSelectSession = async (sessionId: number) => {
 
 const handleAskQuestion = async (question: string) => {
   if (isAsking.value) return
+  isAsking.value = true
 
   // 先创建会话（如果需要）
   if (!currentSessionId.value) {
@@ -83,6 +84,7 @@ const handleAskQuestion = async (question: string) => {
       await fetchSessions()
     } catch {
       ElMessage.error('创建会话失败')
+      isAsking.value = false
       return
     }
   }
@@ -105,8 +107,6 @@ const handleAskQuestion = async (question: string) => {
   }
   messages.value.push(aiMsg)
   const aiMsgIndex = messages.value.length - 1
-
-  isAsking.value = true
 
   try {
     const stream = askQuestionStream({

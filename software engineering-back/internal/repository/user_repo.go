@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
+	"software_engineering/pkg/database"
 )
 
 // CreateUser 创建用户
@@ -36,6 +36,11 @@ func UpdateUser(user *entity.User) error {
 	return database.DB.Save(user).Error
 }
 
+// DeleteUser 删除用户（软删除）
+func DeleteUser(id uint) error {
+	return database.DB.Delete(&entity.User{}, id).Error
+}
+
 // ListUsers 分页获取用户列表
 func ListUsers(page, size int) ([]entity.User, int64, error) {
 	var users []entity.User
@@ -43,4 +48,60 @@ func ListUsers(page, size int) ([]entity.User, int64, error) {
 	database.DB.Model(&entity.User{}).Count(&total)
 	err := database.DB.Offset((page - 1) * size).Limit(size).Find(&users).Error
 	return users, total, err
+}
+
+// ListUsersAdmin 管理员获取用户列表（支持搜索和角色筛选）
+func ListUsersAdmin(page, size int, keyword, role string) ([]entity.User, int64, error) {
+	var users []entity.User
+	var total int64
+
+	query := database.DB.Model(&entity.User{})
+
+	if keyword != "" {
+		query = query.Where("username LIKE ? OR nickname LIKE ? OR email LIKE ?",
+			"%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	}
+	if role != "" {
+		query = query.Where("role = ?", role)
+	}
+
+	query.Count(&total)
+	err := query.Offset((page - 1) * size).Limit(size).Order("created_at DESC").Find(&users).Error
+	return users, total, err
+}
+
+// CountUsers 统计用户总数
+func CountUsers() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.User{}).Count(&count).Error
+	return count, err
+}
+
+// CountUsersByRole 按角色统计用户数量
+func CountUsersByRole() (map[string]int64, error) {
+	stats := make(map[string]int64)
+	var count int64
+
+	// 统计管理员数量
+	err := database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleAdmin).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	stats["admin"] = count
+
+	// 统计老师数量
+	err = database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleTeacher).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	stats["teacher"] = count
+
+	// 统计学生数量
+	err = database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleStudent).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+	stats["student"] = count
+
+	return stats, nil
 }

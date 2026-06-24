@@ -7,6 +7,7 @@ export interface UserInfo {
   email: string
   nickname: string
   avatar: string
+  role: 'admin' | 'teacher' | 'student'
   status: number
   created_at: string
   updated_at: string
@@ -14,7 +15,10 @@ export interface UserInfo {
 
 export const useUserStore = defineStore('user', () => {
   const token = ref<string>(localStorage.getItem('token') || '')
-  const userInfo = ref<UserInfo | null>(null)
+  const userInfo = ref<UserInfo | null>(() => {
+    const stored = localStorage.getItem('userInfo')
+    return stored ? JSON.parse(stored) : null
+  })
 
   // 设置 token
   const setToken = (newToken: string) => {
@@ -31,11 +35,13 @@ export const useUserStore = defineStore('user', () => {
   // 设置用户信息
   const setUserInfo = (info: UserInfo) => {
     userInfo.value = info
+    localStorage.setItem('userInfo', JSON.stringify(info))
   }
 
   // 清除用户信息
   const clearUserInfo = () => {
     userInfo.value = null
+    localStorage.removeItem('userInfo')
   }
 
   // 登出

@@ -120,6 +120,13 @@ export async function* askQuestionStream(data: AskParams) {
       if (line.startsWith('data: ')) {
         const dataStr = line.slice(6)
         if (dataStr === '[DONE]') {
+          // 发送完成事件
+          yield {
+            type: 'done',
+            content: '',
+            sources: [],
+            related: []
+          }
           return
         }
         try {

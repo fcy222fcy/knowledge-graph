@@ -34,6 +34,7 @@ func Register(req request.RegisterRequest) error {
 		Password: hash,
 		Email:    req.Email,
 		Nickname: req.Nickname,
+		Role:     entity.RoleStudent, // 默认角色为学生
 		Status:   1,
 	}
 	return repository.CreateUser(user)
@@ -57,7 +58,7 @@ func Login(req request.LoginRequest) (*response.LoginResponse, error) {
 		return nil, errors.New("用户名或密码错误")
 	}
 
-	token, err := jwt.GenerateToken(user.ID, user.Username)
+	token, err := jwt.GenerateToken(user.ID, user.Username, user.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,7 @@ func Login(req request.LoginRequest) (*response.LoginResponse, error) {
 			Email:     user.Email,
 			Nickname:  user.Nickname,
 			Avatar:    user.Avatar,
+			Role:      user.Role,
 			Status:    user.Status,
 			CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z"),
 			UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
@@ -91,5 +93,5 @@ func RefreshToken(oldToken string) (string, error) {
 	if user.Status == 0 {
 		return "", errors.New("用户已被禁用")
 	}
-	return jwt.GenerateToken(claims.UserID, claims.Username)
+	return jwt.GenerateToken(claims.UserID, claims.Username, user.Role)
 }

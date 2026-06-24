@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"software_engineering/internal/api/v1/admin"
 	"software_engineering/internal/api/v1/analytics"
 	"software_engineering/internal/api/v1/ask"
 	"software_engineering/internal/api/v1/auth"
@@ -39,6 +40,9 @@ func SetupRoutes(r *gin.Engine) {
 			ask.RegisterRoutes(protected)
 			analytics.RegisterRoutes(protected)
 		}
+
+		// Admin routes (requires admin or teacher role)
+		admin.RegisterRoutes(api)
 	}
 }
 

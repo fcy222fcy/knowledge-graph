@@ -45,3 +45,10 @@ func ListQuestions(page, size int, keyword string, knowledgePointID uint, diffic
 	err := query.Offset((page - 1) * size).Limit(size).Find(&questions).Error
 	return questions, total, err
 }
+
+// CountQuestions 统计题目总数
+func CountQuestions() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.Question{}).Count(&count).Error
+	return count, err
+}

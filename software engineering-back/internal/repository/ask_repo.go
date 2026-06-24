@@ -69,3 +69,10 @@ func ListRecentMessages(sessionID uint, limit int) ([]entity.AskMessage, error) 
 	}
 	return messages, err
 }
+
+// CountAskSessions 统计问答会话总数
+func CountAskSessions() (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.AskSession{}).Count(&count).Error
+	return count, err
+}

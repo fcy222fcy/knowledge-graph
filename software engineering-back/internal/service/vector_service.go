@@ -159,12 +159,15 @@ func (s *VectorService) Search(query string, topK int) ([]SearchResult, error) {
 		}
 	}
 
-	// 转换结果
-	searchResults := make([]SearchResult, len(results))
-	for i, r := range results {
-		searchResults[i] = SearchResult{
-			Metadata: s.metadata[r.index],
-			Score:    r.score,
+	// 转换结果并过滤低相关性
+	minScore := 0.5 // 最低相似度阈值
+	searchResults := make([]SearchResult, 0, len(results))
+	for _, r := range results {
+		if r.score >= minScore {
+			searchResults = append(searchResults, SearchResult{
+				Metadata: s.metadata[r.index],
+				Score:    r.score,
+			})
 		}
 	}
 

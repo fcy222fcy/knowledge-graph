@@ -71,6 +71,8 @@ func ListSessionMessages(sessionID uint, page, size int) ([]response.AskMessageR
 // Ask 智能问答核心方法，采用多级降级策略：
 // 1. 知识图谱问答（Graph RAG）→ 2. 普通 RAG 问答 → 3. 语义搜索 → 4. 本地关键词检索 → 5. 知识点匹配
 func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
+	log.Printf("DEBUG: Received question: %q", req.Question)
+
 	// 自动创建或复用会话
 	sessionID := req.ConversationID
 	if sessionID == 0 {
@@ -82,11 +84,18 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 		sessionID = session.ID
 	}
 
-	// 获取历史消息用于上下文
+	// 获取历史消息用于上下文（只取最近2条用户问题，不包含AI回答避免干扰）
 	historyMsgs, _ := repository.ListRecentMessages(sessionID, 10)
-	history := make([]ChatMessage, len(historyMsgs))
-	for i, m := range historyMsgs {
-		history[i] = ChatMessage{Role: m.Role, Content: m.Content}
+	history := make([]ChatMessage, 0)
+	for _, m := range historyMsgs {
+		// 只保留用户消息作为上下文，不包含AI回答
+		if m.Role == "user" {
+			history = append(history, ChatMessage{Role: m.Role, Content: m.Content})
+		}
+	}
+	// 只保留最近2条历史
+	if len(history) > 2 {
+		history = history[len(history)-2:]
 	}
 
 	// 保存当前用户消息
@@ -97,97 +106,213 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	}
 	repository.CreateAskMessage(userMsg)
 
-	// 尝试调用 AI 服务（优先使用知识图谱问答）
 	var answer string
 	var confidence float64
 	var sources []response.AskSource
 	var related []response.KPRef
 
-	if aiClient.IsAvailable() {
-		// 优先使用基于知识图谱的问答
-		graphResp, err := aiClient.SearchAndAnswerWithGraph(req.Question, history, 3)
-		if err == nil && graphResp.Answer != "" {
-			answer = graphResp.Answer
-			confidence = graphResp.Confidence
-			for _, s := range graphResp.Sources {
-				sources = append(sources, response.AskSource{
-					DocumentID:    uint(s.DocumentID),
-					DocumentTitle: s.DocumentTitle,
-					Content:       s.Content,
-				})
-			}
-			// 添加相关知识点
-			for _, kp := range graphResp.RelatedKnowledgePoints {
-				related = append(related, response.KPRef{
-					ID:          kp.ID,
-					Name:        kp.Name,
-					Description: kp.Description,
-				})
-			}
-			log.Printf("info: Graph-based QA succeeded, graph nodes: %d, relations: %d",
-				graphResp.GraphNodesCount, graphResp.GraphRelationsCount)
-		} else {
-			// 降级到普通RAG问答
-			log.Printf("warning: Graph-based QA failed, falling back to RAG: %v", err)
-			answerResp, err := aiClient.SearchAndAnswerWithHistory(req.Question, history, 3)
-			if err == nil && answerResp.Answer != "" {
-				answer = answerResp.Answer
-				confidence = answerResp.Confidence
-				for _, s := range answerResp.Sources {
-					sources = append(sources, response.AskSource{
-						DocumentID:    uint(s.DocumentID),
-						DocumentTitle: s.DocumentTitle,
-						Content:       s.Content,
-					})
+	// 优先使用向量检索（RAG 路径）
+	vecSvc := GetVectorService()
+	if answer == "" && vecSvc != nil && vecSvc.GetSize() > 0 {
+		log.Printf("DEBUG: Using vector search for question: %s", req.Question)
+		searchResults, err := vecSvc.Search(req.Question, 5)
+		if err == nil && len(searchResults) > 0 {
+			// 过滤低相关性结果（相似度 < 0.5）
+			var validResults []SearchResult
+			for _, r := range searchResults {
+				if r.Score >= 0.5 {
+					validResults = append(validResults, r)
 				}
-			} else {
-				// 再降级到简单搜索
-				log.Printf("warning: AI search_and_answer failed, degrading to simple search: %v", err)
-				searchResp, err := aiClient.Search(req.Question, 3)
-				if err == nil && len(searchResp.Results) > 0 {
-					answer = fmt.Sprintf("关于「%s」的回答：\n\n", req.Question)
-					for i, r := range searchResp.Results {
-						answer += fmt.Sprintf("%d. %s\n\n", i+1, r.ChunkText[:min(len(r.ChunkText), 150)])
+			}
+
+			if len(validResults) > 0 {
+				// 取 top-3 相关片段
+				contextParts := make([]string, 0, 3)
+				for i, r := range validResults {
+					if i >= 3 {
+						break
+					}
+					contextParts = append(contextParts, r.Metadata.ChunkText)
+				}
+				contextText := strings.Join(contextParts, "\n\n---\n\n")
+
+				// 获取文档标题
+				docTitle := "知识库"
+				if validResults[0].Metadata.DocumentID > 0 {
+					doc, err := repository.FindDocumentByID(validResults[0].Metadata.DocumentID)
+					if err == nil {
+						docTitle = doc.Title
 						sources = append(sources, response.AskSource{
-							DocumentID:    uint(r.DocumentID),
-							DocumentTitle: fmt.Sprintf("文档 #%d", r.DocumentID),
-							Content:       r.ChunkText[:min(len(r.ChunkText), 200)],
+							DocumentID:    doc.ID,
+							DocumentTitle: doc.Title,
+							Content:       contextText,
 						})
 					}
-					answer += "以上内容来自知识库语义检索，仅供参考。"
+				}
+
+				if aiClient.IsAvailable() {
+					systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
+要求：
+1. 回答要准确、完整、有条理
+2. 如果包含代码示例，请保留代码格式
+3. 如果知识库内容不足以回答问题，请说明
+4. 引用相关的文档来源`
+
+					userPrompt := fmt.Sprintf(`用户问题：%s
+
+参考知识库内容（来自文档《%s》）：
+%s
+
+请基于以上知识库内容，用清晰的格式回答用户的问题：`, req.Question, docTitle, contextText)
+
+					llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+					if err == nil && llmResponse != "" {
+						answer = llmResponse
+						confidence = 0.9
+					}
+				}
+
+				if answer == "" {
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
 					confidence = 0.75
 				}
 			}
 		}
-	} else {
-		log.Println("info: AI service not available, using local keyword search")
 	}
 
 	// 降级到本地关键词检索
 	if answer == "" {
+		log.Printf("DEBUG: Falling back to keyword search for question: %s", req.Question)
 		docs, _ := repository.GetAllDocumentsContent()
+		log.Printf("DEBUG: Found %d documents for keyword search", len(docs))
 		questionLower := strings.ToLower(req.Question)
+
+		// 提取关键词
+		keywords := extractKeywords(questionLower)
+		// 同时用原始问题作为搜索词（去掉问号等）
+		cleanQuestion := strings.NewReplacer("？", "", "!", "", "？", "", "。", "", "，", "", ",", "", ".", "").Replace(questionLower)
+
+		type docMatch struct {
+			doc     entity.Document
+			score   int
+			snippet string
+		}
+		matches := make([]docMatch, 0)
+
 		for _, doc := range docs {
 			contentLower := strings.ToLower(doc.Content)
-			if strings.Contains(contentLower, questionLower) {
-				idx := strings.Index(contentLower, questionLower)
-				start := max(0, idx-100)
-				end := min(len(doc.Content), idx+200)
-				snippet := doc.Content[start:end]
-				if start > 0 {
-					snippet = "..." + snippet
+
+			score := 0
+
+			// 1. 完整问题匹配（最高分）
+			if strings.Contains(contentLower, cleanQuestion) {
+				score += 10
+			}
+
+			// 2. 关键词逐个匹配
+			for _, kw := range keywords {
+				if len(kw) >= 2 && strings.Contains(contentLower, kw) {
+					score++
 				}
-				if end < len(doc.Content) {
-					snippet = snippet + "..."
+			}
+
+			// 3. 如果关键词太长没有匹配，尝试拆分成2字子串匹配
+			if score == 0 {
+				for _, kw := range keywords {
+					if len(kw) > 2 {
+						// 将关键词拆成所有可能的2字及以上的子串
+						for segLen := 2; segLen <= len(kw); segLen++ {
+							for startIdx := 0; startIdx <= len(kw)-segLen; startIdx++ {
+								sub := kw[startIdx : startIdx+segLen]
+								if strings.Contains(contentLower, sub) {
+									score++
+									break
+								}
+							}
+							if score > 0 {
+								break
+							}
+						}
+					}
 				}
-				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, doc.Title, snippet)
-				sources = append(sources, response.AskSource{
-					DocumentID:    doc.ID,
-					DocumentTitle: doc.Title,
-					Content:       snippet[:min(len(snippet), 200)],
-				})
-				confidence = 0.75
-				break
+			}
+
+			if score > 0 {
+				// 提取匹配位置的上下文，按 markdown 标题智能截取整个 section
+				idx := -1
+				for _, kw := range keywords {
+					if i := strings.Index(contentLower, kw); i >= 0 {
+						idx = i
+						break
+					}
+				}
+				if idx < 0 {
+					idx = 0
+				}
+				snippet := extractSectionByHeader(doc.Content, idx)
+				matches = append(matches, docMatch{doc: doc, score: score, snippet: snippet})
+			}
+		}
+
+		log.Printf("DEBUG: Found %d document matches for question: %s", len(matches), req.Question)
+
+		// 按匹配分数排序，融合多个片段
+		if len(matches) > 0 {
+			// 排序取 top-3
+			for i := 0; i < len(matches)-1; i++ {
+				for j := i + 1; j < len(matches); j++ {
+					if matches[j].score > matches[i].score {
+						matches[i], matches[j] = matches[j], matches[i]
+					}
+				}
+			}
+			topN := min(3, len(matches))
+
+			// 融合多个片段
+			contextParts := make([]string, 0, topN)
+			docTitle := matches[0].doc.Title
+			docID := matches[0].doc.ID
+			for i := 0; i < topN; i++ {
+				contextParts = append(contextParts, matches[i].snippet)
+			}
+			contextText := strings.Join(contextParts, "\n\n---\n\n")
+
+			sources = append(sources, response.AskSource{
+				DocumentID:    docID,
+				DocumentTitle: docTitle,
+				Content:       contextText,
+			})
+
+			// 尝试调用 LLM 生成回答
+			if aiClient.IsAvailable() {
+				systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
+要求：
+1. 回答要准确、完整、有条理
+2. 如果包含代码示例，请保留代码格式
+3. 如果知识库内容不足以回答问题，请说明
+4. 引用相关的文档来源`
+
+				userPrompt := fmt.Sprintf(`用户问题：%s
+
+参考知识库内容（来自文档《%s》）：
+%s
+
+请基于以上知识库内容，用清晰的格式回答用户的问题：`, req.Question, docTitle, contextText)
+
+				llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+				if err == nil && llmResponse != "" {
+					answer = llmResponse
+					confidence = 0.85
+				} else {
+					// LLM 失败，降级为直接返回文档片段
+					log.Printf("warning: LLM generation failed for local search: %v", err)
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
+					confidence = 0.7
+				}
+			} else {
+				// AI 服务不可用，直接返回文档片段
+				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
+				confidence = 0.7
 			}
 		}
 	}
@@ -207,10 +332,30 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 			}
 			answer += "以上内容来自知识点库，仅供参考。"
 			confidence = 0.7
-		} else {
-			answer = fmt.Sprintf("抱歉，暂时无法找到关于「%s」的准确回答。您可以尝试：\n1. 上传更多相关文档\n2. 构建知识图谱\n3. 联系管理员获取帮助", req.Question)
-			confidence = 0.3
 		}
+	}
+
+	// 最终降级：如果知识库没有找到，让 LLM 自由回答
+	if answer == "" && aiClient.IsAvailable() {
+		log.Printf("info: No knowledge base match for question: %s, using LLM free answer", req.Question)
+		systemPrompt := `你是一个软件工程知识问答助手。请根据你的知识回答用户的问题。
+注意：这个回答不是基于知识库内容的，请在回答末尾说明这一点。`
+
+		userPrompt := fmt.Sprintf(`用户问题：%s
+
+请回答这个问题：`, req.Question)
+
+		llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+		if err == nil && llmResponse != "" {
+			answer = llmResponse + "\n\n> ⚠️ 注意：以上回答没有从知识库中找到相关内容，是基于 AI 模型的通用知识生成的。"
+			confidence = 0.5
+		}
+	}
+
+	// 最终兜底
+	if answer == "" {
+		answer = fmt.Sprintf("抱歉，暂时无法回答关于「%s」的问题。您可以尝试：\n1. 上传更多相关文档\n2. 构建知识图谱\n3. 联系管理员获取帮助", req.Question)
+		confidence = 0.3
 	}
 
 	// 保存助手消息
@@ -269,6 +414,145 @@ func min(a, b int) int {
 	return b
 }
 
+// extractSectionByHeader 按 markdown 标题层级智能截取内容片段。
+// 从匹配位置向前找到当前所属的标题，向后截取到同级或更高级标题出现之前。
+func extractSectionByHeader(content string, matchIdx int) string {
+	if matchIdx < 0 || matchIdx >= len(content) {
+		return content
+	}
+
+	lines := strings.Split(content, "\n")
+
+	// 找到 matchIdx 所在的行号
+	charCount := 0
+	matchLine := 0
+	for i, line := range lines {
+		charCount += len(line) + 1 // +1 for \n
+		if charCount > matchIdx {
+			matchLine = i
+			break
+		}
+	}
+
+	// 从匹配位置向上找当前所属标题
+	type headerInfo struct {
+		level int
+		index int
+	}
+	currentHeader := headerInfo{-1, 0}
+	for i := matchLine; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if strings.HasPrefix(line, "#") {
+			level := 0
+			for _, ch := range line {
+				if ch == '#' {
+					level++
+				} else {
+					break
+				}
+			}
+			if level > 0 {
+				currentHeader = headerInfo{level, i}
+				break
+			}
+		}
+	}
+
+	// 从当前标题的下一行开始，向后找到同级或更高级标题
+	endLine := len(lines)
+	if currentHeader.level > 0 {
+		for i := currentHeader.index + 1; i < len(lines); i++ {
+			line := strings.TrimSpace(lines[i])
+			if strings.HasPrefix(line, "#") {
+				level := 0
+				for _, ch := range line {
+					if ch == '#' {
+						level++
+					} else {
+						break
+					}
+				}
+				// 遇到同级或更高级标题，截断
+				if level > 0 && level <= currentHeader.level {
+					endLine = i
+					break
+				}
+			}
+		}
+	} else {
+		// 没找到标题，回退到原始逻辑：前后各取一定字符
+		startLine := max(0, matchLine-3)
+		endLine = min(len(lines), matchLine+10)
+		return strings.Join(lines[startLine:endLine], "\n")
+	}
+
+	section := strings.Join(lines[currentHeader.index:endLine], "\n")
+	section = strings.TrimSpace(section)
+
+	// 安全上限：防止超大 section，返回精准片段
+	if len(section) > 1500 {
+		section = section[:1500]
+	}
+	return section
+}
+
+// extractKeywords 从问题中提取关键词
+func extractKeywords(question string) []string {
+	// 常见停用词
+	stopWords := map[string]bool{
+		"的": true, "了": true, "在": true, "是": true, "我": true,
+		"有": true, "和": true, "就": true, "不": true, "人": true,
+		"都": true, "一": true, "一个": true, "上": true, "也": true,
+		"很": true, "到": true, "说": true, "要": true, "去": true,
+		"你": true, "会": true, "着": true, "没有": true, "看": true,
+		"好": true, "自己": true, "这": true, "他": true, "她": true,
+		"它": true, "们": true, "那": true, "怎么": true, "什么": true,
+		"如何": true, "怎样": true, "可以": true, "能": true, "请": true,
+		"帮": true, "帮我": true, "告诉": true, "一下": true, "下": true,
+		"吗": true, "呢": true, "吧": true, "啊": true,
+	}
+
+	// 移除常见问句模式
+	question = strings.ReplaceAll(question, "怎么写", "")
+	question = strings.ReplaceAll(question, "如何写", "")
+	question = strings.ReplaceAll(question, "怎么用", "")
+	question = strings.ReplaceAll(question, "如何使用", "")
+	question = strings.ReplaceAll(question, "是什么", "")
+	question = strings.ReplaceAll(question, "有哪些", "")
+	question = strings.ReplaceAll(question, "怎么", "")
+	question = strings.ReplaceAll(question, "如何", "")
+
+	// 按空格和标点分割
+	words := strings.FieldsFunc(question, func(r rune) bool {
+		return r == ' ' || r == '，' || r == '。' || r == '？' || r == '！' ||
+			r == ',' || r == '.' || r == '?' || r == '!' || r == '、'
+	})
+
+	keywords := make([]string, 0)
+	seen := make(map[string]bool)
+
+	for _, word := range words {
+		word = strings.TrimSpace(word)
+		if len(word) < 2 {
+			continue
+		}
+		if stopWords[word] {
+			continue
+		}
+		if !seen[word] {
+			seen[word] = true
+			keywords = append(keywords, word)
+		}
+	}
+
+	// 如果提取不到关键词，返回原始问题的子串
+	if len(keywords) == 0 && len(question) >= 2 {
+		keywords = append(keywords, question)
+	}
+
+	return keywords
+}
+
 // StreamEvent 流式事件
 type StreamEvent struct {
 	Type       string             `json:"type"`       // "chunk", "done", "error"
@@ -291,11 +575,18 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 		sessionID = session.ID
 	}
 
-	// 获取历史消息用于上下文
+	// 获取历史消息用于上下文（只取最近2条用户问题，不包含AI回答避免干扰）
 	historyMsgs, _ := repository.ListRecentMessages(sessionID, 10)
-	history := make([]ChatMessage, len(historyMsgs))
-	for i, m := range historyMsgs {
-		history[i] = ChatMessage{Role: m.Role, Content: m.Content}
+	history := make([]ChatMessage, 0)
+	for _, m := range historyMsgs {
+		// 只保留用户消息作为上下文，不包含AI回答
+		if m.Role == "user" {
+			history = append(history, ChatMessage{Role: m.Role, Content: m.Content})
+		}
+	}
+	// 只保留最近2条历史
+	if len(history) > 2 {
+		history = history[len(history)-2:]
 	}
 
 	// 保存当前用户消息

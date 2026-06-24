@@ -114,3 +114,8 @@ func ListQuestions(page, size int, keyword string, knowledgePointID uint, diffic
 	}
 	return list, total, nil
 }
+
+// ListQuestionsSimple 简化的题目列表查询（管理员使用）
+func ListQuestionsSimple(page, size int) ([]response.QuestionResponse, int64, error) {
+	return ListQuestions(page, size, "", 0, "")
+}

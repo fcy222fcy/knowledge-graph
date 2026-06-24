@@ -25,6 +25,9 @@
       <el-button @click="$emit('refresh')">
         <el-icon><Refresh /></el-icon> 刷新
       </el-button>
+      <el-button type="primary" @click="$emit('upload')">
+        <el-icon><Upload /></el-icon> 提交资料
+      </el-button>
       <el-button type="primary" @click="$emit('build')">
         <el-icon><Setting /></el-icon> 构建图谱
       </el-button>
@@ -33,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { Refresh, Setting } from '@element-plus/icons-vue'
+import { Refresh, Setting, Upload } from '@element-plus/icons-vue'
 
 defineProps<{
   keyword: string
@@ -46,6 +49,7 @@ defineEmits<{
   search: []
   build: []
   refresh: []
+  upload: []
 }>()
 </script>
 
