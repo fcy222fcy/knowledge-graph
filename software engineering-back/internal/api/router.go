@@ -13,6 +13,7 @@ import (
 	"software_engineering/internal/api/v1/knowledge"
 	"software_engineering/internal/api/v1/question"
 	"software_engineering/internal/api/v1/quiz"
+	teacherAuth "software_engineering/internal/api/v1/teacher_auth"
 	"software_engineering/internal/api/v1/user"
 	"software_engineering/internal/middleware"
 )
@@ -27,6 +28,9 @@ func SetupRoutes(r *gin.Engine) {
 		// Public routes
 		auth.RegisterRoutes(api)
 
+		// 教师认证路由（公开）
+		teacherAuth.RegisterRoutes(api)
+
 		// Protected routes
 		protected := api.Group("")
 		protected.Use(middleware.RequireAuth())
@@ -39,6 +43,13 @@ func SetupRoutes(r *gin.Engine) {
 			quiz.RegisterRoutes(protected)
 			ask.RegisterRoutes(protected)
 			analytics.RegisterRoutes(protected)
+		}
+
+		// 教师管理路由（需要教师权限）
+		teacher := api.Group("/teacher")
+		teacher.Use(middleware.RequireTeacherAuth())
+		{
+			// 教师管理的接口
 		}
 
 		// Admin routes (requires admin or teacher role)

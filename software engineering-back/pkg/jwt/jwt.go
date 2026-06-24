@@ -24,7 +24,7 @@ func init() {
 type Claims struct {
 	UserID   uint   `json:"user_id"`   // 用户ID
 	Username string `json:"username"`  // 用户名
-	Role     string `json:"role"`      // 角色: admin, teacher, student
+	Role     string `json:"role"`      // 角色: teacher, student
 	jwt.RegisteredClaims
 }
 

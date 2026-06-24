@@ -50,8 +50,8 @@ func ListUsers(page, size int) ([]entity.User, int64, error) {
 	return users, total, err
 }
 
-// ListUsersAdmin 管理员获取用户列表（支持搜索和角色筛选）
-func ListUsersAdmin(page, size int, keyword, role string) ([]entity.User, int64, error) {
+// ListUsersAdmin 管理员获取用户列表（支持搜索）
+func ListUsersAdmin(page, size int, keyword string) ([]entity.User, int64, error) {
 	var users []entity.User
 	var total int64
 
@@ -60,9 +60,6 @@ func ListUsersAdmin(page, size int, keyword, role string) ([]entity.User, int64,
 	if keyword != "" {
 		query = query.Where("username LIKE ? OR nickname LIKE ? OR email LIKE ?",
 			"%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
-	}
-	if role != "" {
-		query = query.Where("role = ?", role)
 	}
 
 	query.Count(&total)
@@ -77,31 +74,9 @@ func CountUsers() (int64, error) {
 	return count, err
 }
 
-// CountUsersByRole 按角色统计用户数量
-func CountUsersByRole() (map[string]int64, error) {
-	stats := make(map[string]int64)
+// CountStudents 统计学生总数（即用户总数）
+func CountStudents() (int64, error) {
 	var count int64
-
-	// 统计管理员数量
-	err := database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleAdmin).Count(&count).Error
-	if err != nil {
-		return nil, err
-	}
-	stats["admin"] = count
-
-	// 统计老师数量
-	err = database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleTeacher).Count(&count).Error
-	if err != nil {
-		return nil, err
-	}
-	stats["teacher"] = count
-
-	// 统计学生数量
-	err = database.DB.Model(&entity.User{}).Where("role = ?", entity.RoleStudent).Count(&count).Error
-	if err != nil {
-		return nil, err
-	}
-	stats["student"] = count
-
-	return stats, nil
+	err := database.DB.Model(&entity.User{}).Count(&count).Error
+	return count, err
 }

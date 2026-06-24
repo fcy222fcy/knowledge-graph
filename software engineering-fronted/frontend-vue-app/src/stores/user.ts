@@ -7,7 +7,6 @@ export interface UserInfo {
   email: string
   nickname: string
   avatar: string
-  role: 'admin' | 'teacher' | 'student'
   status: number
   created_at: string
   updated_at: string

@@ -20,16 +20,6 @@
           <el-icon><component :is="item.icon" /></el-icon>
           <span>{{ item.title }}</span>
         </router-link>
-
-        <!-- 后台管理入口 -->
-        <router-link
-          v-if="isAdminOrTeacher"
-          to="/admin"
-          class="nav-item admin-link"
-        >
-          <el-icon><Setting /></el-icon>
-          <span>后台管理</span>
-        </router-link>
       </nav>
 
       <div class="sidebar-footer">
@@ -60,7 +50,6 @@ import {
   Share,
   ChatDotRound,
   DataAnalysis,
-  Setting,
   Edit
 } from '@element-plus/icons-vue'
 
@@ -72,19 +61,7 @@ const currentPath = computed(() => route.path)
 const userName = computed(() => userStore.userInfo?.nickname || userStore.userInfo?.username || '用户')
 const userAvatar = computed(() => userName.value.charAt(0))
 
-const isAdminOrTeacher = computed(() => {
-  const role = userStore.userInfo?.role
-  return role === 'admin' || role === 'teacher'
-})
-
-const roleLabel = computed(() => {
-  const roles: Record<string, string> = {
-    admin: '管理员',
-    teacher: '教师',
-    student: '学生'
-  }
-  return roles[userStore.userInfo?.role || 'student'] || '软件工程专业'
-})
+const roleLabel = computed(() => '软件工程专业')
 
 const navItems = [
   { path: '/home', title: '首页', icon: HomeFilled },
@@ -186,12 +163,6 @@ const handleLogout = () => {
   background: #eff6ff;
   color: #2563eb;
   font-weight: 500;
-}
-
-.nav-item.admin-link {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
 }
 
 .sidebar-footer {

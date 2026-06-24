@@ -77,13 +77,7 @@ const handleLogin = async () => {
         userStore.setToken(result.data.token)
         userStore.setUserInfo(result.data.user)
 
-        // 根据角色跳转到不同页面
-        const role = result.data.user.role
-        if (role === 'admin' || role === 'teacher') {
-          router.push('/admin')
-        } else {
-          router.push('/home')
-        }
+        router.push('/home')
 
         ElMessage.success('登录成功')
       } catch (error) {

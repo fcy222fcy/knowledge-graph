@@ -9,6 +9,7 @@ import (
 func AutoMigrate() {
 	err := DB.AutoMigrate(
 		&entity.User{},
+		&entity.Teacher{},
 		&entity.Document{},
 		&entity.KnowledgePoint{},
 		&entity.KnowledgeRelation{},

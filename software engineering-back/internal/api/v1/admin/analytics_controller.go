@@ -64,12 +64,14 @@ func GetAnalyticsOverview(c *gin.Context) {
 
 // GetUserStats 获取用户统计信息
 func GetUserStats(c *gin.Context) {
-	// 按角色统计用户数量
-	stats, err := repository.CountUsersByRole()
+	// 统计用户总数
+	count, err := repository.CountStudents()
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "获取用户统计失败")
 		return
 	}
 
-	response.Success(c, stats)
+	response.Success(c, gin.H{
+		"student": count,
+	})
 }

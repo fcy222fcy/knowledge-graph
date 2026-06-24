@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: MainLayout,
-    meta: { requiresAuth: true, role: 'student' },
+    meta: { requiresAuth: true },
     children: [
       {
         path: 'home',
@@ -64,50 +64,6 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
-  // 后台路由（管理员/老师端）
-  {
-    path: '/admin',
-    component: () => import('@/layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true },
-    children: [
-      {
-        path: '',
-        name: 'AdminDashboard',
-        component: () => import('@/views/admin/dashboard/index.vue'),
-        meta: { title: '仪表盘' }
-      },
-      {
-        path: 'users',
-        name: 'AdminUsers',
-        component: () => import('@/views/admin/users/index.vue'),
-        meta: { title: '用户管理', adminOnly: true }
-      },
-      {
-        path: 'questions',
-        name: 'AdminQuestions',
-        component: () => import('@/views/admin/questions/index.vue'),
-        meta: { title: '题目管理' }
-      },
-      {
-        path: 'documents',
-        name: 'AdminDocuments',
-        component: () => import('@/views/admin/documents/index.vue'),
-        meta: { title: '资料管理' }
-      },
-      {
-        path: 'knowledge',
-        name: 'AdminKnowledge',
-        component: () => import('@/views/admin/knowledge/index.vue'),
-        meta: { title: '知识点管理' }
-      },
-      {
-        path: 'system',
-        name: 'AdminSystem',
-        component: () => import('@/views/admin/system/index.vue'),
-        meta: { title: '系统设置', adminOnly: true }
-      }
-    ]
-  }
 ]
 
 const router = createRouter({
@@ -131,28 +87,6 @@ router.beforeEach((to, _from, next) => {
   // 已登录用户不允许访问登录/注册页，重定向到首页
   if ((to.path === '/login' || to.path === '/register') && userStore.token) {
     next('/home')
-    return
-  }
-
-  const role = userStore.userInfo?.role
-
-  // 需要管理员权限的路由（/admin/*）
-  if (to.meta.requiresAdmin) {
-    if (role !== 'admin' && role !== 'teacher') {
-      next('/home')
-      return
-    }
-  }
-
-  // 学生不能访问 /admin/* 路由
-  if (to.path.startsWith('/admin') && role === 'student') {
-    next('/home')
-    return
-  }
-
-  // 管理员/教师默认跳转到后台
-  if (to.path === '/' && (role === 'admin' || role === 'teacher')) {
-    next('/admin')
     return
   }
 

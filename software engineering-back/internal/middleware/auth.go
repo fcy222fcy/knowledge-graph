@@ -39,6 +39,26 @@ func RequireAuth() gin.HandlerFunc {
 	}
 }
 
+// RequireTeacherAuth 教师权限验证
+func RequireTeacherAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 先执行基础认证
+		RequireAuth()(c)
+		if c.IsAborted() {
+			return
+		}
+
+		role, exists := c.Get("role")
+		if !exists || role.(string) != "teacher" {
+			c.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "需要教师权限"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
 // RequireRole 角色权限中间件，检查用户是否具有指定角色
 func RequireRole(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {

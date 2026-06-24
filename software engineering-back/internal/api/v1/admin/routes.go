@@ -17,7 +17,6 @@ func RegisterRoutes(api *gin.RouterGroup) {
 		admin.PUT("/users/:id", UpdateUser)
 		admin.DELETE("/users/:id", DeleteUser)
 		admin.PUT("/users/:id/status", UpdateUserStatus)
-		admin.PUT("/users/:id/role", UpdateUserRole)
 
 		// 题目管理
 		admin.GET("/questions", ListQuestions)
