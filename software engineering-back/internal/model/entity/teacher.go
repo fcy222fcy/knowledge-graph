@@ -1,6 +1,6 @@
 package entity
 
-// Teacher 教师实体
+// Teacher 教师实体（相当于管理员）
 type Teacher struct {
 	BaseModel
 	Username string `gorm:"size:50;uniqueIndex;not null;comment:用户名" json:"username"`

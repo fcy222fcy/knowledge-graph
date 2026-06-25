@@ -67,7 +67,7 @@ func ListUsersAdmin(page, size int, keyword string) ([]entity.User, int64, error
 	return users, total, err
 }
 
-// CountUsers 统计用户总数
+// CountUsers 统计用户总数（即学生总数）
 func CountUsers() (int64, error) {
 	var count int64
 	err := database.DB.Model(&entity.User{}).Count(&count).Error

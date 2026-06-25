@@ -7,7 +7,7 @@ export async function login(data: LoginParams) {
   if (USE_MOCK) {
     return mockAuth.login(data) as Promise<any>
   }
-  return request.post<LoginResponse>('/student/auth/login', data)
+  return request.post<LoginResponse>('/auth/login', data)
 }
 
 // 用户注册
@@ -15,12 +15,12 @@ export async function register(data: RegisterParams) {
   if (USE_MOCK) {
     return mockAuth.register(data) as Promise<any>
   }
-  return request.post('/student/auth/register', data)
+  return request.post('/auth/register', data)
 }
 
 // 刷新 Token
 export function refreshToken(token: string) {
-  return request.post<{ token: string }>('/student/auth/refresh', { token })
+  return request.post<{ token: string }>('/auth/refresh', { token })
 }
 
 // 获取当前用户信息

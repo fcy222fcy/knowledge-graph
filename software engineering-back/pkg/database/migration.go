@@ -8,8 +8,8 @@ import (
 // AutoMigrate 自动执行数据库迁移，创建或更新所有实体表
 func AutoMigrate() {
 	err := DB.AutoMigrate(
-		&entity.User{},
-		&entity.Teacher{},
+		&entity.User{},     // 学生表
+		&entity.Teacher{},  // 教师表（相当于管理员）
 		&entity.Document{},
 		&entity.KnowledgePoint{},
 		&entity.KnowledgeRelation{},

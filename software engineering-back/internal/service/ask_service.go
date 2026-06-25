@@ -201,15 +201,23 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 
 		for _, doc := range docs {
 			contentLower := strings.ToLower(doc.Content)
+			titleLower := strings.ToLower(doc.Title)
 
 			score := 0
 
-			// 1. 完整问题匹配（最高分）
+			// 1. 标题匹配（最高优先级）
+			for _, kw := range keywords {
+				if len(kw) >= 2 && strings.Contains(titleLower, kw) {
+					score += 5
+				}
+			}
+
+			// 2. 完整问题匹配（高分）
 			if strings.Contains(contentLower, cleanQuestion) {
 				score += 10
 			}
 
-			// 2. 关键词逐个匹配
+			// 3. 关键词逐个匹配
 			for _, kw := range keywords {
 				if len(kw) >= 2 && strings.Contains(contentLower, kw) {
 					score++
@@ -255,6 +263,16 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 		}
 
 		log.Printf("DEBUG: Found %d document matches for question: %s", len(matches), req.Question)
+
+		// 过滤低分匹配（至少需要匹配1个关键词）
+		var validMatches []docMatch
+		for _, m := range matches {
+			log.Printf("DEBUG: Document %d (%s) score: %d", m.doc.ID, m.doc.Title, m.score)
+			if m.score >= 1 {
+				validMatches = append(validMatches, m)
+			}
+		}
+		matches = validMatches
 
 		// 按匹配分数排序，融合多个片段
 		if len(matches) > 0 {

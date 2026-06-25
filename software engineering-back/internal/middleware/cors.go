@@ -13,7 +13,7 @@ import (
 func CORSMiddleware() gin.HandlerFunc {
 	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if allowedOrigins == "" {
-		allowedOrigins = "http://localhost:5173,http://localhost:5174"
+		allowedOrigins = "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,http://localhost:5177,http://localhost:5178"
 	}
 
 	// 拆分逗号分隔的多个 origin

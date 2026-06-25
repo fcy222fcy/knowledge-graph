@@ -25,14 +25,27 @@ func seedUsers() {
 	users := []entity.User{
 		{Username: "student001", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "student001@example.com", Nickname: "张三", Status: 1},
 		{Username: "student002", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "student002@example.com", Nickname: "李四", Status: 1},
-		{Username: "teacher001", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "teacher001@example.com", Nickname: "王老师", Status: 1},
 	}
 
 	if err := database.DB.Create(&users).Error; err != nil {
 		log.Printf("seed users failed: %v", err)
 		return
 	}
-	log.Println("seeded 3 demo users")
+
+	// 插入教师种子数据
+	var teacherCount int64
+	database.DB.Model(&entity.Teacher{}).Count(&teacherCount)
+	if teacherCount == 0 {
+		teachers := []entity.Teacher{
+			{Username: "teacher001", Password: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy", Email: "teacher001@example.com", Nickname: "王老师", Status: 1},
+		}
+		if err := database.DB.Create(&teachers).Error; err != nil {
+			log.Printf("seed teachers failed: %v", err)
+			return
+		}
+	}
+
+	log.Println("seeded 2 demo students and 1 demo teacher")
 }
 
 func seedKnowledgePoints() {
