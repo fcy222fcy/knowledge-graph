@@ -143,7 +143,7 @@ async function fetchDocuments() {
       size: pageSize.value,
       status: statusFilter.value || undefined,
     }) as Record<string, unknown>
-    documents.value = (data.records as Record<string, unknown>[]) || []
+    documents.value = (data.list as Record<string, unknown>[]) || []
     total.value = (data.total as number) || 0
   } catch (error) {
     console.error('获取文档列表失败:', error)

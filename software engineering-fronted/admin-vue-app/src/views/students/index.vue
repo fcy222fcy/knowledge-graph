@@ -94,7 +94,7 @@ async function fetchStudents() {
       size: pageSize.value,
       keyword: keyword.value || undefined,
     }) as Record<string, unknown>
-    students.value = (data.records as Record<string, unknown>[]) || []
+    students.value = (data.list as Record<string, unknown>[]) || []
     total.value = (data.total as number) || 0
   } catch (error) {
     console.error('获取学生列表失败:', error)

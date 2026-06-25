@@ -124,7 +124,7 @@ async function fetchKnowledgePoints() {
       size: pageSize.value,
       keyword: keyword.value || undefined,
     }) as Record<string, unknown>
-    knowledgePoints.value = (data.records as Record<string, unknown>[]) || []
+    knowledgePoints.value = (data.list as Record<string, unknown>[]) || []
     total.value = (data.total as number) || 0
   } catch (error) {
     console.error('获取知识点列表失败:', error)

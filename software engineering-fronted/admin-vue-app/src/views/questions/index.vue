@@ -18,8 +18,6 @@
       <el-select v-model="typeFilter" placeholder="题目类型" clearable style="width: 140px">
         <el-option label="单选题" value="single" />
         <el-option label="多选题" value="multiple" />
-        <el-option label="判断题" value="judge" />
-        <el-option label="填空题" value="fill" />
       </el-select>
       <el-button type="primary" @click="fetchQuestions">查询</el-button>
     </div>
@@ -34,13 +32,14 @@
             <el-tag size="small">{{ getTypeLabel(row.type) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="answer" label="答案" width="120" show-overflow-tooltip />
-        <el-table-column prop="knowledge_point_name" label="关联知识点" width="140">
+        <el-table-column prop="difficulty" label="难度" width="100">
           <template #default="{ row }">
-            <span v-if="row.knowledge_point_name">{{ row.knowledge_point_name }}</span>
-            <span v-else class="text-muted">--</span>
+            <el-tag :type="getDifficultyType(row.difficulty)" size="small">
+              {{ getDifficultyLabel(row.difficulty) }}
+            </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="answer" label="答案" width="120" show-overflow-tooltip />
         <el-table-column prop="created_at" label="创建时间" width="180" />
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
@@ -68,16 +67,28 @@
       v-model="dialogVisible"
       :title="isEdit ? '编辑题目' : '新增题目'"
       width="650px"
+      destroy-on-close
     >
       <el-form :model="formData" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item label="题目类型" prop="type">
           <el-select v-model="formData.type" placeholder="请选择题目类型">
             <el-option label="单选题" value="single" />
             <el-option label="多选题" value="multiple" />
-            <el-option label="判断题" value="judge" />
-            <el-option label="填空题" value="fill" />
           </el-select>
         </el-form-item>
+
+        <el-form-item label="难度" prop="difficulty">
+          <el-select v-model="formData.difficulty" placeholder="请选择难度">
+            <el-option label="简单" value="easy" />
+            <el-option label="中等" value="medium" />
+            <el-option label="困难" value="hard" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="关联知识点" prop="knowledge_point_id">
+          <el-input-number v-model="formData.knowledge_point_id" :min="1" placeholder="知识点ID" />
+        </el-form-item>
+
         <el-form-item label="题目内容" prop="title">
           <el-input
             v-model="formData.title"
@@ -86,14 +97,12 @@
             placeholder="请输入题目内容"
           />
         </el-form-item>
-        <el-form-item
-          v-if="formData.type === 'single' || formData.type === 'multiple'"
-          label="选项"
-        >
+
+        <el-form-item label="选项" prop="options">
           <div class="options-list">
             <div v-for="(opt, index) in formData.options" :key="index" class="option-row">
-              <span class="option-label">{{ String.fromCharCode(65 + index) }}.</span>
-              <el-input v-model="formData.options[index]" placeholder="请输入选项内容" />
+              <span class="option-label">{{ opt.key }}.</span>
+              <el-input v-model="opt.value" placeholder="请输入选项内容" />
               <el-button
                 v-if="formData.options.length > 2"
                 type="danger"
@@ -106,12 +115,14 @@
             <el-button type="primary" link @click="addOption">+ 添加选项</el-button>
           </div>
         </el-form-item>
+
         <el-form-item label="正确答案" prop="answer">
-          <el-input v-model="formData.answer" placeholder="请输入正确答案" />
+          <el-input v-model="formData.answer" placeholder="如单选填 A，多选填 A,B,C" />
         </el-form-item>
+
         <el-form-item label="题目解析">
           <el-input
-            v-model="formData.analysis"
+            v-model="formData.explanation"
             type="textarea"
             :rows="3"
             placeholder="请输入题目解析（可选）"
@@ -137,6 +148,11 @@ import {
   deleteQuestion,
 } from '@/services/admin'
 
+interface OptionItem {
+  key: string
+  value: string
+}
+
 const loading = ref(false)
 const questions = ref<Record<string, unknown>[]>([])
 const total = ref(0)
@@ -153,34 +169,69 @@ const formRef = ref<FormInstance>()
 
 const formData = reactive({
   type: 'single',
+  difficulty: 'easy',
+  knowledge_point_id: 1,
   title: '',
-  options: ['', '', '', ''],
+  options: [
+    { key: 'A', value: '' },
+    { key: 'B', value: '' },
+    { key: 'C', value: '' },
+    { key: 'D', value: '' },
+  ] as OptionItem[],
   answer: '',
-  analysis: '',
+  explanation: '',
 })
 
 const formRules = {
   type: [{ required: true, message: '请选择题目类型', trigger: 'change' }],
+  difficulty: [{ required: true, message: '请选择难度', trigger: 'change' }],
+  knowledge_point_id: [{ required: true, message: '请输入知识点ID', trigger: 'blur' }],
   title: [{ required: true, message: '请输入题目内容', trigger: 'blur' }],
   answer: [{ required: true, message: '请输入正确答案', trigger: 'blur' }],
+  options: [{
+    validator: (_rule: unknown, value: OptionItem[], callback: (error?: Error) => void) => {
+      if (!value || value.length < 2) {
+        callback(new Error('至少需要2个选项'))
+      } else if (value.some(o => !o.value.trim())) {
+        callback(new Error('选项内容不能为空'))
+      } else {
+        callback()
+      }
+    },
+    trigger: 'blur',
+  }],
 }
 
 function getTypeLabel(type: string) {
-  const map: Record<string, string> = {
-    single: '单选题',
-    multiple: '多选题',
-    judge: '判断题',
-    fill: '填空题',
-  }
+  const map: Record<string, string> = { single: '单选题', multiple: '多选题' }
   return map[type] || type
 }
 
+function getDifficultyLabel(d: string) {
+  const map: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难' }
+  return map[d] || d
+}
+
+function getDifficultyType(d: string) {
+  const map: Record<string, string> = { easy: 'success', medium: 'warning', hard: 'danger' }
+  return (map[d] || 'info') as 'success' | 'warning' | 'danger' | 'info'
+}
+
+function nextKey() {
+  const lastKey = formData.options.length > 0 ? formData.options[formData.options.length - 1].key : '@'
+  return String.fromCharCode(lastKey.charCodeAt(0) + 1)
+}
+
 function addOption() {
-  formData.options.push('')
+  formData.options.push({ key: nextKey(), value: '' })
 }
 
 function removeOption(index: number) {
   formData.options.splice(index, 1)
+  // 重新分配 key
+  formData.options.forEach((opt, i) => {
+    opt.key = String.fromCharCode(65 + i)
+  })
 }
 
 async function fetchQuestions() {
@@ -192,7 +243,7 @@ async function fetchQuestions() {
       keyword: keyword.value || undefined,
       type: typeFilter.value || undefined,
     }) as Record<string, unknown>
-    questions.value = (data.records as Record<string, unknown>[]) || []
+    questions.value = (data.list as Record<string, unknown>[]) || []
     total.value = (data.total as number) || 0
   } catch (error) {
     console.error('获取题目列表失败:', error)
@@ -205,10 +256,17 @@ function handleCreate() {
   isEdit.value = false
   editId.value = null
   formData.type = 'single'
+  formData.difficulty = 'easy'
+  formData.knowledge_point_id = 1
   formData.title = ''
-  formData.options = ['', '', '', '']
+  formData.options = [
+    { key: 'A', value: '' },
+    { key: 'B', value: '' },
+    { key: 'C', value: '' },
+    { key: 'D', value: '' },
+  ]
   formData.answer = ''
-  formData.analysis = ''
+  formData.explanation = ''
   dialogVisible.value = true
 }
 
@@ -216,10 +274,23 @@ function handleEdit(row: Record<string, unknown>) {
   isEdit.value = true
   editId.value = row.id as number
   formData.type = (row.type as string) || 'single'
+  formData.difficulty = (row.difficulty as string) || 'easy'
+  formData.knowledge_point_id = (row.knowledge_point_id as number) || 1
   formData.title = (row.title as string) || ''
-  formData.options = (row.options as string[]) || ['', '', '', '']
+  // 解析 options
+  const rawOpts = row.options
+  if (Array.isArray(rawOpts)) {
+    formData.options = rawOpts.map((o: { key: string; value: string }) => ({ key: o.key, value: o.value }))
+  } else {
+    formData.options = [
+      { key: 'A', value: '' },
+      { key: 'B', value: '' },
+      { key: 'C', value: '' },
+      { key: 'D', value: '' },
+    ]
+  }
   formData.answer = (row.answer as string) || ''
-  formData.analysis = (row.analysis as string) || ''
+  formData.explanation = (row.explanation as string) || ''
   dialogVisible.value = true
 }
 
@@ -234,11 +305,11 @@ async function handleSubmit() {
       const payload = {
         title: formData.title,
         type: formData.type,
+        difficulty: formData.difficulty,
+        knowledge_point_id: formData.knowledge_point_id,
         answer: formData.answer,
-        analysis: formData.analysis,
-        options: (formData.type === 'single' || formData.type === 'multiple')
-          ? formData.options.filter(o => o.trim())
-          : undefined,
+        explanation: formData.explanation,
+        options: formData.options.filter(o => o.value.trim()),
       }
 
       if (isEdit.value && editId.value) {

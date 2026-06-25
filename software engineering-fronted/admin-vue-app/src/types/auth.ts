@@ -12,10 +12,10 @@ export interface RegisterParams {
   nickname?: string
 }
 
-// 登录响应
+// 登录响应（后端返回 teacher 字段）
 export interface LoginResponse {
   token: string
-  user: UserInfo
+  teacher: UserInfo
 }
 
 // 用户信息
@@ -25,7 +25,6 @@ export interface UserInfo {
   email: string
   nickname: string
   avatar: string
-  role: 'admin' | 'teacher' | 'student'
   status: number
   created_at: string
   updated_at: string

@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import AdminLayout from '@/layouts/AdminLayout.vue'
 
 const routes: RouteRecordRaw[] = [
   // 登录页
@@ -13,7 +12,7 @@ const routes: RouteRecordRaw[] = [
   // 管理后台路由（需要认证）
   {
     path: '/admin',
-    component: AdminLayout,
+    component: () => import('@/layouts/AdminLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {

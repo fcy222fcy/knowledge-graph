@@ -130,9 +130,9 @@ async function handleLogin() {
         password: loginForm.password,
       })
 
-      // 保存 token 和用户信息
+      // 保存 token 和用户信息（后端返回 teacher 字段）
       userStore.setToken(res.token)
-      userStore.setUserInfo(res.user)
+      userStore.setUserInfo(res.teacher)
 
       ElMessage.success('登录成功')
       router.push('/admin')
