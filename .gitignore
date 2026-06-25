@@ -40,3 +40,6 @@ frontend-vue-app/src/components.d.ts
 
 # Backend git (monorepo handles this)
 software engineering-back/.git
+
+# MinIO data
+miniodata/
