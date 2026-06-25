@@ -68,3 +68,8 @@ export function getLatestBuild() {
 export function getBuildHistory(params?: { page?: number; size?: number }) {
   return request.get('/graph/build/history', { params })
 }
+
+// 更新知识点（节点）
+export function updateKnowledgePoint(id: number, data: { name?: string; description?: string; category?: string }) {
+  return request.put(`/knowledge/points/${id}`, data)
+}

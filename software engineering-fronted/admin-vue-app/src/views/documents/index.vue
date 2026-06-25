@@ -94,6 +94,30 @@
         <el-button type="primary" :loading="reviewLoading" @click="confirmReview">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 查看详情对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="资料详情"
+      width="600px"
+    >
+      <el-descriptions :column="1" border v-if="currentViewDoc">
+        <el-descriptions-item label="标题">{{ currentViewDoc.title }}</el-descriptions-item>
+        <el-descriptions-item label="描述">{{ currentViewDoc.description || '无' }}</el-descriptions-item>
+        <el-descriptions-item label="文件名">{{ currentViewDoc.filename }}</el-descriptions-item>
+        <el-descriptions-item label="文件类型">{{ currentViewDoc.file_type }}</el-descriptions-item>
+        <el-descriptions-item label="审核状态">
+          <el-tag :type="getStatusType(currentViewDoc.status as string)">
+            {{ getStatusLabel(currentViewDoc.status as string) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item v-if="currentViewDoc.remark" label="审核备注">{{ currentViewDoc.remark }}</el-descriptions-item>
+        <el-descriptions-item label="上传时间">{{ currentViewDoc.created_at }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -116,6 +140,9 @@ const reviewForm = reactive({
   status: 'approved' as 'approved' | 'rejected',
   remark: '',
 })
+
+const detailDialogVisible = ref(false)
+const currentViewDoc = ref<Record<string, unknown> | null>(null)
 
 function getStatusType(status: string) {
   const map: Record<string, string> = {
@@ -153,7 +180,8 @@ async function fetchDocuments() {
 }
 
 function handleView(row: Record<string, unknown>) {
-  ElMessage.info('查看资料详情 - ' + row.title)
+  currentViewDoc.value = row
+  detailDialogVisible.value = true
 }
 
 function handleReview(row: Record<string, unknown>, status: 'approved' | 'rejected') {
