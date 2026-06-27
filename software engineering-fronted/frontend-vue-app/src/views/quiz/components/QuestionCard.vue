@@ -31,8 +31,8 @@
       <!-- 单选：el-radio-group -->
       <el-radio-group
         v-if="question.type === 'single'"
-        :model-value="modelValue"
-        @update:model-value="emit('update:modelValue', $event)"
+        :model-value="modelValue as string"
+        @update:model-value="(val: string | number | boolean | undefined) => emit('update:modelValue', String(val))"
         class="options-group"
       >
         <el-radio
@@ -49,8 +49,8 @@
       <!-- 多选：el-checkbox-group -->
       <el-checkbox-group
         v-else-if="question.type === 'multiple'"
-        :model-value="Array.isArray(modelValue) ? modelValue : []"
-        @update:model-value="emit('update:modelValue', $event)"
+        :model-value="(Array.isArray(modelValue) ? modelValue : []) as string[]"
+        @update:model-value="(val: (string | number)[]) => emit('update:modelValue', val.map(String))"
         class="options-group"
       >
         <el-checkbox
@@ -106,8 +106,8 @@ const typeLabel = computed(() => {
 
 // 类型标签样式
 const typeTagStyle = computed(() => {
-  const map: Record<Question['type'], { type: string }> = {
-    single: { type: '' },       // 默认蓝色
+  const map: Record<Question['type'], { type: 'primary' | 'success' | 'warning' | 'info' | 'danger' }> = {
+    single: { type: 'primary' },       // 蓝色
     multiple: { type: 'success' }, // 绿色
   }
   return map[props.question.type]
@@ -125,7 +125,7 @@ const difficultyLabel = computed(() => {
 
 // 难度标签样式
 const difficultyTagStyle = computed(() => {
-  const map: Record<Question['difficulty'], { type: string; effect: string }> = {
+  const map: Record<Question['difficulty'], { type: 'primary' | 'success' | 'warning' | 'info' | 'danger'; effect: 'dark' | 'light' | 'plain' }> = {
     easy: { type: 'success', effect: 'light' },
     medium: { type: 'warning', effect: 'light' },
     hard: { type: 'danger', effect: 'light' },

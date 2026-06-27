@@ -170,3 +170,12 @@ export interface SystemConfig {
 export function getSystemConfig() {
   return request.get<SystemConfig>('/admin/system/config')
 }
+
+// 知识图谱
+export function getKnowledgeGraph() {
+  return request.get('/admin/knowledge-graph')
+}
+
+export function rebuildKnowledgeGraph(documentIds: number[]) {
+  return request.post('/admin/knowledge-graph/rebuild', { document_ids: documentIds })
+}

@@ -55,8 +55,6 @@ const renderGraph = () => {
     degreeMap.set(sourceId, (degreeMap.get(sourceId) || 0) + 1)
     degreeMap.set(targetId, (degreeMap.get(targetId) || 0) + 1)
   })
-  const maxDegree = Math.max(...Array.from(degreeMap.values()), 1)
-
   simulation = d3.forceSimulation<GraphNode>(nodes)
     .force('link', d3.forceLink<GraphNode, GraphEdge>(edges).id(d => d.id).distance(60).strength(0.5))
     .force('charge', d3.forceManyBody().strength(-60))

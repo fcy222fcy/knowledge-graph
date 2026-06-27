@@ -11,7 +11,6 @@ func RegisterRoutes(protected *gin.RouterGroup) {
 		docs.POST("", UploadDocument)
 		docs.GET("", ListDocuments)
 		docs.GET("/:id", GetDocument)
-		docs.GET("/:id/download", GetDocumentDownload)
 		docs.PUT("/:id", UpdateDocument)
 		docs.DELETE("/:id", DeleteDocument)
 		docs.GET("/:id/content", GetDocumentContent)

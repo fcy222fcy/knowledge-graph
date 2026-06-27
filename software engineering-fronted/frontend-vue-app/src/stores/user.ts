@@ -14,10 +14,7 @@ export interface UserInfo {
 
 export const useUserStore = defineStore('user', () => {
   const token = ref<string>(localStorage.getItem('token') || '')
-  const userInfo = ref<UserInfo | null>(() => {
-    const stored = localStorage.getItem('userInfo')
-    return stored ? JSON.parse(stored) : null
-  })
+  const userInfo = ref<UserInfo | null>(JSON.parse(localStorage.getItem('userInfo') || 'null'))
 
   // 设置 token
   const setToken = (newToken: string) => {

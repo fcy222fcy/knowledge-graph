@@ -66,7 +66,8 @@
           <div class="q-options" v-if="q.options && q.options.length > 0">
             <el-radio-group
               v-if="isSingleChoice(q.type)"
-              v-model="answers[q.id]"
+              :model-value="(answers[q.id] as string)"
+              @update:model-value="(val: string | number | boolean | undefined) => { answers[q.id] = String(val ?? '') }"
               class="options-list"
             >
               <el-radio
@@ -82,7 +83,8 @@
 
             <el-checkbox-group
               v-else
-              v-model="answers[q.id]"
+              :model-value="(answers[q.id] as string[])"
+              @update:model-value="(val: (string | number)[]) => { answers[q.id] = val.map(String) }"
               class="options-list"
             >
               <el-checkbox
@@ -180,7 +182,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { Document, Check, TrendCharts } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import { getQuestions, submitQuiz } from '@/services/quiz'
 import type { Question, QuizResult } from '@/services/quiz'
 

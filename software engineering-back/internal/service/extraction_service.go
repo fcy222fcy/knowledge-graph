@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"software_engineering/internal/model/entity"
+	"software_engineering/internal/repository"
 	"software_engineering/pkg/ai"
 	"software_engineering/pkg/config"
 )
@@ -99,6 +101,61 @@ func (s *ExtractionService) ExtractKnowledgePoints(content string, documentID ui
 
 	// 验证和清理结果
 	result = s.validateResult(result)
+
+	return result, nil
+}
+
+// ExtractAndStoreToNeo4j 抽取知识点和关系后直接写入 Neo4j 和 MySQL
+func (s *ExtractionService) ExtractAndStoreToNeo4j(content string, documentID uint) (*ExtractionResult, error) {
+	// 1. 使用 LLM 抽取知识点和关系
+	result, err := s.extractWithLLM(content)
+	if err != nil {
+		log.Printf("LLM extraction failed, falling back to regex: %v", err)
+		result = s.extractWithRegex(content)
+	}
+
+	// 2. 验证和清理结果
+	result = s.validateResult(result)
+
+	// 3. 存储知识点到 MySQL + Neo4j
+	for _, point := range result.Points {
+		kp := &entity.KnowledgePoint{
+			Name:        point.Name,
+			Description: point.Description,
+			DocumentID:  documentID,
+			Category:    point.Category,
+		}
+		if err := repository.CreateKnowledgePoint(kp); err != nil {
+			log.Printf("failed to store knowledge point '%s': %v", point.Name, err)
+			continue
+		}
+	}
+
+	// 4. 存储关系到 MySQL + Neo4j
+	for _, rel := range result.Relations {
+		// 查找源和目标知识点以获取 ID
+		sourceKP, err := repository.FindKnowledgePointByName(rel.Source, documentID)
+		if err != nil {
+			log.Printf("failed to find source knowledge point '%s': %v", rel.Source, err)
+			continue
+		}
+		targetKP, err := repository.FindKnowledgePointByName(rel.Target, documentID)
+		if err != nil {
+			log.Printf("failed to find target knowledge point '%s': %v", rel.Target, err)
+			continue
+		}
+		kr := &entity.KnowledgeRelation{
+			SourceID:     sourceKP.ID,
+			TargetID:     targetKP.ID,
+			Type:         rel.RelationType,
+			RelationType: rel.RelationType,
+			Description:  rel.Description,
+		}
+		if err := repository.CreateRelation(kr); err != nil {
+			log.Printf("failed to store relation '%s' -> '%s': %v", rel.Source, rel.Target, err)
+			continue
+		}
+	}
 
 	return result, nil
 }
@@ -300,12 +357,113 @@ func extractJSON(text string) string {
 }
 
 // GenerateChunkIndex 为文档生成分块索引
+// 按 Markdown 标题结构分块，每个 chunk 是一个完整的章节
 func (s *ExtractionService) GenerateChunkIndex(content string, documentID uint) []VectorMetadata {
 	chunks := make([]VectorMetadata, 0)
 
-	// 按段落分割
+	// 按行分割
+	lines := strings.Split(content, "\n")
+
+	// 标题正则：匹配 ##, ###, #### 等（二级及以下标题）
+	headingRegex := regexp.MustCompile(`^(#{2,6})\s+(.+)$`)
+
+	// 存储每个 chunk 的标题层级和内容
+	type section struct {
+		level   int
+		heading string
+		content strings.Builder
+	}
+
+	sections := make([]section, 0)
+	currentSection := section{level: 0, heading: "文档开头"}
+
+	for _, line := range lines {
+		// 检查是否是标题行
+		matches := headingRegex.FindStringSubmatch(line)
+		if matches != nil {
+			// 保存之前的 section
+			if currentSection.content.Len() > 0 {
+				sections = append(sections, currentSection)
+			}
+			// 开始新 section
+			currentSection = section{
+				level:   len(matches[1]),
+				heading: matches[2],
+			}
+		}
+		currentSection.content.WriteString(line)
+		currentSection.content.WriteString("\n")
+	}
+
+	// 保存最后一个 section
+	if currentSection.content.Len() > 0 {
+		sections = append(sections, currentSection)
+	}
+
+	// 合并过小的 section，确保每个 chunk 有一定内容
+	maxChunkSize := 1500 // 最大 chunk 大小
+
+	mergedChunks := make([]string, 0)
+	currentMerged := ""
+
+	for _, sec := range sections {
+		secContent := sec.content.String()
+		secLen := len(secContent)
+
+		// 如果当前 section 本身很大，直接保存
+		if secLen > maxChunkSize {
+			if currentMerged != "" {
+				mergedChunks = append(mergedChunks, currentMerged)
+				currentMerged = ""
+			}
+			mergedChunks = append(mergedChunks, secContent)
+			continue
+		}
+
+		// 尝试合并
+		if len(currentMerged)+secLen > maxChunkSize && currentMerged != "" {
+			// 当前合并块已经达到上限，保存并开始新块
+			mergedChunks = append(mergedChunks, currentMerged)
+			currentMerged = secContent
+		} else {
+			// 继续合并
+			if currentMerged != "" {
+				currentMerged += "\n"
+			}
+			currentMerged += secContent
+		}
+	}
+
+	// 保存最后一个合并块
+	if currentMerged != "" {
+		mergedChunks = append(mergedChunks, currentMerged)
+	}
+
+	// 转换为 VectorMetadata
+	for _, chunk := range mergedChunks {
+		chunk = strings.TrimSpace(chunk)
+		if chunk == "" {
+			continue
+		}
+		chunks = append(chunks, VectorMetadata{
+			ChunkText:  chunk,
+			DocumentID: documentID,
+		})
+	}
+
+	// 如果没有生成任何 chunk（纯文本无标题），使用原来的段落分割逻辑
+	if len(chunks) == 0 {
+		chunks = s.generateFallbackChunks(content, documentID)
+	}
+
+	return chunks
+}
+
+// generateFallbackChunks 无标题时的降级分块策略
+func (s *ExtractionService) generateFallbackChunks(content string, documentID uint) []VectorMetadata {
+	chunks := make([]VectorMetadata, 0)
 	paragraphs := strings.Split(content, "\n\n")
-	chunkSize := 500 // 每个分块约 500 字符
+	chunkSize := 500
 	currentChunk := ""
 
 	for _, para := range paragraphs {
@@ -328,7 +486,6 @@ func (s *ExtractionService) GenerateChunkIndex(content string, documentID uint) 
 		}
 	}
 
-	// 添加最后一个分块
 	if currentChunk != "" {
 		chunks = append(chunks, VectorMetadata{
 			ChunkText:  currentChunk,

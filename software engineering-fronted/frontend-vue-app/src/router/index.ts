@@ -64,6 +64,20 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Admin 路由（教师权限）
+  {
+    path: '/admin',
+    component: MainLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'knowledge-graph',
+        name: 'AdminKnowledgeGraph',
+        component: () => import('../views/admin/knowledge-graph/index.vue'),
+        meta: { title: '知识图谱管理', requiresAuth: true, roles: ['teacher'] }
+      }
+    ]
+  },
 ]
 
 const router = createRouter({

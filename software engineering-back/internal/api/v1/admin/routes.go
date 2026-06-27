@@ -36,6 +36,10 @@ func RegisterRoutes(api *gin.RouterGroup) {
 		admin.GET("/knowledge/relations", ListKnowledgeRelations)
 		admin.DELETE("/knowledge/relations/:id", DeleteKnowledgeRelation)
 
+		// 知识图谱管理
+		admin.GET("/knowledge/graph", GetKnowledgeGraph)
+		admin.POST("/knowledge/graph/rebuild", RebuildKnowledgeGraph)
+
 		// 系统统计
 		admin.GET("/analytics/overview", GetAnalyticsOverview)
 		admin.GET("/analytics/users", GetUserStats)

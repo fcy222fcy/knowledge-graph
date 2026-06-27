@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SE智图问答平台 - 学生端交互流程图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #333;
+  }
+  .diagram-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #222;
+  }
+  .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .note {
+    max-width: 1000px;
+    margin: 20px auto 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.8;
+  }
+  .note strong {
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<div class="diagram-title">基于知识图谱的软件工程课程问答平台 — 学生端交互流程图</div>
+
+<div class="mermaid">
+flowchart TD
+    Start([开始]) --> VisitPlatform[访问平台首页]
+
+    VisitPlatform --> CheckLogin{是否已登录?}
+
+    %% ========== 登录/注册流程 ==========
+    CheckLogin -->|未登录| LoginPage[跳转至登录页面]
+    LoginPage --> InputCredentials[输入用户名和密码]
+    InputCredentials --> ClickLogin[点击登录按钮]
+    ClickLogin --> ValidateCredentials{验证凭据}
+
+    ValidateCredentials -->|登录成功| SaveToken[保存Token至本地存储]
+    SaveToken --> JumpToHome[跳转至首页]
+    ValidateCredentials -->|登录失败| ShowError[显示错误提示]
+    ShowError --> InputCredentials
+
+    LoginPage --> ClickRegister[点击注册链接]
+    ClickRegister --> RegisterPage[跳转至注册页面]
+    RegisterPage --> InputRegister[填写注册信息]
+    InputRegister --> SubmitRegister[提交注册]
+    SubmitRegister --> RegisterResult{注册结果}
+    RegisterResult -->|成功| LoginPage
+    RegisterResult -->|失败| ShowRegError[显示错误提示]
+    ShowRegError --> InputRegister
+
+    %% ========== 主功能入口 ==========
+    CheckLogin -->|已登录| JumpToHome
+    JumpToHome --> MainHub[学生端首页]
+
+    MainHub --> EnterQA[进入问答中心]
+    MainHub --> EnterGraph[进入知识图谱]
+    MainHub --> EnterQuiz[进入答题练习]
+    MainHub --> EnterStats[进入分析统计]
+
+    %% ========== 知识问答流程 ==========
+    EnterQA --> QAInput[输入问题]
+    QAInput --> SubmitQuestion[提交问题]
+    SubmitQuestion --> SearchKB[系统检索知识库]
+    SearchKB --> ReturnAnswer[返回答案内容]
+    ReturnAnswer --> ShowConfidence[显示置信度评分]
+    ShowConfidence --> ShowRelatedKP[显示相关知识点链接]
+    ShowRelatedKP --> QAAction{用户操作}
+    QAAction -->|继续提问| QAInput
+    QAAction -->|查看知识点| KPDetail[查看知识点详情]
+    QAAction -->|返回首页| MainHub
+
+    %% ========== 知识图谱流程 ==========
+    EnterGraph --> LoadGraph[系统加载图谱数据]
+    LoadGraph --> RenderGraph[渲染力导向图]
+    RenderGraph --> BrowseGraph[浏览图谱]
+
+    BrowseGraph --> DragNode[鼠标拖拽节点]
+    BrowseGraph --> ZoomGraph[滚轮缩放]
+    BrowseGraph --> ClickNode[点击知识点节点]
+
+    ClickNode --> ShowKPInfo[显示节点详情]
+    ShowKPInfo --> KPAction{用户操作}
+    KPAction -->|查看关联| ShowRelated[展示关联知识点]
+    ShowRelated --> BrowseGraph
+    KPAction -->|返回浏览| BrowseGraph
+    KPAction -->|前往问答| EnterQA
+
+    %% ========== 答题流程 ==========
+    EnterQuiz --> SelectType[选择题目类型]
+    SelectType --> SelectDifficulty[选择难度等级]
+    SelectDifficulty --> LoadQuestions[系统加载题目]
+    LoadQuestions --> ShowQuestion[展示题目内容]
+
+    ShowQuestion --> SelectAnswer[选择答案]
+    SelectAnswer --> SubmitAnswer[提交答案]
+    SubmitAnswer --> ShowResult[显示评分和解析]
+    ShowResult --> QuizAction{用户操作}
+    QuizAction -->|下一题| ShowQuestion
+    QuizAction -->|切换类型| SelectType
+    QuizAction -->|查看统计| EnterStats
+    QuizAction -->|返回首页| MainHub
+
+    %% ========== 分析统计流程 ==========
+    EnterStats --> LoadStats[加载学习数据]
+    LoadStats --> ShowOverview[展示总览统计卡片]
+    ShowOverview --> ShowMastery[展示知识点掌握度图表]
+    ShowMastery --> ShowHotPoints[展示热门知识点排行]
+    ShowHotPoints --> ShowTrend[展示学习趋势折线图]
+    ShowTrend --> ShowWeak[展示薄弱知识点]
+    ShowWeak --> StatsAction{用户操作}
+    StatsAction -->|查看知识点| KPDetail
+    StatsAction -->|前往练习| EnterQuiz
+    StatsAction -->|返回首页| MainHub
+
+    %% ========== 样式定义 ==========
+    classDef startEnd fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#2e7d32
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:1.5px,color:#1565c0
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef error fill:#ffebee,stroke:#d32f2f,stroke-width:1.5px,color:#c62828
+    classDef action fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,color:#6a1b9a
+    classDef highlight fill:#fffde7,stroke:#f9a825,stroke-width:2px,color:#f57f17
+
+    class Start startEnd
+    class CheckLogin,ValidateCredentials,RegisterResult,QAAction,KPAction,QuizAction,StatsAction decision
+    class ShowError,ShowRegError error
+    class KPDetail highlight
+    class MainHub highlight
+</div>
+
+<div class="note">
+  <strong>说明：</strong><br>
+  ① 学生首次访问平台时，未登录状态会自动跳转至登录页面；已登录状态直接进入首页。<br>
+  ② 登录采用JWT Token认证机制，Token存储于浏览器LocalStorage，支持自动续期。<br>
+  ③ 知识问答支持SSE流式输出，答案包含置信度评分和相关知识图谱节点链接。<br>
+  ④ 知识图谱采用力导向布局（D3.js），支持拖拽、缩放、点击交互。<br>
+  ⑤ 答题系统支持按类型和难度筛选，提交后即时返回评分和详细解析。<br>
+  ⑥ 分析统计页面展示学习总览、掌握度、趋势和薄弱知识点，数据实时更新。
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: {
+      useMaxWidth: true,
+      htmlLabels: true,
+      curve: 'basis',
+      rankSpacing: 60,
+      nodeSpacing: 40
+    },
+    themeVariables: {
+      fontSize: '13px',
+      fontFamily: '"Microsoft YaHei", "SimHei", Arial, sans-serif'
+    }
+  });
+</script>
+</body>
+</html>

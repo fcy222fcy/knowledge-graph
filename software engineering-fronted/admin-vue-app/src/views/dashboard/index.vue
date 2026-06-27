@@ -111,9 +111,9 @@ onMounted(async () => {
   try {
     const data = await getAnalyticsOverview() as Record<string, unknown>
     stats.value = {
-      studentCount: (data.student_count as number) || 0,
+      studentCount: (data.user_count as number) || 0,
       documentCount: (data.document_count as number) || 0,
-      pendingReview: (data.pending_review as number) || 0,
+      pendingReview: (data.session_count as number) || 0,
       questionCount: (data.question_count as number) || 0,
     }
     recentActivities.value = (data.recent_activities as typeof recentActivities.value) || []

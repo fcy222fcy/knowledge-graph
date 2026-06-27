@@ -25,10 +25,31 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // 监听所有网络接口，允许局域网访问
-    port: 5173,
+    port: 4173,
+    strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        // SSE 流式响应特殊处理
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            // 对流式接口禁用缓冲
+            if (req.url?.includes('/ask/stream')) {
+              proxyReq.setHeader('X-Accel-Buffering', 'no')
+              proxyReq.setHeader('Cache-Control', 'no-cache')
+            }
+          })
+        }
+      }
+    }
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
         changeOrigin: true
       }
     }

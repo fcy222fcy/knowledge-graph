@@ -37,30 +37,24 @@ func (a *App) Initialize() {
 	// 2. 初始化 AI 客户端（需要在 config.Load 之后）
 	service.InitAIClient()
 
-	// 3. 初始化 MinIO 客户端
-	if err := service.InitMinIOClient(); err != nil {
-		log.Printf("Warning: MinIO initialization failed: %v", err)
-		log.Println("File upload/download features will be disabled")
-	}
-
-	// 4. 连接数据库
+	// 3. 连接数据库
 	database.Connect()
 	database.ConnectNeo4j()
 
-	// 5. 数据库迁移
+	// 4. 数据库迁移
 	database.AutoMigrate()
 
-	// 6. 初始化种子数据
+	// 5. 初始化种子数据
 	seed.SeedAll()
 
-	// 7. 初始化路由
+	// 6. 初始化路由
 	a.router = gin.New()
 	a.router.Use(middleware.Logger())
 	a.router.Use(middleware.Recovery())
 	a.router.Use(middleware.CORSMiddleware())
 	api.SetupRoutes(a.router)
 
-	// 8. 创建 HTTP 服务器
+	// 7. 创建 HTTP 服务器
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "8080"

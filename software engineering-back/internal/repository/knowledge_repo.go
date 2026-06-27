@@ -3,8 +3,9 @@ package repository
 import (
 	"log"
 
-	"software_engineering/pkg/database"
 	"software_engineering/internal/model/entity"
+	"software_engineering/pkg/database"
+	"gorm.io/gorm"
 )
 
 // CreateKnowledgePoint 创建知识点，同时双写到 Neo4j（尽力而为）
@@ -19,10 +20,38 @@ func CreateKnowledgePoint(kp *entity.KnowledgePoint) error {
 	return nil
 }
 
+// CreateKnowledgePointWithRelations 在一个事务中批量创建知识点及其关系
+// 示例：展示如何使用 GORM 事务保证原子性
+func CreateKnowledgePointWithRelations(kp *entity.KnowledgePoint, rels []entity.KnowledgeRelation) error {
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. 创建知识点
+		if err := tx.Create(kp).Error; err != nil {
+			return err
+		}
+		// 2. 批量创建关系（填充 source_id）
+		for i := range rels {
+			rels[i].SourceID = kp.ID
+		}
+		if len(rels) > 0 {
+			if err := tx.Create(&rels).Error; err != nil {
+				return err // 回滚知识点和已创建的关系
+			}
+		}
+		return nil // 提交事务
+	})
+}
+
 // FindKnowledgePointByID 根据 ID 查找知识点
 func FindKnowledgePointByID(id uint) (*entity.KnowledgePoint, error) {
 	var kp entity.KnowledgePoint
 	err := database.DB.First(&kp, id).Error
+	return &kp, err
+}
+
+// FindKnowledgePointByName 根据名称和文档 ID 查找知识点
+func FindKnowledgePointByName(name string, documentID uint) (*entity.KnowledgePoint, error) {
+	var kp entity.KnowledgePoint
+	err := database.DB.Where("name = ? AND document_id = ?", name, documentID).First(&kp).Error
 	return &kp, err
 }
 

@@ -11,15 +11,21 @@
           <el-descriptions-item label="分类">{{ node.category || '-' }}</el-descriptions-item>
           <el-descriptions-item label="关联文档ID">{{ node.document_id }}</el-descriptions-item>
         </el-descriptions>
-        <el-button
-          v-if="node.document_id"
-          type="primary"
-          class="doc-link"
-          @click="goToDocument"
-        >
-          <el-icon><Document /></el-icon>
-          查看关联文档
-        </el-button>
+        <div class="node-actions">
+          <el-button type="primary" class="action-btn" @click="$emit('edit', node)">
+            <el-icon><Edit /></el-icon>
+            编辑知识点
+          </el-button>
+          <el-button
+            v-if="node.document_id"
+            type="info"
+            class="action-btn"
+            @click="goToDocument"
+          >
+            <el-icon><Document /></el-icon>
+            查看关联文档
+          </el-button>
+        </div>
       </div>
     </template>
   </el-drawer>
@@ -27,7 +33,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Document } from '@element-plus/icons-vue'
+import { Document, Edit } from '@element-plus/icons-vue'
 import type { GraphNode } from '@/types/graph'
 
 const visible = defineModel<boolean>({ default: false })
@@ -35,6 +41,10 @@ const router = useRouter()
 
 const props = defineProps<{
   node: GraphNode | null
+}>()
+
+defineEmits<{
+  (e: 'edit', node: GraphNode): void
 }>()
 
 const COLORS: Record<string, string> = {
@@ -81,8 +91,12 @@ const goToDocument = () => {
   margin-bottom: 16px;
   line-height: 1.6;
 }
-.doc-link {
+.node-actions {
   margin-top: 16px;
-  width: 100%;
+  display: flex;
+  gap: 12px;
+}
+.action-btn {
+  flex: 1;
 }
 </style>

@@ -178,7 +178,7 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 				totalRelations += resp.CreatedRelations
 				totalChunks += resp.ChunkCount
 
-				// 将 AI 构建的知识点和关系写入 MySQL
+				// 优先写入 Neo4j（主存储），MySQL 作为备份
 				// 建立 Python ID 到 MySQL ID 的映射
 				idMapping := make(map[uint]uint)
 				for _, p := range resp.Points {
@@ -188,6 +188,13 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 						DocumentID:  p.DocumentID,
 						Category:    p.Category,
 					}
+
+					// 优先写入 Neo4j
+					if err := repository.CreateKnowledgePointInNeo4j(kp); err != nil {
+						log.Printf("warning: failed to save knowledge point to Neo4j (will use MySQL backup): %v", err)
+					}
+
+					// MySQL 作为备份存储
 					if err := repository.CreateKnowledgePoint(kp); err != nil {
 						log.Printf("warning: failed to save knowledge point to MySQL: %v", err)
 					} else {
@@ -208,6 +215,13 @@ func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
 						RelationType: r.RelationType,
 						Description:  r.Description,
 					}
+
+					// 优先写入 Neo4j
+					if err := repository.CreateRelationInNeo4j(rel); err != nil {
+						log.Printf("warning: failed to save relation to Neo4j (will use MySQL backup): %v", err)
+					}
+
+					// MySQL 作为备份存储
 					if err := repository.CreateRelation(rel); err != nil {
 						log.Printf("warning: failed to save relation to MySQL: %v", err)
 					}

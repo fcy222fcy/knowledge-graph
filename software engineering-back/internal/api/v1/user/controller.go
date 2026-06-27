@@ -15,7 +15,7 @@ func GetProfile(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	resp, err := service.GetProfile(userID)
 	if err != nil {
-		response.Error(c, http.StatusNotFound, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, resp)
@@ -30,7 +30,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 	if err := service.UpdateProfile(userID, req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, nil)
@@ -45,7 +45,7 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 	if err := service.ChangePassword(userID, req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, nil)
@@ -57,7 +57,7 @@ func ListUsers(c *gin.Context) {
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
 	resp, err := service.ListUsers(page, size)
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, resp)

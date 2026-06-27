@@ -23,7 +23,8 @@
       />
     </div>
 
-    <NodeDetail v-model="detailVisible" :node="selectedNode" />
+    <NodeDetail v-model="detailVisible" :node="selectedNode" @edit="handleEditNode" />
+    <NodeEditDialog v-model="editDialogVisible" :node="editingNode" @success="fetchGraphData" />
     <BuildDialog v-model="buildVisible" :loading="buildLoading" @confirm="handleBuild" />
     <UploadDialog v-model="uploadVisible" @success="fetchGraphData" />
   </div>
@@ -38,6 +39,7 @@ import { debounce } from '@/utils'
 import GraphToolbar from './components/GraphToolbar.vue'
 import GraphCanvas from './components/GraphCanvas.vue'
 import NodeDetail from './components/NodeDetail.vue'
+import NodeEditDialog from './components/NodeEditDialog.vue'
 import BuildDialog from './components/BuildDialog.vue'
 import UploadDialog from './components/UploadDialog.vue'
 
@@ -47,6 +49,8 @@ const searchKeyword = ref('')
 const filterRelationType = ref('')
 const selectedNode = ref<GraphNode | null>(null)
 const detailVisible = ref(false)
+const editingNode = ref<GraphNode | null>(null)
+const editDialogVisible = ref(false)
 const buildVisible = ref(false)
 const buildLoading = ref(false)
 const uploadVisible = ref(false)
@@ -73,6 +77,12 @@ const handleSearch = debounce(() => {
 const handleNodeClick = (node: GraphNode) => {
   selectedNode.value = node
   detailVisible.value = true
+}
+
+const handleEditNode = (node: GraphNode) => {
+  editingNode.value = node
+  detailVisible.value = false
+  editDialogVisible.value = true
 }
 
 const handleBuild = async (documentIds: number[]) => {

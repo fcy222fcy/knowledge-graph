@@ -112,7 +112,7 @@ const handleAskQuestion = async (question: string) => {
     const stream = askQuestionStream({
       question,
       conversation_id: currentSessionId.value!
-    })
+    }) as AsyncIterable<import('@/services/qa').StreamEvent>
 
     for await (const event of stream) {
       if (event.type === 'session') {

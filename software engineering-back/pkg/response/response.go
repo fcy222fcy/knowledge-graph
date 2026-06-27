@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	apperrors "software_engineering/pkg/errors"
 )
 
 // Success 返回成功响应
@@ -24,11 +25,32 @@ func SuccessWithMessage(c *gin.Context, message string, data interface{}) {
 	})
 }
 
-// Error 返回错误响应
+// Error 返回错误响应（保持向后兼容）
 func Error(c *gin.Context, code int, message string) {
 	c.JSON(code, gin.H{
 		"code":    code,
 		"message": message,
+		"data":    nil,
+	})
+}
+
+// HandleError 统一错误处理：根据 AppError 自动推断 HTTP 状态码并返回标准错误响应。
+// 对于非 AppError 的普通 error，返回 500 内部错误。
+func HandleError(c *gin.Context, err error) {
+	if err == nil {
+		return
+	}
+	if appErr := apperrors.AsAppError(err); appErr != nil {
+		c.JSON(appErr.HTTPStatus(), gin.H{
+			"code":    appErr.Code,
+			"message": appErr.Message,
+			"data":    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"code":    apperrors.CodeInternalError,
+		"message": err.Error(),
 		"data":    nil,
 	})
 }

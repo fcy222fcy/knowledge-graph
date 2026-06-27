@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能实现流程图</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #000000;
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .flowchart-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #cccccc;
+            background-color: #ffffff;
+        }
+        .flowchart-container {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .description {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #333333;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .note {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            .flowchart-section {
+                page-break-inside: avoid;
+                border: 1px solid #000000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>系统功能实现流程图</h1>
+
+        <!-- 5.1.1 注册功能 -->
+        <h2>5.1.1 注册功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）注册功能实现过程</h3>
+            <div class="description">
+                学生在注册页面填写用户名、邮箱、密码和确认密码后，前端首先进行表单验证，检查各字段是否符合格式要求。验证通过后，前端通过 Axios 向后端发送 POST 请求至 /api/v1/auth/register 接口。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[开始注册] --> B[填写注册信息<br/>用户名/邮箱/密码/确认密码]
+    B --> C{前端表单验证}
+    C -->|验证失败| D[显示错误提示]
+    D --> B
+    C -->|验证通过| E[发送POST请求<br/>/api/v1/auth/register]
+    E --> F[Controller接收请求<br/>绑定注册DTO]
+    F --> G{参数验证}
+    G -->|验证失败| H[返回错误响应]
+    H --> B
+    G -->|验证通过| I[Service层处理]
+    I --> J{检查用户名是否已存在}
+    J -->|已存在| K[返回用户名已存在错误]
+    K --> B
+    J -->|不存在| L{检查邮箱是否已存在}
+    L -->|已存在| M[返回邮箱已存在错误]
+    M --> B
+    L -->|不存在| N[bcrypt密码哈希处理]
+    N --> O[创建User实体]
+    O --> P[Repository写入数据库]
+    P --> Q[返回成功响应]
+    Q --> R[前端跳转到登录页面]
+    R --> S[注册完成]
+                </div>
+            </div>
+            <p class="note">注：黑色线条表示主流程，灰色线条表示异常流程</p>
+        </div>
+
+        <!-- 5.1.2 登录功能 -->
+        <h2>5.1.2 登录功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）登录功能实现过程</h3>
+            <div class="description">
+                学生在登录页面输入用户名和密码后，前端通过 Axios 向后端发送 POST 请求至 /api/v1/auth/login 接口。后端验证用户身份，生成 JWT Token 返回给前端。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[开始登录] --> B[输入用户名和密码]
+    B --> C[发送POST请求<br/>/api/v1/auth/login]
+    C --> D[Controller接收请求<br/>绑定登录DTO]
+    D --> E[Service层处理]
+    E --> F{根据用户名查询用户}
+    F -->|用户不存在| G[返回用户不存在错误]
+    G --> B
+    F -->|用户存在| H[bcrypt.CompareHashAndPassword<br/>比对密码哈希]
+    H --> I{密码是否正确}
+    I -->|密码错误| J[返回密码错误]
+    J --> B
+    I -->|密码正确| K[golang-jwt生成JWT Token<br/>编码用户ID和用户名<br/>设置过期时间]
+    K --> L[返回Token和用户基本信息]
+    L --> M[前端存储Token<br/>Pinia状态管理 + localStorage]
+    M --> N[Axios请求拦截器<br/>自动携带Token]
+    N --> O[路由守卫验证Token]
+    O --> P[允许访问受保护页面]
+    P --> Q[登录完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.1.3 知识问答功能 -->
+        <h2>5.1.3 知识问答功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）知识问答功能实现过程</h3>
+            <div class="description">
+                学生在问答中心输入问题并提交后，前端通过 Axios 向后端发送 POST 请求至 /api/v1/ask 接口。后端执行知识检索逻辑，生成回答并返回置信度评分。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[开始问答] --> B[输入问题内容]
+    B --> C[发送POST请求<br/>/api/v1/ask<br/>请求体: 问题内容 + 会话ID]
+    C --> D[Service层接收问题]
+    D --> E{会话ID是否为空?}
+    E -->|为空| F[创建新AskSession<br/>标题: 问题前20个字符]
+    E -->|不为空| G[使用现有会话]
+    F --> H[保存用户问题<br/>AskMessage role=user]
+    G --> H
+    H --> I[知识检索逻辑<br/>基于关键词模糊匹配<br/>KnowledgePoint表查询]
+    I --> J{是否找到相关知识点?}
+    J -->|找到| K[计算置信度评分<br/>基于匹配数量和程度]
+    J -->|未找到| L[设置置信度为0]
+    K --> M[生成回答内容]
+    L --> M
+    M --> N[保存助手回答<br/>AskMessage role=assistant]
+    N --> O[返回响应:<br/>回答内容 + 置信度 + 相关知识点列表]
+    O --> P[前端展示:<br/>聊天气泡 + 置信度进度条<br/>+ 知识点标签]
+    P --> Q[问答完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.1.4 知识图谱浏览功能 -->
+        <h2>5.1.4 知识图谱浏览功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）知识图谱浏览功能实现过程</h3>
+            <div class="description">
+                前端进入知识图谱页面后，通过 Axios 向后端发送 GET 请求至 /api/v1/graph 接口获取图谱数据。后端从数据库查询知识点和关系，前端使用 D3.js 渲染力导向图。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[进入知识图谱页面] --> B[发送GET请求<br/>/api/v1/graph]
+    B --> C[Controller处理请求]
+    C --> D[查询KnowledgePoint表<br/>获取所有知识点]
+    D --> E[查询KnowledgeRelation表<br/>获取所有关系]
+    E --> F[组装JSON响应<br/>nodes + edges]
+    F --> G[返回图谱数据]
+    G --> H[前端接收数据]
+    H --> I[D3.js forceSimulation<br/>创建力导向图模拟]
+    I --> J[设置力:<br/>charge电荷力 + link链接力<br/>+ center中心力]
+    J --> K[SVG渲染:<br/>知识点=圆形节点<br/>关系=连线+关系类型标注]
+    K --> L[用户交互:<br/>鼠标拖拽节点 + 滚轮缩放]
+    L --> M[图谱浏览完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.1.5 题库练习功能 -->
+        <h2>5.1.5 题库练习功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）题库练习功能实现过程</h3>
+            <div class="description">
+                前端进入题库页面后，通过 Axios 向后端发送 GET 请求至 /api/v1/question 接口获取题目列表。学生选择题目并提交答案后，系统即时返回评分结果和详细解析。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[进入题库页面] --> B[发送GET请求<br/>/api/v1/question]
+    B --> C[后端查询Question表<br/>返回题目列表]
+    C --> D[前端展示题目卡片:<br/>标题/类型/难度/知识点]
+    D --> E[学生选择题目]
+    E --> F[展示完整题目<br/>内容和选项]
+    F --> G[学生选择答案]
+    G --> H[发送POST请求<br/>/api/v1/quiz<br/>请求体: 题目ID + 用户答案]
+    H --> I[Service层处理]
+    I --> J[查询题目记录<br/>获取正确答案]
+    J --> K[比对用户答案<br/>与正确答案]
+    K --> L{答案是否一致?}
+    L -->|一致| M[标记为正确<br/>is_correct = true]
+    L -->|不一致| N[标记为错误<br/>is_correct = false]
+    M --> O[保存答题记录到Quiz表]
+    N --> O
+    O --> P[返回响应:<br/>是否正确 + 正确答案 + 解析]
+    P --> Q[前端展示评分结果<br/>和详细解析]
+    Q --> R[答题完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.1.6 学习分析功能 -->
+        <h2>5.1.6 学习分析功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）学习分析功能实现过程</h3>
+            <div class="description">
+                前端进入学习分析页面后，通过 Axios 向后端发送 GET 请求至 /api/v1/analytics/overview 接口。后端从多个表中聚合统计数据，前端使用 ECharts 渲染图表。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[进入学习分析页面] --> B[发送GET请求<br/>/api/v1/analytics/overview]
+    B --> C[Service层聚合统计]
+    C --> D[查询AskSession表<br/>统计问答会话总数]
+    C --> E[查询AskMessage表<br/>统计消息总数]
+    C --> F[查询Quiz表<br/>统计答题总数和正确数]
+    C --> G[按难度统计正确率<br/>easy/medium/hard]
+    C --> H[分析薄弱知识点<br/>基于答题记录]
+    D --> I[封装统计数据]
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+    I --> J[返回统计数据]
+    J --> K[前端ECharts渲染:<br/>问答统计 + 答题统计<br/>+ 薄弱知识点列表<br/>+ 综合雷达图]
+    K --> L[学习分析完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.2.1 教师登录功能 -->
+        <h2>5.2.1 教师登录功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）教师登录功能实现过程</h3>
+            <div class="description">
+                教师登录流程与学生登录流程类似，区别在于后端验证的是 Teacher 表中的记录。教师登录接口为 /api/v1/teacher_auth/login。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[教师开始登录] --> B[输入教师账号和密码]
+    B --> C[发送POST请求<br/>/api/v1/teacher_auth/login]
+    C --> D[Controller接收请求<br/>绑定登录DTO]
+    D --> E[Service层处理]
+    E --> F[根据账号查询<br/>Teacher表]
+    F --> G{教师是否存在?}
+    G -->|不存在| H[返回教师不存在错误]
+    H --> B
+    G -->|存在| I[bcrypt比对密码]
+    I --> J{密码是否正确?}
+    J -->|错误| K[返回密码错误]
+    K --> B
+    J -->|正确| L[生成JWT Token<br/>包含教师身份标识]
+    L --> M[RequireTeacherAuth<br/>中间件验证]
+    M --> N[返回Token和教师信息]
+    N --> O[前端存储Token]
+    O --> P[进入教师管理界面]
+    P --> Q[教师登录完成]
+                </div>
+            </div>
+        </div>
+
+        <!-- 5.2.2 知识图谱构建功能 -->
+        <h2>5.2.2 知识图谱构建功能</h2>
+        <div class="flowchart-section">
+            <h3>（2）知识图谱构建功能实现过程</h3>
+            <div class="description">
+                教师选择文档并触发构建后，前端通过 Axios 向后端发送 POST 请求至 /api/v1/graph/build 接口。后端执行知识抽取、去重和存储流程。
+            </div>
+            <div class="flowchart-container">
+                <div class="mermaid">
+flowchart TD
+    A[教师点击构建图谱] --> B[弹出资料选择对话框<br/>展示已审核文档列表]
+    B --> C[勾选需要的文档]
+    C --> D[点击确认构建]
+    D --> E[发送POST请求<br/>/api/v1/graph/build<br/>请求体: 文档ID列表]
+    E --> F[Service层处理]
+    F --> G[根据文档ID查询<br/>Document记录]
+    G --> H[获取文档解析内容]
+    H --> I[分块处理文档内容]
+    I --> J[提取关键知识点<br/>和关系]
+    J --> K[确定性规则抽取<br/>知识点实体和关系]
+    K --> L[去重检查<br/>与KnowledgePoint表比对]
+    L --> M{是否重复?}
+    M -->|重复| N[跳过重复项]
+    M -->|不重复| O[写入KnowledgePoint表<br/>新知识点]
+    N --> P{还有更多知识点?}
+    O --> Q[写入KnowledgeRelation表<br/>新关系]
+    Q --> P
+    P -->|有| K
+    P -->|没有| R[记录构建统计信息<br/>到KnowledgeBuild表]
+    R --> S[返回构建结果:<br/>新增知识点数 + 新增关系数<br/>+ 跳过数]
+    S --> T[前端展示构建结果]
+    T --> U[自动刷新图谱<br/>GET /api/v1/graph]
+    U --> V[重新渲染可视化]
+    V --> W[构建完成]
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#000000',
+                primaryBorderColor: '#000000',
+                lineColor: '#000000',
+                secondaryColor: '#f0f0f0',
+                tertiaryColor: '#ffffff',
+                fontFamily: 'Microsoft YaHei, Arial, sans-serif',
+                fontSize: '14px'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

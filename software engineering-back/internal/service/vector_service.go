@@ -6,6 +6,8 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
+	"strconv"
 	"sync"
 
 	"software_engineering/pkg/ai"
@@ -178,6 +180,108 @@ func (s *VectorService) Search(query string, topK int) ([]SearchResult, error) {
 type SearchResult struct {
 	Metadata VectorMetadata
 	Score    float64
+}
+
+// Rerank 使用 LLM 对检索结果重新排序
+// query: 用户查询
+// results: 初始检索结果
+// topK: 返回的结果数量
+func (s *VectorService) Rerank(query string, results []SearchResult, topK int) ([]SearchResult, error) {
+	if len(results) == 0 {
+		return results, nil
+	}
+
+	// 如果结果数量已经小于等于 topK，直接返回
+	if len(results) <= topK {
+		return results, nil
+	}
+
+	type scoredResult struct {
+		result SearchResult
+		score  float64
+	}
+
+	scored := make([]scoredResult, 0, len(results))
+
+	for _, r := range results {
+		// 截断过长的文本，避免 token 超限
+		content := r.Metadata.ChunkText
+		if len(content) > 500 {
+			content = content[:500] + "..."
+		}
+
+		// 构建评估 prompt
+		prompt := fmt.Sprintf(`评估以下文档与问题的相关性。
+
+问题：%s
+
+文档内容：%s
+
+评分标准：
+- 10分：完全匹配，直接回答问题
+- 8-9分：高度相关，包含关键信息
+- 5-7分：部分相关，有一些有用信息
+- 1-4分：相关性很低
+- 0分：完全不相关
+
+只返回数字分数：`, query, content)
+
+		// 调用 LLM 获取分数
+		response, err := s.ollamaClient.Generate(prompt, "你是一个相关性评估器。只返回数字，不要解释。", nil)
+		if err != nil {
+			// 如果 LLM 调用失败，使用原始分数
+			scored = append(scored, scoredResult{r, r.Score})
+			log.Printf("Rerank LLM call failed, using original score: %v", err)
+			continue
+		}
+
+		// 解析分数
+		response = trimSpace(response)
+		llmScore, err := strconv.ParseFloat(response, 64)
+		if err != nil {
+			// 解析失败，使用原始分数
+			scored = append(scored, scoredResult{r, r.Score})
+			continue
+		}
+
+		// 归一化 LLM 分数到 0-1
+		normalizedLLMScore := llmScore / 10.0
+
+		// 混合分数：50% 向量分数 + 50% LLM 分数
+		hybridScore := r.Score*0.5 + normalizedLLMScore*0.5
+		scored = append(scored, scoredResult{r, hybridScore})
+	}
+
+	// 按混合分数降序排序
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].score > scored[j].score
+	})
+
+	// 取 topK 结果
+	if len(scored) > topK {
+		scored = scored[:topK]
+	}
+
+	// 转换回 SearchResult，保留原始向量分数
+	reranked := make([]SearchResult, len(scored))
+	for i, s := range scored {
+		reranked[i] = s.result
+	}
+
+	return reranked, nil
+}
+
+// trimSpace 去除字符串首尾空白
+func trimSpace(s string) string {
+	start := 0
+	end := len(s)
+	for start < end && (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' || s[start] == '\r') {
+		start++
+	}
+	for end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\n' || s[end-1] == '\r') {
+		end--
+	}
+	return s[start:end]
 }
 
 // SaveIndex 保存索引到文件

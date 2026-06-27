@@ -6,6 +6,7 @@ import (
 	"math"
 	"strings"
 
+	"software_engineering/internal/repository"
 	"software_engineering/pkg/ai"
 	"software_engineering/pkg/config"
 )
@@ -70,93 +71,37 @@ func GetAnswerService() *AnswerService {
 	return answerService
 }
 
-// SearchAndAnswer 标准 RAG 问答：向量搜索 + LLM 回答
+// SearchAndAnswer 标准 RAG 问答：向量搜索 + Rerank + LLM 回答
 func (s *AnswerService) SearchAndAnswer(query string, history []ChatMessage, topK int) (*AnswerResponse, error) {
-	// 1. 向量搜索
-	searchResults, err := GetVectorService().Search(query, topK)
+	// 1. 向量搜索（多检索一些，用于 Rerank）
+	searchTopK := topK * 2
+	searchResults, err := GetVectorService().Search(query, searchTopK)
 	if err != nil {
 		return nil, fmt.Errorf("vector search failed: %w", err)
 	}
 
-	// 2. 构建上下文
-	context := buildRAGContext(searchResults)
-
-	// 3. 构建对话历史字符串
-	historyStr := BuildConversationContext(history)
-
-	// 4. 构建 prompt
-	systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
-如果知识库中没有相关信息，请说明无法从知识库中找到答案。
-回答要准确、简洁，并引用相关的知识来源。`
-
-	userPrompt := fmt.Sprintf(`知识库内容：
-%s
-
-%s
-用户问题：%s
-
-请基于以上知识库内容回答问题：`, context, historyStr, query)
-
-	// 5. 调用 LLM
-	response, err := s.ollamaClient.Generate(userPrompt, systemPrompt, &ai.GenerateOptions{
-		Temperature: 0.7,
-		TopP:        0.9,
-		NumPredict:  1024,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("LLM generation failed: %w", err)
+	// 2. Rerank 重排序
+	if len(searchResults) > topK {
+		searchResults, err = GetVectorService().Rerank(query, searchResults, topK)
+		if err != nil {
+			// Rerank 失败时使用原始排序
+			if len(searchResults) > topK {
+				searchResults = searchResults[:topK]
+			}
+		}
 	}
-
-	// 6. 计算置信度
-	confidence := calculateConfidence(searchResults)
-
-	// 7. 构建来源
-	sources := buildSources(searchResults)
-
-	return &AnswerResponse{
-		Answer:     response,
-		Confidence: confidence,
-		Sources:    sources,
-	}, nil
-}
-
-// SearchAndAnswerWithGraph 知识图谱增强的 RAG 问答
-func (s *AnswerService) SearchAndAnswerWithGraph(query string, history []ChatMessage, topK int) (*GraphAnswerResponse, error) {
-	// 1. 向量搜索
-	searchResults, err := GetVectorService().Search(query, topK)
-	if err != nil {
-		return nil, fmt.Errorf("vector search failed: %w", err)
-	}
-
-	// 2. 搜索知识图谱
-	graphNodes, graphRelations := searchKnowledgeGraph(query)
 
 	// 3. 构建上下文
-	vectorContext := buildRAGContext(searchResults)
-	graphContext := buildGraphContext(graphNodes, graphRelations)
+	context := buildRAGContext(searchResults)
 
 	// 4. 构建对话历史字符串
 	historyStr := BuildConversationContext(history)
 
 	// 5. 构建 prompt
-	systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容和知识图谱信息回答用户的问题。
-知识图谱提供了知识点之间的关系，可以帮助你更好地理解概念之间的联系。
-如果知识库中没有相关信息，请说明无法从知识库中找到答案。
-回答要准确、简洁，并引用相关的知识来源。`
-
-	userPrompt := fmt.Sprintf(`知识库内容：
-%s
-
-知识图谱信息：
-%s
-
-%s
-用户问题：%s
-
-请基于以上信息回答问题：`, vectorContext, graphContext, historyStr, query)
+	userPrompt := BuildUserPrompt(query, context, "", historyStr)
 
 	// 6. 调用 LLM
-	response, err := s.ollamaClient.Generate(userPrompt, systemPrompt, &ai.GenerateOptions{
+	response, err := s.ollamaClient.Generate(userPrompt, DocumentRAGPrompt, &ai.GenerateOptions{
 		Temperature: 0.7,
 		TopP:        0.9,
 		NumPredict:  1024,
@@ -171,7 +116,64 @@ func (s *AnswerService) SearchAndAnswerWithGraph(query string, history []ChatMes
 	// 8. 构建来源
 	sources := buildSources(searchResults)
 
-	// 9. 构建相关知识点
+	return &AnswerResponse{
+		Answer:     response,
+		Confidence: confidence,
+		Sources:    sources,
+	}, nil
+}
+
+// SearchAndAnswerWithGraph 知识图谱增强的 RAG 问答
+func (s *AnswerService) SearchAndAnswerWithGraph(query string, history []ChatMessage, topK int) (*GraphAnswerResponse, error) {
+	// 1. 向量搜索（多检索一些，用于 Rerank）
+	searchTopK := topK * 2
+	searchResults, err := GetVectorService().Search(query, searchTopK)
+	if err != nil {
+		return nil, fmt.Errorf("vector search failed: %w", err)
+	}
+
+	// 2. Rerank 重排序
+	if len(searchResults) > topK {
+		searchResults, err = GetVectorService().Rerank(query, searchResults, topK)
+		if err != nil {
+			// Rerank 失败时使用原始排序
+			if len(searchResults) > topK {
+				searchResults = searchResults[:topK]
+			}
+		}
+	}
+
+	// 3. 搜索知识图谱
+	graphNodes, graphRelations := searchKnowledgeGraph(query)
+
+	// 4. 构建上下文
+	vectorContext := buildRAGContext(searchResults)
+	graphContext := buildGraphContext(graphNodes, graphRelations)
+
+	// 5. 构建对话历史字符串
+	historyStr := BuildConversationContext(history)
+
+	// 6. 构建 prompt
+	combinedContext := "知识库内容：\n" + vectorContext + "\n\n知识图谱信息：\n" + graphContext
+	userPrompt := BuildUserPrompt(query, combinedContext, "", historyStr)
+
+	// 7. 调用 LLM
+	response, err := s.ollamaClient.Generate(userPrompt, KnowledgeGraphPrompt, &ai.GenerateOptions{
+		Temperature: 0.7,
+		TopP:        0.9,
+		NumPredict:  1024,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("LLM generation failed: %w", err)
+	}
+
+	// 8. 计算置信度
+	confidence := calculateConfidence(searchResults)
+
+	// 9. 构建来源
+	sources := buildSources(searchResults)
+
+	// 10. 构建相关知识点
 	relatedPoints := buildRelatedPoints(graphNodes)
 
 	return &GraphAnswerResponse{
@@ -193,33 +195,35 @@ type StreamChunk struct {
 
 // SearchAndAnswerStream 流式 RAG 问答
 func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
-	// 1. 向量搜索
-	searchResults, err := GetVectorService().Search(query, topK)
+	// 1. 向量搜索（多检索一些，用于 Rerank）
+	searchTopK := topK * 2
+	searchResults, err := GetVectorService().Search(query, searchTopK)
 	if err != nil {
 		return nil, fmt.Errorf("vector search failed: %w", err)
 	}
 
-	// 2. 构建上下文
+	// 2. Rerank 重排序
+	if len(searchResults) > topK {
+		searchResults, err = GetVectorService().Rerank(query, searchResults, topK)
+		if err != nil {
+			// Rerank 失败时使用原始排序
+			if len(searchResults) > topK {
+				searchResults = searchResults[:topK]
+			}
+		}
+	}
+
+	// 3. 构建上下文
 	context := buildRAGContext(searchResults)
 
-	// 3. 构建对话历史字符串
+	// 4. 构建对话历史字符串
 	historyStr := BuildConversationContext(history)
 
-	// 4. 构建 prompt
-	systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
-如果知识库中没有相关信息，请说明无法从知识库中找到答案。
-回答要准确、简洁，并引用相关的知识来源。`
+	// 5. 构建 prompt
+	userPrompt := BuildUserPrompt(query, context, "", historyStr)
 
-	userPrompt := fmt.Sprintf(`知识库内容：
-%s
-
-%s
-用户问题：%s
-
-请基于以上知识库内容回答问题：`, context, historyStr, query)
-
-	// 5. 调用流式 LLM
-	stream, err := s.ollamaClient.GenerateStream(userPrompt, systemPrompt, &ai.GenerateOptions{
+	// 6. 调用流式 LLM
+	stream, err := s.ollamaClient.GenerateStream(userPrompt, DocumentRAGPrompt, &ai.GenerateOptions{
 		Temperature: 0.7,
 		TopP:        0.9,
 		NumPredict:  1024,
@@ -228,10 +232,10 @@ func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessag
 		return nil, fmt.Errorf("LLM generation stream failed: %w", err)
 	}
 
-	// 6. 计算置信度
+	// 7. 计算置信度
 	confidence := calculateConfidence(searchResults)
 
-	// 7. 创建输出 channel
+	// 8. 创建输出 channel
 	ch := make(chan StreamChunk, 100)
 
 	go func() {
@@ -266,41 +270,40 @@ func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessag
 
 // SearchAndAnswerWithGraphStream 流式知识图谱增强 RAG 问答
 func (s *AnswerService) SearchAndAnswerWithGraphStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
-	// 1. 向量搜索
-	searchResults, err := GetVectorService().Search(query, topK)
+	// 1. 向量搜索（多检索一些，用于 Rerank）
+	searchTopK := topK * 2
+	searchResults, err := GetVectorService().Search(query, searchTopK)
 	if err != nil {
 		return nil, fmt.Errorf("vector search failed: %w", err)
 	}
 
-	// 2. 搜索知识图谱
+	// 2. Rerank 重排序
+	if len(searchResults) > topK {
+		searchResults, err = GetVectorService().Rerank(query, searchResults, topK)
+		if err != nil {
+			// Rerank 失败时使用原始排序
+			if len(searchResults) > topK {
+				searchResults = searchResults[:topK]
+			}
+		}
+	}
+
+	// 3. 搜索知识图谱
 	graphNodes, graphRelations := searchKnowledgeGraph(query)
 
-	// 3. 构建上下文
+	// 4. 构建上下文
 	vectorContext := buildRAGContext(searchResults)
 	graphContext := buildGraphContext(graphNodes, graphRelations)
 
-	// 4. 构建对话历史字符串
+	// 5. 构建对话历史字符串
 	historyStr := BuildConversationContext(history)
 
-	// 5. 构建 prompt
-	systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容和知识图谱信息回答用户的问题。
-知识图谱提供了知识点之间的关系，可以帮助你更好地理解概念之间的联系。
-如果知识库中没有相关信息，请说明无法从知识库中找到答案。
-回答要准确、简洁，并引用相关的知识来源。`
+	// 6. 构建 prompt
+	combinedContext := "知识库内容：\n" + vectorContext + "\n\n知识图谱信息：\n" + graphContext
+	userPrompt := BuildUserPrompt(query, combinedContext, "", historyStr)
 
-	userPrompt := fmt.Sprintf(`知识库内容：
-%s
-
-知识图谱信息：
-%s
-
-%s
-用户问题：%s
-
-请基于以上信息回答问题：`, vectorContext, graphContext, historyStr, query)
-
-	// 6. 调用流式 LLM
-	stream, err := s.ollamaClient.GenerateStream(userPrompt, systemPrompt, &ai.GenerateOptions{
+	// 7. 调用流式 LLM
+	stream, err := s.ollamaClient.GenerateStream(userPrompt, KnowledgeGraphPrompt, &ai.GenerateOptions{
 		Temperature: 0.7,
 		TopP:        0.9,
 		NumPredict:  1024,
@@ -309,10 +312,10 @@ func (s *AnswerService) SearchAndAnswerWithGraphStream(query string, history []C
 		return nil, fmt.Errorf("LLM generation stream failed: %w", err)
 	}
 
-	// 7. 计算置信度
+	// 8. 计算置信度
 	confidence := calculateConfidence(searchResults)
 
-	// 8. 创建输出 channel
+	// 9. 创建输出 channel
 	ch := make(chan StreamChunk, 100)
 
 	go func() {
@@ -438,10 +441,21 @@ func calculateConfidence(results []SearchResult) float64 {
 func buildSources(results []SearchResult) []AnswerSource {
 	sources := make([]AnswerSource, 0)
 	for _, r := range results {
-		sources = append(sources, AnswerSource{
+		source := AnswerSource{
 			DocumentID: r.Metadata.DocumentID,
 			Content:    truncateText(r.Metadata.ChunkText, 200),
-		})
+		}
+		// 查询文档标题
+		if r.Metadata.DocumentID > 0 {
+			doc, err := repository.FindDocumentByID(r.Metadata.DocumentID)
+			if err == nil {
+				source.DocumentTitle = doc.Title
+			}
+		}
+		if source.DocumentTitle == "" {
+			source.DocumentTitle = "知识库"
+		}
+		sources = append(sources, source)
 	}
 	return sources
 }
@@ -469,13 +483,72 @@ func truncateText(text string, maxLen int) string {
 
 // searchKnowledgeGraph 搜索知识图谱的全局函数
 func searchKnowledgeGraph(query string) ([]GraphNode, []GraphEdge) {
-	// 简化实现：从 MySQL 查询相关知识点
-	// 实际应该调用 graph_repo 的方法
 	nodes := make([]GraphNode, 0)
 	edges := make([]GraphEdge, 0)
 
-	// TODO: 实现从数据库查询知识图谱
-	// 可以调用 repository.FindKnowledgePointsByKeyword 等方法
+	// 1. 获取所有知识点
+	allPoints, err := repository.GetAllKnowledgePoints()
+	if err != nil || len(allPoints) == 0 {
+		return nodes, edges
+	}
+
+	// 2. 提取关键词并匹配知识点
+	queryLower := strings.ToLower(query)
+	matchedIDs := make(map[uint]bool)
+
+	for _, p := range allPoints {
+		nameLower := strings.ToLower(p.Name)
+		descLower := strings.ToLower(p.Description)
+		if strings.Contains(nameLower, queryLower) || strings.Contains(descLower, queryLower) {
+			if !matchedIDs[p.ID] {
+				matchedIDs[p.ID] = true
+				nodes = append(nodes, GraphNode{
+					ID:          p.ID,
+					Name:        p.Name,
+					Description: p.Description,
+					Category:    p.Category,
+				})
+			}
+		}
+	}
+
+	// 3. 如果没有精确匹配，尝试部分关键词匹配
+	if len(nodes) == 0 {
+		keywords := extractKeywords(queryLower)
+		for _, p := range allPoints {
+			nameLower := strings.ToLower(p.Name)
+			descLower := strings.ToLower(p.Description)
+			for _, kw := range keywords {
+				if len(kw) >= 2 && (strings.Contains(nameLower, kw) || strings.Contains(descLower, kw)) {
+					if !matchedIDs[p.ID] {
+						matchedIDs[p.ID] = true
+						nodes = append(nodes, GraphNode{
+							ID:          p.ID,
+							Name:        p.Name,
+							Description: p.Description,
+							Category:    p.Category,
+						})
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// 4. 获取匹配知识点的关系
+	if len(matchedIDs) > 0 {
+		_, allRelations, _ := repository.GetAllGraphDataFromNeo4j()
+		for _, rel := range allRelations {
+			if matchedIDs[rel.SourceID] || matchedIDs[rel.TargetID] {
+				edges = append(edges, GraphEdge{
+					Source:       rel.SourceID,
+					Target:       rel.TargetID,
+					RelationType: rel.RelationType,
+					Description:  rel.Description,
+				})
+			}
+		}
+	}
 
 	return nodes, edges
 }

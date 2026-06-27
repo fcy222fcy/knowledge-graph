@@ -69,7 +69,7 @@ func ListSessionMessages(sessionID uint, page, size int) ([]response.AskMessageR
 }
 
 // Ask 智能问答核心方法，采用多级降级策略：
-// 1. 知识图谱问答（Graph RAG）→ 2. 普通 RAG 问答 → 3. 语义搜索 → 4. 本地关键词检索 → 5. 知识点匹配
+// 1. 知识图谱查询（Graph RAG）→ 2. 向量检索 RAG → 3. 关键词检索 → 4. 知识点匹配 → 5. LLM 自由回答
 func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	log.Printf("DEBUG: Received question: %q", req.Question)
 
@@ -98,20 +98,51 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 		history = history[len(history)-2:]
 	}
 
-	// 保存当前用户消息
+	// 保存当前用户消息（防止重复保存）
 	userMsg := &entity.AskMessage{
 		SessionID: sessionID,
 		Role:      "user",
 		Content:   req.Question,
 	}
-	repository.CreateAskMessage(userMsg)
+	if !repository.HasRecentUserMessage(sessionID, req.Question, 5) {
+		repository.CreateAskMessage(userMsg)
+	}
+
+	// 构建对话历史字符串
+	historyStr := BuildConversationContext(history)
 
 	var answer string
 	var confidence float64
 	var sources []response.AskSource
 	var related []response.KPRef
 
-	// 优先使用向量检索（RAG 路径）
+	// 第1级：优先使用知识图谱查询
+	graphContext, graphSources, graphRelated, graphConfidence := searchFromKnowledgeGraph(req.Question)
+	if graphContext != "" {
+		log.Printf("DEBUG: Using knowledge graph for question: %s", req.Question)
+		// 尝试调用 LLM 基于图谱上下文生成回答
+		if aiClient.IsAvailable() {
+			userPrompt := BuildGraphUserPrompt(req.Question, graphContext, historyStr)
+
+			llmResponse, err := aiClient.Generate(userPrompt, KnowledgeGraphPrompt, nil)
+			if err == nil && llmResponse != "" {
+				answer = llmResponse
+				confidence = graphConfidence
+				sources = graphSources
+				related = graphRelated
+			}
+		}
+
+		// LLM 不可用或失败时，直接返回图谱上下文
+		if answer == "" {
+			answer = fmt.Sprintf("关于「%s」的知识图谱查询结果：\n\n%s\n\n以上内容来自知识图谱。", req.Question, graphContext)
+			confidence = 0.75
+			sources = graphSources
+			related = graphRelated
+		}
+	}
+
+	// 第2级：向量检索 RAG
 	vecSvc := GetVectorService()
 	if answer == "" && vecSvc != nil && vecSvc.GetSize() > 0 {
 		log.Printf("DEBUG: Using vector search for question: %s", req.Question)
@@ -151,21 +182,9 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 				}
 
 				if aiClient.IsAvailable() {
-					systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
-要求：
-1. 回答要准确、完整、有条理
-2. 如果包含代码示例，请保留代码格式
-3. 如果知识库内容不足以回答问题，请说明
-4. 引用相关的文档来源`
+					userPrompt := BuildUserPrompt(req.Question, contextText, docTitle, historyStr)
 
-					userPrompt := fmt.Sprintf(`用户问题：%s
-
-参考知识库内容（来自文档《%s》）：
-%s
-
-请基于以上知识库内容，用清晰的格式回答用户的问题：`, req.Question, docTitle, contextText)
-
-					llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+					llmResponse, err := aiClient.Generate(userPrompt, DocumentRAGPrompt, nil)
 					if err == nil && llmResponse != "" {
 						answer = llmResponse
 						confidence = 0.9
@@ -303,33 +322,21 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 
 			// 尝试调用 LLM 生成回答
 			if aiClient.IsAvailable() {
-				systemPrompt := `你是一个软件工程知识问答助手。请根据提供的知识库内容回答用户的问题。
-要求：
-1. 回答要准确、完整、有条理
-2. 如果包含代码示例，请保留代码格式
-3. 如果知识库内容不足以回答问题，请说明
-4. 引用相关的文档来源`
+				userPrompt := BuildUserPrompt(req.Question, contextText, docTitle, historyStr)
 
-				userPrompt := fmt.Sprintf(`用户问题：%s
-
-参考知识库内容（来自文档《%s》）：
-%s
-
-请基于以上知识库内容，用清晰的格式回答用户的问题：`, req.Question, docTitle, contextText)
-
-				llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+				llmResponse, err := aiClient.Generate(userPrompt, DocumentRAGPrompt, nil)
 				if err == nil && llmResponse != "" {
 					answer = llmResponse
 					confidence = 0.85
 				} else {
 					// LLM 失败，降级为直接返回文档片段
 					log.Printf("warning: LLM generation failed for local search: %v", err)
-					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n📚 **参考来源**：《%s》", req.Question, docTitle, contextText, docTitle)
 					confidence = 0.7
 				}
 			} else {
 				// AI 服务不可用，直接返回文档片段
-				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
+				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n📚 **参考来源**：《%s》", req.Question, docTitle, contextText, docTitle)
 				confidence = 0.7
 			}
 		}
@@ -356,16 +363,11 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	// 最终降级：如果知识库没有找到，让 LLM 自由回答
 	if answer == "" && aiClient.IsAvailable() {
 		log.Printf("info: No knowledge base match for question: %s, using LLM free answer", req.Question)
-		systemPrompt := `你是一个软件工程知识问答助手。请根据你的知识回答用户的问题。
-注意：这个回答不是基于知识库内容的，请在回答末尾说明这一点。`
+		userPrompt := BuildFreeUserPrompt(req.Question)
 
-		userPrompt := fmt.Sprintf(`用户问题：%s
-
-请回答这个问题：`, req.Question)
-
-		llmResponse, err := aiClient.Generate(userPrompt, systemPrompt, nil)
+		llmResponse, err := aiClient.Generate(userPrompt, FreeAnswerPrompt, nil)
 		if err == nil && llmResponse != "" {
-			answer = llmResponse + "\n\n> ⚠️ 注意：以上回答没有从知识库中找到相关内容，是基于 AI 模型的通用知识生成的。"
+			answer = llmResponse
 			confidence = 0.5
 		}
 	}
@@ -571,6 +573,113 @@ func extractKeywords(question string) []string {
 	return keywords
 }
 
+// searchFromKnowledgeGraph 从知识图谱查询与问题相关的知识点和关系，构建上下文
+// 返回：图谱上下文文本、参考来源、相关知识点列表、置信度
+func searchFromKnowledgeGraph(question string) (string, []response.AskSource, []response.KPRef, float64) {
+	// 从 Neo4j 获取图谱数据（不可用时自动降级到 MySQL）
+	allNodes, allRelations, err := repository.GetAllGraphDataFromNeo4j()
+	if err != nil || len(allNodes) == 0 {
+		log.Printf("DEBUG: Knowledge graph query returned no nodes or error: %v", err)
+		return "", nil, nil, 0
+	}
+
+	// 提取关键词并匹配知识点
+	keywords := extractKeywords(strings.ToLower(question))
+	if len(keywords) == 0 {
+		cleanQuestion := strings.NewReplacer("？", "", "!", "", "。", "", "，", "", ",", "", ".", "").Replace(strings.ToLower(question))
+		if len(cleanQuestion) >= 2 {
+			keywords = append(keywords, cleanQuestion)
+		}
+	}
+
+	// 根据关键词匹配知识点
+	matchedNodeIDs := make(map[uint]bool)
+	var matchedNodes []entity.KnowledgePoint
+	for _, node := range allNodes {
+		nameLower := strings.ToLower(node.Name)
+		descLower := strings.ToLower(node.Description)
+		for _, kw := range keywords {
+			if len(kw) >= 2 && (strings.Contains(nameLower, kw) || strings.Contains(descLower, kw)) {
+				if !matchedNodeIDs[node.ID] {
+					matchedNodeIDs[node.ID] = true
+					matchedNodes = append(matchedNodes, node)
+				}
+				break
+			}
+		}
+	}
+
+	if len(matchedNodes) == 0 {
+		log.Printf("DEBUG: No knowledge graph nodes matched for question: %s", question)
+		return "", nil, nil, 0
+	}
+
+	// 获取与匹配节点相关的边
+	var matchedRelations []entity.KnowledgeRelation
+	for _, rel := range allRelations {
+		if matchedNodeIDs[rel.SourceID] || matchedNodeIDs[rel.TargetID] {
+			matchedRelations = append(matchedRelations, rel)
+		}
+	}
+
+	// 构建图谱上下文
+	var sb strings.Builder
+	sb.WriteString("相关知识点：\n")
+	for _, node := range matchedNodes {
+		category := node.Category
+		if category == "" {
+			category = "未分类"
+		}
+		sb.WriteString(fmt.Sprintf("- %s (%s): %s\n", node.Name, category, node.Description))
+	}
+
+	if len(matchedRelations) > 0 {
+		sb.WriteString("\n知识点关系：\n")
+		nodeIDToName := make(map[uint]string)
+		for _, node := range allNodes {
+			nodeIDToName[node.ID] = node.Name
+		}
+		for _, rel := range matchedRelations {
+			sourceName := nodeIDToName[rel.SourceID]
+			if sourceName == "" {
+				sourceName = fmt.Sprintf("节点_%d", rel.SourceID)
+			}
+			targetName := nodeIDToName[rel.TargetID]
+			if targetName == "" {
+				targetName = fmt.Sprintf("节点_%d", rel.TargetID)
+			}
+			relType := rel.RelationType
+			if relType == "" {
+				relType = rel.Type
+			}
+			sb.WriteString(fmt.Sprintf("- %s --[%s]--> %s: %s\n", sourceName, relType, targetName, rel.Description))
+		}
+	}
+
+	graphContext := sb.String()
+
+	// 构建 sources
+	sources := []response.AskSource{
+		{
+			DocumentTitle: "知识图谱",
+			Content:       graphContext,
+		},
+	}
+
+	// 构建相关知识点
+	related := make([]response.KPRef, 0, len(matchedNodes))
+	for _, node := range matchedNodes {
+		related = append(related, response.KPRef{
+			ID:          node.ID,
+			Name:        node.Name,
+			Description: node.Description,
+		})
+	}
+
+	log.Printf("DEBUG: Knowledge graph found %d nodes and %d relations", len(matchedNodes), len(matchedRelations))
+	return graphContext, sources, related, 0.85
+}
+
 // StreamEvent 流式事件
 type StreamEvent struct {
 	Type       string             `json:"type"`       // "chunk", "done", "error"
@@ -607,13 +716,15 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 		history = history[len(history)-2:]
 	}
 
-	// 保存当前用户消息
-	userMsg := &entity.AskMessage{
-		SessionID: sessionID,
-		Role:      "user",
-		Content:   req.Question,
+	// 保存当前用户消息（防止重复保存）
+	if !repository.HasRecentUserMessage(sessionID, req.Question, 5) {
+		userMsg := &entity.AskMessage{
+			SessionID: sessionID,
+			Role:      "user",
+			Content:   req.Question,
+		}
+		repository.CreateAskMessage(userMsg)
 	}
-	repository.CreateAskMessage(userMsg)
 
 	// 创建事件 channel
 	ch := make(chan StreamEvent, 100)

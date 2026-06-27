@@ -1,19 +1,18 @@
 package service
 
 import (
-	"errors"
-
 	"software_engineering/internal/model/dto/request"
 	"software_engineering/internal/model/dto/response"
 	"software_engineering/internal/repository"
 	"software_engineering/pkg/bcrypt"
+	apperrors "software_engineering/pkg/errors"
 )
 
 // GetProfile 获取用户个人信息
 func GetProfile(userID uint) (*response.UserResponse, error) {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
-		return nil, errors.New("用户不存在")
+		return nil, apperrors.New(apperrors.CodeUserNotFound, "用户不存在")
 	}
 	return &response.UserResponse{
 		ID:        user.ID,
@@ -31,7 +30,7 @@ func GetProfile(userID uint) (*response.UserResponse, error) {
 func UpdateProfile(userID uint, req request.UpdateProfileRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
-		return errors.New("用户不存在")
+		return apperrors.New(apperrors.CodeUserNotFound, "用户不存在")
 	}
 	if req.Nickname != "" {
 		user.Nickname = req.Nickname
@@ -46,10 +45,10 @@ func UpdateProfile(userID uint, req request.UpdateProfileRequest) error {
 func ChangePassword(userID uint, req request.ChangePasswordRequest) error {
 	user, err := repository.FindUserByID(userID)
 	if err != nil {
-		return errors.New("用户不存在")
+		return apperrors.New(apperrors.CodeUserNotFound, "用户不存在")
 	}
 	if !bcrypt.CheckPassword(req.OldPassword, user.Password) {
-		return errors.New("旧密码错误")
+		return apperrors.New(apperrors.CodeInvalidPassword, "旧密码错误")
 	}
 	hash, err := bcrypt.HashPassword(req.NewPassword)
 	if err != nil {

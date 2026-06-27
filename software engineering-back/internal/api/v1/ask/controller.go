@@ -93,18 +93,19 @@ func AskQuestionStream(c *gin.Context) {
 		return
 	}
 
-	// 设置 SSE 响应头
-	c.Header("Content-Type", "text/event-stream")
-	c.Header("Cache-Control", "no-cache")
-	c.Header("Connection", "keep-alive")
-	c.Header("X-Accel-Buffering", "no")
-
-	// 调用流式服务
+	// 调用流式服务（在设置 SSE 头之前）
 	sessionID, ch, err := service.AskStream(userID, req)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// 设置 SSE 响应头
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Accel-Buffering", "no")
+	c.Writer.Flush()
 
 	// 先发送会话 ID
 	c.Writer.Write([]byte(fmt.Sprintf("data: %s\n\n", mustJSON(map[string]interface{}{

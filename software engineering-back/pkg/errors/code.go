@@ -10,16 +10,21 @@ const (
 	CodeNotFound      = 404
 	CodeInternalError = 500
 
+	// 参数验证错误码 (4xx)
+	CodeValidationFailed = 40010
+
 	// 用户相关错误码
 	CodeUserNotFound      = 1001
 	CodeUserAlreadyExists = 1002
 	CodeInvalidPassword   = 1003
 	CodeInvalidToken      = 1004
+	CodeUserDisabled      = 1005
 
 	// 资料相关错误码
 	CodeDocumentNotFound      = 2001
 	CodeDocumentUploadFailed  = 2002
 	CodeDocumentInvalidFormat = 2003
+	CodeDocumentAccessDenied  = 2004
 
 	// 知识点相关错误码
 	CodeKnowledgePointNotFound = 3001
@@ -34,4 +39,9 @@ const (
 	// 问答相关错误码
 	CodeAskSessionNotFound = 6001
 	CodeAskFailed          = 6002
+
+	// 外部服务错误码
+	CodeExternalServiceUnavailable = 7001
+	CodeLLMServiceFailed           = 7002
+	CodeVectorServiceFailed        = 7003
 )

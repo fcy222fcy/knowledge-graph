@@ -32,6 +32,16 @@ func CreateAskMessage(msg *entity.AskMessage) error {
 	return database.DB.Create(msg).Error
 }
 
+// HasRecentUserMessage 检查会话中是否有最近的相同用户消息（防止重复保存）
+func HasRecentUserMessage(sessionID uint, content string, seconds int) bool {
+	var count int64
+	database.DB.Model(&entity.AskMessage{}).
+		Where("session_id = ? AND role = ? AND content = ? AND created_at > DATE_SUB(NOW(), INTERVAL ? SECOND)",
+			sessionID, "user", content, seconds).
+		Count(&count)
+	return count > 0
+}
+
 // ListAskMessages 分页获取指定会话的消息记录
 func ListAskMessages(sessionID uint, page, size int) ([]entity.AskMessage, int64, error) {
 	var messages []entity.AskMessage
@@ -42,10 +52,10 @@ func ListAskMessages(sessionID uint, page, size int) ([]entity.AskMessage, int64
 	return messages, total, err
 }
 
-// CountMessagesBySession 统计指定会话的消息数量
+// CountMessagesBySession 统计指定会话的用户问题数量
 func CountMessagesBySession(sessionID uint) int {
 	var count int64
-	database.DB.Model(&entity.AskMessage{}).Where("session_id = ?", sessionID).Count(&count)
+	database.DB.Model(&entity.AskMessage{}).Where("session_id = ? AND role = ?", sessionID, "user").Count(&count)
 	return int(count)
 }
 

@@ -172,7 +172,7 @@ func TestAuthServiceImpl_RefreshToken_Success(t *testing.T) {
 	mockRepo.AddUser(1, "testuser", "test@example.com", hash)
 
 	// 生成有效 token
-	oldToken, err := jwt.GenerateToken(1, "testuser")
+	oldToken, err := jwt.GenerateToken(1, "testuser", "student")
 	if err != nil {
 		t.Fatalf("生成Token失败: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestAuthServiceImpl_RefreshToken_UserNotFound(t *testing.T) {
 	svc, _ := setupTestService()
 
 	// 生成一个有效 token，但用户不存在
-	token, err := jwt.GenerateToken(999, "nonexistent")
+	token, err := jwt.GenerateToken(999, "nonexistent", "student")
 	if err != nil {
 		t.Fatalf("生成Token失败: %v", err)
 	}
@@ -242,7 +242,7 @@ func TestAuthServiceImpl_RefreshToken_UserDisabled(t *testing.T) {
 	user.ID = 1
 	mockRepo.Create(user)
 
-	token, err := jwt.GenerateToken(1, "disableduser")
+	token, err := jwt.GenerateToken(1, "disableduser", "student")
 	if err != nil {
 		t.Fatalf("生成Token失败: %v", err)
 	}

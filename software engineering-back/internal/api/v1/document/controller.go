@@ -69,21 +69,10 @@ func GetDocument(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	resp, err := service.GetDocument(uint(id))
 	if err != nil {
-		response.Error(c, http.StatusNotFound, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, resp)
-}
-
-// GetDocumentDownload 获取文档下载 URL
-func GetDocumentDownload(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	url, err := service.GetDocumentDownloadURL(uint(id))
-	if err != nil {
-		response.Error(c, http.StatusNotFound, err.Error())
-		return
-	}
-	response.Success(c, map[string]string{"url": url})
 }
 
 // GetDocumentContent 获取文档完整内容
@@ -91,7 +80,7 @@ func GetDocumentContent(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	resp, err := service.GetDocumentContent(uint(id))
 	if err != nil {
-		response.Error(c, http.StatusNotFound, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, resp)
@@ -106,7 +95,7 @@ func UpdateDocument(c *gin.Context) {
 		return
 	}
 	if err := service.UpdateDocument(uint(id), req); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, nil)
@@ -117,7 +106,7 @@ func DeleteDocument(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	id, _ := strconv.Atoi(c.Param("id"))
 	if err := service.DeleteDocument(userID, uint(id)); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 	response.Success(c, nil)

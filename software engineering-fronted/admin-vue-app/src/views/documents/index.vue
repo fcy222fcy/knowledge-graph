@@ -82,7 +82,7 @@
         </el-form-item>
         <el-form-item label="备注">
           <el-input
-            v-model="reviewForm.remark"
+            v-model="reviewForm.comment"
             type="textarea"
             :rows="3"
             placeholder="请输入审核备注（可选）"
@@ -138,7 +138,7 @@ const reviewLoading = ref(false)
 const currentReviewDoc = ref<Record<string, unknown> | null>(null)
 const reviewForm = reactive({
   status: 'approved' as 'approved' | 'rejected',
-  remark: '',
+  comment: '',
 })
 
 const detailDialogVisible = ref(false)
@@ -187,7 +187,7 @@ function handleView(row: Record<string, unknown>) {
 function handleReview(row: Record<string, unknown>, status: 'approved' | 'rejected') {
   currentReviewDoc.value = row
   reviewForm.status = status
-  reviewForm.remark = ''
+  reviewForm.comment = ''
   reviewDialogVisible.value = true
 }
 
@@ -209,7 +209,7 @@ async function confirmReview() {
   try {
     await reviewDocument(currentReviewDoc.value.id as number, {
       status: reviewForm.status,
-      remark: reviewForm.remark,
+      comment: reviewForm.comment,
     })
     ElMessage.success(`已${actionText}`)
     reviewDialogVisible.value = false

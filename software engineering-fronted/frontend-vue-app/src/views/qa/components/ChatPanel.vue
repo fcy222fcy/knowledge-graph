@@ -10,8 +10,17 @@
           :related-points="lastAssistantMsg.relatedKnowledgePoints || []"
         />
       </template>
-      <div v-if="isAsking" class="typing-indicator">
-        <span></span><span></span><span></span>
+      <div v-if="isAsking" class="thinking-message">
+        <div class="thinking-avatar">
+          <el-icon :size="20"><ChatDotRound /></el-icon>
+        </div>
+        <div class="thinking-content">
+          <div class="thinking-text">
+            <span class="thinking-icon">🔍</span>
+            正在为你寻找相关知识...
+          </div>
+          <div class="thinking-hint">AI 正在分析问题并检索知识库</div>
+        </div>
       </div>
     </div>
 
@@ -36,6 +45,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import { ChatDotRound } from '@element-plus/icons-vue'
 import type { MessageItem } from '@/types/qa'
 import type { AskResponse } from '@/services/qa'
 import MessageBubble from './MessageBubble.vue'
@@ -111,27 +121,51 @@ watch(() => props.isAsking, scrollToBottom)
 .input-area .el-textarea {
   flex: 1;
 }
-.typing-indicator {
+.thinking-message {
   display: flex;
-  gap: 4px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+.thinking-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+.thinking-content {
   background: var(--bg-card);
   border-radius: 12px;
+  padding: 12px 16px;
   box-shadow: var(--shadow-sm);
-  width: fit-content;
-  margin-left: 48px;
 }
-.typing-indicator span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  animation: bounce 1.4s infinite ease-in-out;
+.thinking-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-@keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+.thinking-icon {
+  animation: pulse 1.5s infinite;
+}
+.thinking-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>
