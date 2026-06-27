@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	dto "software_engineering/internal/model/dto/response"
 	"software_engineering/internal/model/dto/request"
 	"software_engineering/internal/service"
 	"software_engineering/pkg/response"
@@ -122,6 +123,12 @@ func AskQuestionStream(c *gin.Context) {
 		}
 		if event.Type == "done" {
 			data["confidence"] = event.Confidence
+			if event.Sources == nil {
+				event.Sources = make([]dto.AskSource, 0)
+			}
+			if event.Related == nil {
+				event.Related = make([]dto.KPRef, 0)
+			}
 			data["sources"] = event.Sources
 			data["related"] = event.Related
 		}

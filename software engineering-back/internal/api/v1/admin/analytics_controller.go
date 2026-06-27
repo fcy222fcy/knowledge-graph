@@ -24,6 +24,13 @@ func GetAnalyticsOverview(c *gin.Context) {
 		return
 	}
 
+	// 获取待审核文档数量
+	pendingDocCount, err := repository.CountDocumentsByStatus("pending")
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "获取待审核文档统计失败")
+		return
+	}
+
 	// 获取知识点总数
 	kpCount, err := repository.CountKnowledgePoints()
 	if err != nil {
@@ -53,12 +60,13 @@ func GetAnalyticsOverview(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{
-		"user_count":      userCount,
-		"document_count":  docCount,
-		"knowledge_count": kpCount,
-		"question_count":  questionCount,
-		"session_count":   sessionCount,
-		"quiz_count":      quizCount,
+		"user_count":           userCount,
+		"document_count":       docCount,
+		"pending_document_count": pendingDocCount,
+		"knowledge_count":      kpCount,
+		"question_count":       questionCount,
+		"session_count":        sessionCount,
+		"quiz_count":           quizCount,
 	})
 }
 

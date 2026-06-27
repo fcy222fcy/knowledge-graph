@@ -28,11 +28,11 @@
 
       <div class="stat-card">
         <div class="stat-icon" style="background: var(--color-warning-light); color: var(--color-warning);">
-          <el-icon :size="24"><Clock /></el-icon>
+          <el-icon :size="24"><Share /></el-icon>
         </div>
         <div class="stat-content">
-          <span class="stat-value">{{ stats.pendingReview }}</span>
-          <span class="stat-label">待审核资料</span>
+          <span class="stat-value">{{ stats.knowledgeCount }}</span>
+          <span class="stat-label">知识点数</span>
         </div>
       </div>
 
@@ -99,6 +99,8 @@ const stats = ref({
   documentCount: 0,
   pendingReview: 0,
   questionCount: 0,
+  knowledgeCount: 0,
+  sessionCount: 0,
 })
 
 const recentActivities = ref<Array<{
@@ -113,10 +115,40 @@ onMounted(async () => {
     stats.value = {
       studentCount: (data.user_count as number) || 0,
       documentCount: (data.document_count as number) || 0,
-      pendingReview: (data.session_count as number) || 0,
+      pendingReview: (data.pending_document_count as number) || 0,
       questionCount: (data.question_count as number) || 0,
+      knowledgeCount: (data.knowledge_count as number) || 0,
+      sessionCount: (data.session_count as number) || 0,
     }
-    recentActivities.value = (data.recent_activities as typeof recentActivities.value) || []
+
+    // 构建最近活动列表
+    recentActivities.value = [
+      {
+        content: `系统已收录 ${stats.value.documentCount} 篇软件工程文档`,
+        time: '文档资源',
+        type: 'success',
+      },
+      {
+        content: `知识图谱包含 ${stats.value.knowledgeCount} 个知识点`,
+        time: '知识图谱',
+        type: 'primary',
+      },
+      {
+        content: `题库共有 ${stats.value.questionCount} 道练习题`,
+        time: '题库建设',
+        type: 'warning',
+      },
+      {
+        content: `已有 ${stats.value.studentCount} 名学生注册使用`,
+        time: '用户统计',
+        type: 'info' as '',
+      },
+      {
+        content: `累计 ${stats.value.sessionCount} 次AI问答交互`,
+        time: '问答统计',
+        type: 'success',
+      },
+    ]
   } catch (error) {
     console.error('获取统计数据失败:', error)
   }
@@ -125,7 +157,7 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard-page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .stats-grid {
@@ -133,6 +165,18 @@ onMounted(async () => {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stat-card {

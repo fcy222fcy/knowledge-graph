@@ -43,6 +43,11 @@ export function getDocument(id: number) {
   return request.get(`/admin/documents/${id}`)
 }
 
+// 获取文档内容（用于预览）
+export function getDocumentContent(id: number) {
+  return request.get(`/documents/${id}/content`)
+}
+
 // 审核文档（通过/拒绝）
 export function reviewDocument(id: number, data: { status: 'approved' | 'rejected'; comment?: string }) {
   return request.put(`/admin/documents/${id}/review`, data)

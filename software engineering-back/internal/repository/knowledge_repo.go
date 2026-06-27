@@ -167,6 +167,64 @@ func ListKnowledgePointsAdmin(page, size int) ([]entity.KnowledgePoint, int64, e
 	return points, total, err
 }
 
+// FindKnowledgePointSourcesByName 根据知识点名称查找所有来源文档
+func FindKnowledgePointSourcesByName(name string) ([]entity.DocumentSource, error) {
+	var sources []entity.DocumentSource
+
+	// 从中间表查询知识点关联的所有文档
+	err := database.DB.
+		Table("knowledge_point_documents kpd").
+		Select("kpd.document_id, d.title as document_title").
+		Joins("INNER JOIN knowledge_points kp ON kpd.knowledge_point_id = kp.id").
+		Joins("LEFT JOIN documents d ON kpd.document_id = d.id").
+		Where("kp.name = ?", name).
+		Group("kpd.document_id, d.title").
+		Order("kpd.document_id").
+		Scan(&sources).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sources, nil
+}
+
+// FindKnowledgePointSourcesByID 根据知识点ID查找所有来源文档
+func FindKnowledgePointSourcesByID(pointID uint) ([]entity.DocumentSource, error) {
+	var sources []entity.DocumentSource
+
+	// 从中间表查询知识点关联的所有文档
+	err := database.DB.
+		Table("knowledge_point_documents kpd").
+		Select("kpd.document_id, d.title as document_title").
+		Joins("LEFT JOIN documents d ON kpd.document_id = d.id").
+		Where("kpd.knowledge_point_id = ?", pointID).
+		Order("kpd.document_id").
+		Scan(&sources).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sources, nil
+}
+
+// AddKnowledgePointDocument 添加知识点-文档关联
+func AddKnowledgePointDocument(pointID, documentID uint) error {
+	kpd := entity.KnowledgePointDocument{
+		KnowledgePointID: pointID,
+		DocumentID:       documentID,
+	}
+	return database.DB.Where(kpd).FirstOrCreate(&kpd).Error
+}
+
+// RemoveKnowledgePointDocument 删除知识点-文档关联
+func RemoveKnowledgePointDocument(pointID, documentID uint) error {
+	return database.DB.
+		Where("knowledge_point_id = ? AND document_id = ?", pointID, documentID).
+		Delete(&entity.KnowledgePointDocument{}).Error
+}
+
 // ListRelationsAdmin 管理员获取关系列表
 func ListRelationsAdmin(page, size int) ([]entity.KnowledgeRelation, int64, error) {
 	var rels []entity.KnowledgeRelation

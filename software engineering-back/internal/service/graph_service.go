@@ -43,33 +43,55 @@ func GetGraphData(documentID uint, keyword string, relationType string) (*respon
 
 // filterAndConvertGraphData 过滤节点和边，并转换为前端响应格式
 func filterAndConvertGraphData(points []entity.KnowledgePoint, rels []entity.KnowledgeRelation, documentID uint, keyword string, relationType string) *response.GraphDataResponse {
-	// 过滤
+	// 第一步：筛选关系
+	var filteredRels []entity.KnowledgeRelation
+	for _, r := range rels {
+		// 如果指定了关系类型，只保留匹配的关系
+		if relationType != "" && r.RelationType != relationType {
+			continue
+		}
+		filteredRels = append(filteredRels, r)
+	}
+
+	// 收集筛选后关系涉及的节点ID
+	relatedNodeIDs := make(map[uint]bool)
+	for _, r := range filteredRels {
+		relatedNodeIDs[r.SourceID] = true
+		relatedNodeIDs[r.TargetID] = true
+	}
+
+	// 第二步：筛选节点
 	var filteredPoints []entity.KnowledgePoint
 	for _, p := range points {
+		// 如果指定了文档ID，只保留该文档的节点
 		if documentID > 0 && p.DocumentID != documentID {
 			continue
 		}
+		// 如果指定了关键词，只保留名称包含关键词的节点
 		if keyword != "" && !strings.Contains(p.Name, keyword) {
+			continue
+		}
+		// 如果指定了关系类型，只保留有相关关系的节点
+		if relationType != "" && !relatedNodeIDs[p.ID] {
 			continue
 		}
 		filteredPoints = append(filteredPoints, p)
 	}
 
+	// 如果指定了关系类型，需要重新过滤关系，确保只保留两个端点都在筛选后节点集中的关系
 	pointIDs := make(map[uint]bool)
 	for _, p := range filteredPoints {
 		pointIDs[p.ID] = true
 	}
 
-	var filteredRels []entity.KnowledgeRelation
-	for _, r := range rels {
-		// 边的 source 和 target 都必须在过滤后的节点集中
-		if !pointIDs[r.SourceID] || !pointIDs[r.TargetID] {
-			continue
+	if relationType != "" {
+		var finalRels []entity.KnowledgeRelation
+		for _, r := range filteredRels {
+			if pointIDs[r.SourceID] && pointIDs[r.TargetID] {
+				finalRels = append(finalRels, r)
+			}
 		}
-		if relationType != "" && r.RelationType != relationType {
-			continue
-		}
-		filteredRels = append(filteredRels, r)
+		filteredRels = finalRels
 	}
 
 	nodes := make([]response.GraphNode, len(filteredPoints))

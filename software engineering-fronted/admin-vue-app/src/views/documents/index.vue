@@ -99,11 +99,10 @@
     <el-dialog
       v-model="detailDialogVisible"
       title="资料详情"
-      width="600px"
+      width="800px"
     >
-      <el-descriptions :column="1" border v-if="currentViewDoc">
-        <el-descriptions-item label="标题">{{ currentViewDoc.title }}</el-descriptions-item>
-        <el-descriptions-item label="描述">{{ currentViewDoc.description || '无' }}</el-descriptions-item>
+      <el-descriptions :column="2" border v-if="currentViewDoc">
+        <el-descriptions-item label="标题" :span="2">{{ currentViewDoc.title }}</el-descriptions-item>
         <el-descriptions-item label="文件名">{{ currentViewDoc.filename }}</el-descriptions-item>
         <el-descriptions-item label="文件类型">{{ currentViewDoc.file_type }}</el-descriptions-item>
         <el-descriptions-item label="审核状态">
@@ -111,9 +110,22 @@
             {{ getStatusLabel(currentViewDoc.status as string) }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item v-if="currentViewDoc.remark" label="审核备注">{{ currentViewDoc.remark }}</el-descriptions-item>
         <el-descriptions-item label="上传时间">{{ currentViewDoc.created_at }}</el-descriptions-item>
+        <el-descriptions-item v-if="currentViewDoc.description" label="描述" :span="2">{{ currentViewDoc.description }}</el-descriptions-item>
+        <el-descriptions-item v-if="currentViewDoc.remark" label="审核备注" :span="2">{{ currentViewDoc.remark }}</el-descriptions-item>
       </el-descriptions>
+
+      <!-- 文档预览区域 -->
+      <div class="document-preview">
+        <div class="preview-header">
+          <span class="preview-title">📄 文档预览</span>
+        </div>
+        <div class="preview-content" v-loading="contentLoading">
+          <pre v-if="documentContent">{{ documentContent }}</pre>
+          <el-empty v-else-if="!contentLoading" description="暂无文档内容" />
+        </div>
+      </div>
+
       <template #footer>
         <el-button @click="detailDialogVisible = false">关闭</el-button>
       </template>
@@ -124,7 +136,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getDocuments, reviewDocument } from '@/services/admin'
+import { getDocuments, getDocumentContent, reviewDocument } from '@/services/admin'
 
 const loading = ref(false)
 const documents = ref<Record<string, unknown>[]>([])
@@ -143,6 +155,8 @@ const reviewForm = reactive({
 
 const detailDialogVisible = ref(false)
 const currentViewDoc = ref<Record<string, unknown> | null>(null)
+const documentContent = ref('')
+const contentLoading = ref(false)
 
 function getStatusType(status: string) {
   const map: Record<string, string> = {
@@ -179,9 +193,22 @@ async function fetchDocuments() {
   }
 }
 
-function handleView(row: Record<string, unknown>) {
+async function handleView(row: Record<string, unknown>) {
   currentViewDoc.value = row
+  documentContent.value = ''
   detailDialogVisible.value = true
+
+  // 获取文档内容用于预览
+  contentLoading.value = true
+  try {
+    const res = await getDocumentContent(row.id as number) as Record<string, unknown>
+    documentContent.value = (res.content as string) || ''
+  } catch (error) {
+    console.error('获取文档内容失败:', error)
+    documentContent.value = '加载文档内容失败'
+  } finally {
+    contentLoading.value = false
+  }
 }
 
 function handleReview(row: Record<string, unknown>, status: 'approved' | 'rejected') {
@@ -228,7 +255,7 @@ onMounted(() => {
 
 <style scoped>
 .documents-page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .filter-bar {
@@ -242,5 +269,41 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+.document-preview {
+  margin-top: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preview-header {
+  background-color: #f5f7fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.preview-title {
+  font-weight: 600;
+  color: #303133;
+  font-size: 14px;
+}
+
+.preview-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #fafafa;
+}
+
+.preview-content pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #303133;
 }
 </style>

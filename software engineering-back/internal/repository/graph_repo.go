@@ -104,9 +104,9 @@ func GetAllGraphDataFromNeo4j() ([]entity.KnowledgePoint, []entity.KnowledgeRela
 		return nil, nil, fmt.Errorf("failed to read nodes from neo4j: %w", err)
 	}
 
-	// Fetch all KNOWS relationships (using a generic relationship type)
+	// Fetch all relationships (匹配所有关系类型)
 	relsResult, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		result, err := tx.Run(ctx, `MATCH (a:KnowledgePoint)-[r:RELATED|DEPENDS_ON|PART_OF]->(b:KnowledgePoint) RETURN r.id AS id, a.id AS source_id, b.id AS target_id, r.type AS relation_type, r.description AS description`, nil)
+		result, err := tx.Run(ctx, `MATCH (a:KnowledgePoint)-[r]->(b:KnowledgePoint) RETURN r.id AS id, a.id AS source_id, b.id AS target_id, type(r) AS relation_type, r.description AS description`, nil)
 		if err != nil {
 			return nil, err
 		}

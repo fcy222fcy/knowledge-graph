@@ -351,7 +351,7 @@ onMounted(() => {
 
 <style scoped>
 .questions-page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .filter-bar {

@@ -135,10 +135,15 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 
 		// LLM 不可用或失败时，直接返回图谱上下文
 		if answer == "" {
-			answer = fmt.Sprintf("关于「%s」的知识图谱查询结果：\n\n%s\n\n以上内容来自知识图谱。", req.Question, graphContext)
+			answer = fmt.Sprintf("关于「%s」的知识图谱查询结果：\n\n%s", req.Question, graphContext)
 			confidence = 0.75
 			sources = graphSources
 			related = graphRelated
+		}
+
+		// 在回答末尾添加来源信息（如果有文档来源）
+		if len(sources) > 0 && sources[0].DocumentTitle != "" {
+			answer += "\n\n📚 来自：《" + sources[0].DocumentTitle + "》"
 		}
 	}
 
@@ -192,8 +197,13 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 				}
 
 				if answer == "" {
-					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n以上内容来自知识库文档检索。", req.Question, docTitle, contextText)
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s", req.Question, docTitle, contextText)
 					confidence = 0.75
+				}
+
+				// 在回答末尾添加来源信息
+				if answer != "" && docTitle != "知识库" {
+					answer += "\n\n📚 来自：《" + docTitle + "》"
 				}
 			}
 		}
@@ -331,13 +341,18 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 				} else {
 					// LLM 失败，降级为直接返回文档片段
 					log.Printf("warning: LLM generation failed for local search: %v", err)
-					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n📚 **参考来源**：《%s》", req.Question, docTitle, contextText, docTitle)
+					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s", req.Question, docTitle, contextText)
 					confidence = 0.7
 				}
 			} else {
 				// AI 服务不可用，直接返回文档片段
-				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s\n\n📚 **参考来源**：《%s》", req.Question, docTitle, contextText, docTitle)
+				answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s", req.Question, docTitle, contextText)
 				confidence = 0.7
+			}
+
+			// 在回答末尾添加来源信息
+			if answer != "" {
+				answer += "\n\n📚 来自：《" + docTitle + "》"
 			}
 		}
 	}
@@ -355,7 +370,6 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 			for i, kp := range related {
 				answer += fmt.Sprintf("%d. %s: %s\n\n", i+1, kp.Name, kp.Description)
 			}
-			answer += "以上内容来自知识点库，仅供参考。"
 			confidence = 0.7
 		}
 	}

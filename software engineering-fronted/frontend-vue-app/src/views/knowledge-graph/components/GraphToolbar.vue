@@ -10,23 +10,6 @@
       @keyup.enter="$emit('search')"
       @clear="$emit('search')"
     />
-    <el-select
-      :model-value="relationType"
-      @update:model-value="$emit('update:relationType', $event)"
-      placeholder="关系类型"
-      clearable
-      style="width: 160px"
-      @change="$emit('search')"
-    >
-      <el-option label="全部关系" value="" />
-      <el-option label="关联" value="RELATED" />
-      <el-option label="依赖" value="DEPENDS_ON" />
-      <el-option label="组成部分" value="PART_OF" />
-      <el-option label="是一种" value="IS_A" />
-      <el-option label="示例" value="EXAMPLE_OF" />
-      <el-option label="使用" value="USES" />
-      <el-option label="实现" value="IMPLEMENTS" />
-    </el-select>
     <div class="toolbar-right">
       <el-button @click="$emit('refresh')">
         <el-icon><Refresh /></el-icon> 刷新

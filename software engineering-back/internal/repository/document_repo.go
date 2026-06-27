@@ -73,6 +73,13 @@ func CountDocuments() (int64, error) {
 	return count, err
 }
 
+// CountDocumentsByStatus 按状态统计文档数量
+func CountDocumentsByStatus(status string) (int64, error) {
+	var count int64
+	err := database.DB.Model(&entity.Document{}).Where("status = ?", status).Count(&count).Error
+	return count, err
+}
+
 // ListDocumentsAdmin 管理员获取文档列表（所有用户的）
 func ListDocumentsAdmin(page, size int, keyword string) ([]entity.Document, int64, error) {
 	var docs []entity.Document

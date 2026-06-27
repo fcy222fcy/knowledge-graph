@@ -1,12 +1,18 @@
 import request, { USE_MOCK } from '@/utils/request'
 import { mockGraphApi } from './mock'
 
+export interface DocumentSource {
+  document_id: number
+  document_title: string
+}
+
 export interface GraphNode {
   id: number
   name: string
   description: string
   document_id: number
   category?: string
+  sources?: DocumentSource[]
   // D3 force simulation properties
   x?: number
   y?: number

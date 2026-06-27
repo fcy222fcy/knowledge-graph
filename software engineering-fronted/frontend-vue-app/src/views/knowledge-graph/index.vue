@@ -2,7 +2,6 @@
   <div class="graph-container">
     <GraphToolbar
       v-model:keyword="searchKeyword"
-      v-model:relationType="filterRelationType"
       @search="handleSearch"
       @build="buildVisible = true"
       @upload="uploadVisible = true"
@@ -46,7 +45,6 @@ import UploadDialog from './components/UploadDialog.vue'
 const graphData = ref<GraphData | null>(null)
 const loading = ref(false)
 const searchKeyword = ref('')
-const filterRelationType = ref('')
 const selectedNode = ref<GraphNode | null>(null)
 const detailVisible = ref(false)
 const editingNode = ref<GraphNode | null>(null)
@@ -59,8 +57,7 @@ const fetchGraphData = async () => {
   loading.value = true
   try {
     const result = await getGraphData({
-      keyword: searchKeyword.value || undefined,
-      relation_type: filterRelationType.value || undefined
+      keyword: searchKeyword.value || undefined
     })
     graphData.value = result.data
   } catch (error) {

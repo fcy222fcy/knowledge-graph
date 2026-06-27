@@ -2,13 +2,26 @@ package entity
 
 // ─── Knowledge ────────────────────────────────────────
 
+// DocumentSource 文档来源信息，用于显示知识点的多个来源
+type DocumentSource struct {
+	DocumentID    uint   `json:"document_id"`
+	DocumentTitle string `json:"document_title"`
+}
+
 // KnowledgePoint 知识点实体，表示知识图谱中的一个节点
 type KnowledgePoint struct {
 	BaseModel
 	Name        string `gorm:"size:100;not null;comment:知识点名称" json:"name"`
 	Description string `gorm:"size:500;comment:知识点描述" json:"description"`
-	DocumentID  uint   `gorm:"comment:关联的文档ID" json:"document_id"`                        // 关联的文档 ID
-	Category    string `gorm:"size:50;comment:知识点分类" json:"category"`            // 知识点分类
+	DocumentID  uint   `gorm:"comment:关联的文档ID" json:"document_id"` // 保留兼容旧数据
+	Category    string `gorm:"size:50;comment:知识点分类" json:"category"`
+}
+
+// KnowledgePointDocument 知识点-文档关联表（多对多）
+type KnowledgePointDocument struct {
+	BaseModel
+	KnowledgePointID uint `gorm:"not null;comment:知识点ID" json:"knowledge_point_id"`
+	DocumentID       uint `gorm:"not null;comment:文档ID" json:"document_id"`
 }
 
 // KnowledgeRelation 知识点关系实体，表示知识图谱中的边

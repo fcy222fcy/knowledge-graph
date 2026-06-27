@@ -50,7 +50,7 @@ func Load() {
 
 		// AI 配置 (Ollama)
 		OllamaURL:            getEnv("OLLAMA_URL", "http://localhost:11434"),
-		OllamaModel:          getEnv("OLLAMA_MODEL", "qwen3:8b"),
+		OllamaModel:          getEnv("OLLAMA_MODEL", "qwen3:1.7b"),
 		OllamaEmbeddingModel: getEnv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text"),
 	}
 }

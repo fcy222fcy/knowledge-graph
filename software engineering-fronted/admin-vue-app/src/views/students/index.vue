@@ -141,7 +141,7 @@ onMounted(() => {
 
 <style scoped>
 .students-page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .filter-bar {

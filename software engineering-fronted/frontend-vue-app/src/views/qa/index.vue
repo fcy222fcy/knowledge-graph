@@ -98,6 +98,12 @@ const handleAskQuestion = async (question: string) => {
   }
   messages.value.push(userMsg)
 
+  // 乐观更新侧边栏消息计数
+  const currentSession = sessions.value.find(s => s.conversation_id === currentSessionId.value)
+  if (currentSession) {
+    currentSession.message_count++
+  }
+
   // 添加空的 AI 消息占位
   const aiMsg: ExtendedMessage = {
     message_id: Date.now() + 1,

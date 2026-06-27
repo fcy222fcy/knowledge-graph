@@ -29,12 +29,20 @@ func GetKnowledgePoint(id uint) (*response.KnowledgePointResponse, error) {
 	if err != nil {
 		return nil, errors.New("知识点不存在")
 	}
+
+	// 从中间表获取所有来源文档
+	sources, err := repository.FindKnowledgePointSourcesByID(id)
+	if err != nil {
+		sources = []entity.DocumentSource{} // 如果查询失败，返回空列表
+	}
+
 	return &response.KnowledgePointResponse{
 		ID:          kp.ID,
 		Name:        kp.Name,
 		Description: kp.Description,
 		DocumentID:  kp.DocumentID,
 		Category:    kp.Category,
+		Sources:     sources,
 		CreatedAt:   kp.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:   kp.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	}, nil
