@@ -62,7 +62,7 @@ func ListDocumentsByUser(userID uint, page, size int, keyword, status string) ([
 // GetAllDocumentsContent 获取所有已解析完成的文档内容（用于本地关键词检索）
 func GetAllDocumentsContent() ([]entity.Document, error) {
 	var docs []entity.Document
-	err := database.DB.Where("content != '' AND status = ?", "completed").Find(&docs).Error
+	err := database.DB.Where("content != '' AND status IN ?", []string{"completed", "approved"}).Find(&docs).Error
 	return docs, err
 }
 

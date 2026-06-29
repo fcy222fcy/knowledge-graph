@@ -1,10 +1,12 @@
 package document
 
 import (
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -38,10 +40,14 @@ func UploadDocument(c *gin.Context) {
 		return
 	}
 
-	title := c.PostForm("title")
-	description := c.PostForm("description")
+	title := fixFilenameEncoding(c.PostForm("title"))
+	description := fixFilenameEncoding(c.PostForm("description"))
 	filename := fixFilenameEncoding(file.Filename)
 	ext := filepath.Ext(filename)
+
+	// 调试：查看原始字节和转换后的结果
+	rawTitle := c.PostForm("title")
+	log.Printf("DEBUG: raw_title_bytes=%v raw_title=%q fixed_title=%q", []byte(rawTitle), rawTitle, title)
 
 	// 文件类型白名单
 	if !allowedExts[ext] {
@@ -128,11 +134,11 @@ func ListDocuments(c *gin.Context) {
 }
 
 // fixFilenameEncoding 修复 Windows 下 multipart 表单文件名的编码问题。
-// curl 在 Windows 上发送 multipart 时，文件名使用系统默认编码（GBK），
-// 而 Go 的 mime/multipart 直接将 GBK 字节当作字符串返回。
+// 浏览器发送 multipart 时，文件名可能是 GBK 编码（Windows 系统默认），
+// Go 的 mime/multipart 将其字节当作 Latin-1 处理，产生乱码。
 // 此函数检测并将其转为 UTF-8。
 func fixFilenameEncoding(name string) string {
-	// 如果全是 ASCII 或已合法的 Unicode，直接返回
+	// 如果全是 ASCII，直接返回
 	hasNonASCII := false
 	for _, r := range name {
 		if r > unicode.MaxASCII {
@@ -144,12 +150,16 @@ func fixFilenameEncoding(name string) string {
 		return name
 	}
 
-	// 尝试将字符串的底层字节用 GBK 解码，再转为 UTF-8 字符串
+	// 如果已经是合法的 UTF-8 字符串，直接返回（浏览器发送的正常 UTF-8 文件名）
+	if utf8.ValidString(name) {
+		return name
+	}
+
+	// 不是合法 UTF-8，尝试将底层字节用 GBK 解码
 	raw := []byte(name)
 	decoder := simplifiedchinese.GBK.NewDecoder()
 	utf8Bytes, _, err := transform.Bytes(decoder, raw)
 	if err != nil {
-		// 解码失败，说明不是 GBK，原样返回
 		return name
 	}
 	return string(utf8Bytes)

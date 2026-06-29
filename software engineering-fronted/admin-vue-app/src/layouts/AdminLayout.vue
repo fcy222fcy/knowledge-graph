@@ -7,7 +7,7 @@
         <div class="logo">
           <span class="logo-mark">SE</span>
           <div class="logo-text">
-            <span class="title">SE智图问答</span>
+            <span class="title">基于知识图谱的软件工程课程问答平台</span>
             <span class="badge">教师端</span>
           </div>
         </div>
@@ -78,7 +78,7 @@ const menuItems = [
   { path: '/admin', label: '仪表盘', icon: DataAnalysis },
   { path: '/admin/documents', label: '资料审核', icon: Document },
   { path: '/admin/knowledge', label: '知识点管理', icon: Share },
-  { path: '/admin/questions', label: '题目管理', icon: Edit },
+  { path: '/admin/assignments', label: '作业管理', icon: Edit },
   { path: '/admin/students', label: '学生管理', icon: User },
 ]
 

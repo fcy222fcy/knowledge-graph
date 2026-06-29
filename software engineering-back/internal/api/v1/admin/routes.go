@@ -5,8 +5,8 @@ import (
 	"software_engineering/internal/middleware"
 )
 
-// RegisterRoutes 注册后台管理路由，需要 admin 或 teacher 角色
-func RegisterRoutes(api *gin.RouterGroup) {
+// RegisterRoutes 注册后台管理路由，需要 admin 或 teacher 角色，返回 admin group 供其他模块挂载
+func RegisterRoutes(api *gin.RouterGroup) *gin.RouterGroup {
 	admin := api.Group("/admin")
 	admin.Use(middleware.RequireAuth())
 	admin.Use(middleware.RequireRole("admin", "teacher"))
@@ -47,4 +47,5 @@ func RegisterRoutes(api *gin.RouterGroup) {
 		// 系统配置
 		admin.GET("/system/config", GetSystemConfig)
 	}
+	return admin
 }

@@ -34,10 +34,10 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '知识点管理' },
       },
       {
-        path: 'questions',
-        name: 'Questions',
-        component: () => import('@/views/questions/index.vue'),
-        meta: { title: '题目管理' },
+        path: 'assignments',
+        name: 'Assignments',
+        component: () => import('@/views/assignments/index.vue'),
+        meta: { title: '作业管理' },
       },
       {
         path: 'students',
@@ -69,7 +69,7 @@ router.beforeEach((to, _from, next) => {
   // 设置页面标题
   const title = to.meta.title as string
   if (title) {
-    document.title = `${title} - SE智图问答 教师端`
+    document.title = `${title} - 基于知识图谱的软件工程课程问答平台 教师端`
   }
 
   const token = localStorage.getItem('admin_token')

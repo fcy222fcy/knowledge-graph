@@ -36,9 +36,14 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="注册时间" width="180" />
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column prop="created_at" label="注册时间" width="180">
           <template #default="{ row }">
+            {{ formatTime(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="handleEdit(row)">编辑</el-button>
             <el-button
               v-if="row.status === 1"
               type="warning"
@@ -70,14 +75,56 @@
         />
       </div>
     </div>
+
+    <!-- 编辑对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑学生信息"
+      width="450px"
+      destroy-on-close
+    >
+      <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="80px">
+        <el-form-item label="用户名">
+          <el-input :model-value="editForm.username" disabled />
+        </el-form-item>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="editForm.status" placeholder="请选择状态">
+            <el-option label="正常" :value="1" />
+            <el-option label="禁用" :value="0" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSubmitLoading" @click="handleEditSubmit">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getStudents, updateStudentStatus, deleteStudent } from '@/services/admin'
+import { getStudents, updateStudent, updateStudentStatus, deleteStudent } from '@/services/admin'
+
+function formatTime(time: string | null | undefined): string {
+  if (!time) return '--'
+  const date = new Date(time)
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const s = String(date.getSeconds()).padStart(2, '0')
+  return `${y}-${m}-${d} ${h}:${min}:${s}`
+}
 
 const loading = ref(false)
 const students = ref<Record<string, unknown>[]>([])
@@ -85,6 +132,26 @@ const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const keyword = ref('')
+
+const editDialogVisible = ref(false)
+const editSubmitLoading = ref(false)
+const editFormRef = ref<FormInstance>()
+const editForm = reactive({
+  id: 0,
+  username: '',
+  nickname: '',
+  email: '',
+  status: 1,
+})
+
+const editRules = {
+  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email' as const, message: '请输入正确的邮箱格式', trigger: 'blur' },
+  ],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+}
 
 async function fetchStudents() {
   loading.value = true
@@ -132,6 +199,39 @@ async function handleDelete(row: Record<string, unknown>) {
   } catch {
     // 用户取消
   }
+}
+
+function handleEdit(row: Record<string, unknown>) {
+  editForm.id = row.id as number
+  editForm.username = (row.username as string) || ''
+  editForm.nickname = (row.nickname as string) || ''
+  editForm.email = (row.email as string) || ''
+  editForm.status = (row.status as number) ?? 1
+  editDialogVisible.value = true
+}
+
+async function handleEditSubmit() {
+  if (!editFormRef.value) return
+
+  await editFormRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    editSubmitLoading.value = true
+    try {
+      await updateStudent(editForm.id, {
+        nickname: editForm.nickname,
+        email: editForm.email,
+        status: editForm.status,
+      })
+      ElMessage.success('更新成功')
+      editDialogVisible.value = false
+      fetchStudents()
+    } catch (error) {
+      console.error('更新失败:', error)
+    } finally {
+      editSubmitLoading.value = false
+    }
+  })
 }
 
 onMounted(() => {

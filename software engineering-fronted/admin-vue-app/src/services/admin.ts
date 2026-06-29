@@ -22,6 +22,11 @@ export function getStudent(id: number) {
   return request.get(`/admin/users/${id}`)
 }
 
+// 更新学生信息
+export function updateStudent(id: number, data: { nickname?: string; email?: string; status?: number }) {
+  return request.put(`/admin/users/${id}`, data)
+}
+
 // 更新学生状态
 export function updateStudentStatus(id: number, status: number) {
   return request.put(`/admin/users/${id}/status`, { status })

@@ -4,7 +4,7 @@
       <div class="register-header">
         <div class="register-logo">SE</div>
         <h1>创建账号</h1>
-        <p>加入 SE智图问答，开启智能学习</p>
+        <p>加入基于知识图谱的软件工程课程问答平台，开启智能学习</p>
       </div>
       <el-form :model="registerForm" :rules="rules" ref="formRef" class="register-form">
         <el-form-item prop="username">

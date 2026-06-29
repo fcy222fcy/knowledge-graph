@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"software_engineering/internal/api/v1/admin"
 	"software_engineering/internal/api/v1/analytics"
+	"software_engineering/internal/api/v1/assignment"
 	"software_engineering/internal/api/v1/ask"
 	"software_engineering/internal/api/v1/auth"
 	"software_engineering/internal/api/v1/document"
@@ -41,6 +42,7 @@ func SetupRoutes(r *gin.Engine) {
 			graph.RegisterRoutes(protected)
 			question.RegisterRoutes(protected)
 			quiz.RegisterRoutes(protected)
+			assignment.RegisterRoutes(protected)
 			ask.RegisterRoutes(protected)
 			analytics.RegisterRoutes(protected)
 		}
@@ -53,7 +55,8 @@ func SetupRoutes(r *gin.Engine) {
 		}
 
 		// Admin routes (requires admin or teacher role)
-		admin.RegisterRoutes(api)
+		adminGroup := admin.RegisterRoutes(api)
+		assignment.RegisterAdminRoutes(adminGroup)
 	}
 }
 

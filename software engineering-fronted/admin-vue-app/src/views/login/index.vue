@@ -7,7 +7,7 @@
           <div class="logo-large">
             <span class="logo-mark">SE</span>
           </div>
-          <h1>SE智图问答</h1>
+          <h1>基于知识图谱的软件工程课程问答平台</h1>
           <p class="subtitle">教师端管理后台</p>
           <div class="features">
             <div class="feature-item">

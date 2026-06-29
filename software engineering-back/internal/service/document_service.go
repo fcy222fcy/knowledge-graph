@@ -4,6 +4,10 @@ import (
 	"io"
 	"log"
 	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 
 	"software_engineering/internal/model/dto/request"
 	"software_engineering/internal/model/dto/response"
@@ -24,7 +28,7 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 	var fileContent string
 	ext := strings.ToLower(fileType)
 	if ext == ".md" || ext == ".txt" {
-		fileContent = string(contentBytes)
+		fileContent = decodeContentWithCharset(contentBytes)
 	}
 
 	if title == "" {
@@ -62,6 +66,23 @@ func UploadDocument(userID uint, title, description string, filename string, fil
 		CreatedAt:   doc.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:   doc.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	}, nil
+}
+
+// decodeContentWithCharset 检测字节流编码并转为 UTF-8 字符串。
+// Windows 中文系统默认编码为 GBK，浏览器上传 .md/.txt 文件时会按原编码发送字节流。
+// 此函数先检测是否为合法 UTF-8，若不是则尝试 GBK 解码，失败则回退为原始字节按 UTF-8 解析。
+func decodeContentWithCharset(data []byte) string {
+	if utf8.Valid(data) {
+		return string(data)
+	}
+	// 尝试 GBK 解码
+	decoder := simplifiedchinese.GBK.NewDecoder()
+	utf8Bytes, _, err := transform.Bytes(decoder, data)
+	if err == nil {
+		return string(utf8Bytes)
+	}
+	// 回退：强制按 UTF-8 解析，替换无效字节
+	return strings.ToValidUTF8(string(data), "")
 }
 
 // buildVectorIndex 为文档构建向量索引

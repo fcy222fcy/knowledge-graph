@@ -69,4 +69,9 @@ defineProps<{
   flex-wrap: wrap;
   gap: 6px;
 }
+.no-source {
+  font-size: 12px;
+  color: #999;
+  padding: 8px 0;
+}
 </style>

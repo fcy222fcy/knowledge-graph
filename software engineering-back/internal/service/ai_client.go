@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"software_engineering/internal/repository"
+	"software_engineering/pkg/ai"
 )
 
 // AIClient AI 服务客户端，负责调用知识图谱构建、语义搜索和智能问答接口
@@ -423,4 +424,18 @@ func (c *AIClient) Generate(prompt, system string, options interface{}) (string,
 	}
 
 	return answerService.ollamaClient.Generate(prompt, system, nil)
+}
+
+// GenerateStream 流式调用 LLM 生成回答
+func (c *AIClient) GenerateStream(prompt, system string, options *ai.GenerateOptions) (<-chan ai.GenerateStreamResponse, error) {
+	if !c.IsAvailable() {
+		return nil, fmt.Errorf("AI service not available")
+	}
+
+	answerService := GetAnswerService()
+	if answerService == nil || answerService.ollamaClient == nil {
+		return nil, fmt.Errorf("answer service not initialized")
+	}
+
+	return answerService.ollamaClient.GenerateStream(prompt, system, options)
 }

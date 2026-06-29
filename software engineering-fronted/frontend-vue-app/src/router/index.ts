@@ -88,7 +88,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, _from, next) => {
   // 设置页面标题
-  document.title = `${to.meta.title || ''} - SE智图问答`
+  document.title = `${to.meta.title || ''} - 基于知识图谱的软件工程课程问答平台`
 
   const userStore = useUserStore()
 

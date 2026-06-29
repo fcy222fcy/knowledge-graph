@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 
+	"software_engineering/internal/repository"
 	"software_engineering/pkg/ai"
 	"software_engineering/pkg/config"
 )
@@ -50,6 +51,11 @@ func InitVectorService() {
 		EmbeddingModel: cfg.OllamaEmbeddingModel,
 	})
 
+	// 确保 data 目录存在
+	if err := os.MkdirAll("data", 0755); err != nil {
+		log.Printf("Warning: failed to create data directory: %v", err)
+	}
+
 	vectorService = &VectorService{
 		ollamaClient: ollamaClient,
 		vectors:      make([][]float64, 0),
@@ -63,12 +69,21 @@ func InitVectorService() {
 		log.Printf("Warning: failed to load vector index: %v", err)
 	}
 
-	log.Println("Vector service initialized")
+	log.Printf("Vector service initialized, index size: %d", vectorService.GetSize())
 }
 
 // GetVectorService 获取向量服务实例
 func GetVectorService() *VectorService {
 	return vectorService
+}
+
+// RebuildIfEmpty 索引为空时从数据库重建（需在数据库连接后调用）
+func RebuildIfEmpty() {
+	if vectorService == nil || vectorService.GetSize() > 0 {
+		return
+	}
+	log.Println("Vector index empty, rebuilding from database...")
+	vectorService.rebuildFromDatabase()
 }
 
 // Embed 获取文本的嵌入向量
@@ -101,6 +116,13 @@ func (s *VectorService) AddVector(vector []float64, meta VectorMetadata) error {
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	// 去重：检查是否已有相同文档ID+文本的向量
+	for _, m := range s.metadata {
+		if m.DocumentID == meta.DocumentID && m.ChunkText == meta.ChunkText {
+			return nil // 已存在，跳过
+		}
+	}
 
 	s.vectors = append(s.vectors, vector)
 	s.metadata = append(s.metadata, meta)
@@ -331,6 +353,45 @@ func (s *VectorService) loadIndex() error {
 	s.metadata = index.Metadata
 	log.Printf("Loaded vector index: %d vectors", len(s.vectors))
 	return nil
+}
+
+// rebuildFromDatabase 从数据库重建向量索引
+func (s *VectorService) rebuildFromDatabase() {
+	docs, err := repository.GetAllDocumentsContent()
+	if err != nil {
+		log.Printf("Failed to get documents for rebuild: %v", err)
+		return
+	}
+	if len(docs) == 0 {
+		log.Println("No documents found for vector rebuild")
+		return
+	}
+
+	extractionSvc := &ExtractionService{}
+	totalChunks := 0
+
+	for _, doc := range docs {
+		chunks := extractionSvc.GenerateChunkIndex(doc.Content, doc.ID)
+		for i, chunk := range chunks {
+			embedding, err := s.Embed(chunk.ChunkText)
+			if err != nil {
+				log.Printf("Failed to embed chunk %d for document %d: %v", i, doc.ID, err)
+				continue
+			}
+			if err := s.AddVector(embedding, chunk); err != nil {
+				log.Printf("Failed to add vector for chunk %d: %v", i, err)
+				continue
+			}
+		}
+		totalChunks += len(chunks)
+		log.Printf("Rebuilt vector index for document %d (%s): %d chunks", doc.ID, doc.Title, len(chunks))
+	}
+
+	if err := s.SaveIndex(); err != nil {
+		log.Printf("Failed to save rebuilt vector index: %v", err)
+	} else {
+		log.Printf("Vector index rebuild complete: %d documents, %d chunks", len(docs), totalChunks)
+	}
 }
 
 // ClearIndex 清空索引

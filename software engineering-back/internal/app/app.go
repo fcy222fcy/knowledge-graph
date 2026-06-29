@@ -47,6 +47,9 @@ func (a *App) Initialize() {
 	// 5. 初始化种子数据
 	seed.SeedAll()
 
+	// 5.1 向量索引为空时从数据库重建
+	service.RebuildIfEmpty()
+
 	// 6. 初始化路由
 	a.router = gin.New()
 	a.router.Use(middleware.Logger())

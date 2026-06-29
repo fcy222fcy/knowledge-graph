@@ -5,7 +5,7 @@
       <div class="sidebar-header">
         <div class="logo">
           <div class="logo-mark">SE</div>
-          <div class="logo-text">SE智图问答</div>
+          <div class="logo-text">基于知识图谱的软件工程课程问答平台</div>
         </div>
       </div>
 

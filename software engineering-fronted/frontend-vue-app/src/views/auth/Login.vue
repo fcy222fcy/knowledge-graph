@@ -4,7 +4,7 @@
       <div class="login-header">
         <div class="login-logo">SE</div>
         <h1>欢迎回来</h1>
-        <p>登录 SE智图问答，继续你的学习之旅</p>
+        <p>登录基于知识图谱的软件工程课程问答平台，继续你的学习之旅</p>
       </div>
       <el-form :model="loginForm" :rules="rules" ref="formRef" class="login-form">
         <el-form-item prop="username">

@@ -59,6 +59,13 @@ func GetAnalyticsOverview(c *gin.Context) {
 		return
 	}
 
+	// 获取作业总数
+	assignmentCount, err := repository.CountAssignments()
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "获取作业统计失败")
+		return
+	}
+
 	response.Success(c, gin.H{
 		"user_count":           userCount,
 		"document_count":       docCount,
@@ -67,6 +74,7 @@ func GetAnalyticsOverview(c *gin.Context) {
 		"question_count":       questionCount,
 		"session_count":        sessionCount,
 		"quiz_count":           quizCount,
+		"assignment_count":     assignmentCount,
 	})
 }
 

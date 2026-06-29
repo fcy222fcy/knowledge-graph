@@ -8,7 +8,7 @@
         to="/qa"
         class="qa-item"
       >
-        <span class="qa-question">{{ item.question }}</span>
+        <span class="qa-question">{{ item.title || item.last_question }}</span>
         <span class="qa-time">{{ formatDate(item.created_at) }}</span>
       </router-link>
     </div>

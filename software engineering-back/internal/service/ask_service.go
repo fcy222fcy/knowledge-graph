@@ -140,16 +140,12 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 			sources = graphSources
 			related = graphRelated
 		}
-
-		// 在回答末尾添加来源信息（如果有文档来源）
-		if len(sources) > 0 && sources[0].DocumentTitle != "" {
-			answer += "\n\n📚 来自：《" + sources[0].DocumentTitle + "》"
-		}
 	}
 
-	// 第2级：向量检索 RAG
+	// 第2级：向量检索 RAG（图谱未匹配到真实文档时也尝试）
+	needDocSearch := answer == "" || (len(sources) > 0 && sources[0].DocumentTitle == "知识图谱")
 	vecSvc := GetVectorService()
-	if answer == "" && vecSvc != nil && vecSvc.GetSize() > 0 {
+	if needDocSearch && vecSvc != nil && vecSvc.GetSize() > 0 {
 		log.Printf("DEBUG: Using vector search for question: %s", req.Question)
 		searchResults, err := vecSvc.Search(req.Question, 5)
 		if err == nil && len(searchResults) > 0 {
@@ -178,11 +174,11 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 					doc, err := repository.FindDocumentByID(validResults[0].Metadata.DocumentID)
 					if err == nil {
 						docTitle = doc.Title
-						sources = append(sources, response.AskSource{
+						sources = []response.AskSource{{
 							DocumentID:    doc.ID,
 							DocumentTitle: doc.Title,
 							Content:       contextText,
-						})
+						}}
 					}
 				}
 
@@ -200,17 +196,13 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 					answer = fmt.Sprintf("关于「%s」的回答：\n\n根据文档《%s》中的内容：\n\n%s", req.Question, docTitle, contextText)
 					confidence = 0.75
 				}
-
-				// 在回答末尾添加来源信息
-				if answer != "" && docTitle != "知识库" {
-					answer += "\n\n📚 来自：《" + docTitle + "》"
-				}
 			}
 		}
 	}
 
-	// 降级到本地关键词检索
-	if answer == "" {
+	// 降级到本地关键词检索（图谱未匹配到真实文档时也尝试）
+	needDocSearch = answer == "" || (len(sources) > 0 && sources[0].DocumentTitle == "知识图谱")
+	if needDocSearch {
 		log.Printf("DEBUG: Falling back to keyword search for question: %s", req.Question)
 		docs, _ := repository.GetAllDocumentsContent()
 		log.Printf("DEBUG: Found %d documents for keyword search", len(docs))
@@ -324,11 +316,11 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 			}
 			contextText := strings.Join(contextParts, "\n\n---\n\n")
 
-			sources = append(sources, response.AskSource{
+			sources = []response.AskSource{{
 				DocumentID:    docID,
 				DocumentTitle: docTitle,
 				Content:       contextText,
-			})
+			}}
 
 			// 尝试调用 LLM 生成回答
 			if aiClient.IsAvailable() {
@@ -350,10 +342,6 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 				confidence = 0.7
 			}
 
-			// 在回答末尾添加来源信息
-			if answer != "" {
-				answer += "\n\n📚 来自：《" + docTitle + "》"
-			}
 		}
 	}
 
@@ -390,6 +378,17 @@ func Ask(userID uint, req request.AskRequest) (*response.AskResponse, error) {
 	if answer == "" {
 		answer = fmt.Sprintf("抱歉，暂时无法回答关于「%s」的问题。您可以尝试：\n1. 上传更多相关文档\n2. 构建知识图谱\n3. 联系管理员获取帮助", req.Question)
 		confidence = 0.3
+	}
+
+	// 统一添加来源标注：有答案就是从知识库找到的
+	if confidence > 0.5 {
+		if len(sources) > 0 && sources[0].DocumentTitle != "" && sources[0].DocumentTitle != "知识库" {
+			answer += "\n\n📚 以上内容来源于《" + sources[0].DocumentTitle + "》"
+		} else {
+			answer += "\n\n📚 以上内容来源于知识库"
+		}
+	} else {
+		answer += "\n\n📚 知识库中未找到相关内容，以上为 AI 通用知识回答"
 	}
 
 	// 保存助手消息
@@ -556,7 +555,10 @@ func extractKeywords(question string) []string {
 	question = strings.ReplaceAll(question, "怎么", "")
 	question = strings.ReplaceAll(question, "如何", "")
 
-	// 按空格和标点分割
+	// 先按连接词拆分（"与"、"和"、"及"等），再按空格和标点分割
+	question = strings.ReplaceAll(question, "与", " ")
+	question = strings.ReplaceAll(question, "和", " ")
+	question = strings.ReplaceAll(question, "及", " ")
 	words := strings.FieldsFunc(question, func(r rune) bool {
 		return r == ' ' || r == '，' || r == '。' || r == '？' || r == '！' ||
 			r == ',' || r == '.' || r == '?' || r == '!' || r == '、'
@@ -703,6 +705,38 @@ type StreamEvent struct {
 	Related    []response.KPRef   `json:"related,omitempty"`
 }
 
+// convertSources 将 answer_service 的 AnswerSource 转为 response.AskSource
+func convertSources(src []AnswerSource) []response.AskSource {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]response.AskSource, 0, len(src))
+	for _, s := range src {
+		out = append(out, response.AskSource{
+			DocumentID:    s.DocumentID,
+			DocumentTitle: s.DocumentTitle,
+			Content:       s.Content,
+		})
+	}
+	return out
+}
+
+// convertRelated 将 answer_service 的 KnowledgePoint 转为 response.KPRef
+func convertRelated(pts []KnowledgePoint) []response.KPRef {
+	if len(pts) == 0 {
+		return nil
+	}
+	out := make([]response.KPRef, 0, len(pts))
+	for _, p := range pts {
+		out = append(out, response.KPRef{
+			ID:          p.ID,
+			Name:        p.Name,
+			Description: p.Description,
+		})
+	}
+	return out
+}
+
 // AskStream 流式智能问答核心方法
 func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, error) {
 	// 自动创建或复用会话
@@ -758,6 +792,9 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 				for chunk := range stream {
 					if chunk.Type == "done" {
 						confidence = chunk.Confidence
+						sources = convertSources(chunk.Sources)
+						related = convertRelated(chunk.Related)
+						log.Printf("DEBUG STREAM: done confidence=%.2f sources=%d", confidence, len(sources))
 					} else if chunk.Type == "chunk" {
 						answer.WriteString(chunk.Content)
 						ch <- StreamEvent{
@@ -774,6 +811,8 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 					for chunk := range stream {
 						if chunk.Type == "done" {
 							confidence = chunk.Confidence
+							sources = convertSources(chunk.Sources)
+							log.Printf("DEBUG STREAM (RAG fallback): done confidence=%.2f sources=%d", confidence, len(sources))
 						} else if chunk.Type == "chunk" {
 							answer.WriteString(chunk.Content)
 							ch <- StreamEvent{
@@ -783,17 +822,23 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 						}
 					}
 				} else {
-					// 降级到非流式问答
-					log.Printf("warning: Stream QA failed, falling back to non-stream: %v", err)
-					resp, err := Ask(userID, req)
-					if err == nil {
-						ch <- StreamEvent{
-							Type:    "chunk",
-							Content: resp.Answer,
+					// 降级到直接流式生成（跳过 RAG 搜索）
+					log.Printf("warning: RAG stream failed, falling back to direct LLM stream: %v", err)
+					historyStr := BuildConversationContext(history)
+					userPrompt := fmt.Sprintf("用户问题：%s\n\n%s", req.Question, historyStr)
+					directStream, streamErr := GetAIClient().GenerateStream(userPrompt, BaseSystemPrompt, nil)
+					if streamErr == nil {
+						for chunk := range directStream {
+							if chunk.Done {
+								confidence = 0.5
+							} else {
+								answer.WriteString(chunk.Response)
+								ch <- StreamEvent{
+									Type:    "chunk",
+									Content: chunk.Response,
+								}
+							}
 						}
-						confidence = resp.Confidence
-						sources = resp.Sources
-						related = resp.RelatedKnowledgePoints
 					} else {
 						ch <- StreamEvent{
 							Type:    "error",
@@ -821,11 +866,33 @@ func AskStream(userID uint, req request.AskRequest) (uint, <-chan StreamEvent, e
 			}
 		}
 
+		// 添加来源标注并发送给前端
+		sourceText := ""
+		log.Printf("DEBUG SOURCE: confidence=%.2f sources=%d", confidence, len(sources))
+		if confidence > 0.5 {
+			if len(sources) > 0 && sources[0].DocumentTitle != "" && sources[0].DocumentTitle != "知识库" {
+				sourceText = "\n\n📚 以上内容来源于《" + sources[0].DocumentTitle + "》"
+			} else {
+				sourceText = "\n\n📚 以上内容来源于知识库"
+			}
+		} else {
+			sourceText = "\n\n📚 知识库中未找到相关内容，以上为 AI 通用知识回答"
+		}
+		currentAnswer := answer.String() + sourceText
+
+		// 发送来源标注作为最后一个 chunk
+		if sourceText != "" {
+			ch <- StreamEvent{
+				Type:    "chunk",
+				Content: sourceText,
+			}
+		}
+
 		// 保存助手消息
 		assistantMsg := &entity.AskMessage{
 			SessionID:  sessionID,
 			Role:       "assistant",
-			Content:    answer.String(),
+			Content:    currentAnswer,
 			Confidence: confidence,
 		}
 		repository.CreateAskMessage(assistantMsg)

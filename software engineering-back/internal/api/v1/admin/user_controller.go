@@ -62,6 +62,7 @@ func UpdateUser(c *gin.Context) {
 	var req struct {
 		Nickname string `json:"nickname"`
 		Email    string `json:"email"`
+		Status   *int   `json:"status"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "参数错误")
@@ -73,6 +74,15 @@ func UpdateUser(c *gin.Context) {
 	}
 	if req.Email != "" {
 		user.Email = req.Email
+	}
+	if req.Status != nil {
+		// 禁止禁用自己
+		currentUserID := c.GetUint("user_id")
+		if user.ID == currentUserID && *req.Status == 0 {
+			response.Error(c, http.StatusBadRequest, "不能禁用自己")
+			return
+		}
+		user.Status = *req.Status
 	}
 
 	if err := repository.UpdateUser(user); err != nil {

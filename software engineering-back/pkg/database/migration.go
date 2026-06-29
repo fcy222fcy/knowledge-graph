@@ -33,6 +33,9 @@ func AutoMigrate() {
 		&entity.KnowledgeBuild{},
 		&entity.Question{},
 		&entity.Quiz{},
+		&entity.Assignment{},
+		&entity.AssignmentQuestion{},
+		&entity.AssignmentSubmission{},
 		&entity.AskSession{},
 		&entity.AskMessage{},
 	)

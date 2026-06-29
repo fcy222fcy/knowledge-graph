@@ -16,6 +16,32 @@ type AnswerService struct {
 	ollamaClient *ai.OllamaClient
 }
 
+// isSERelated 检测问题是否与软件工程领域相关
+// 通过关键词匹配快速判断，避免对无关问题浪费搜索资源
+func isSERelated(query string) bool {
+	seKeywords := []string{
+		"软件", "需求", "测试", "设计", "开发", "架构", "敏捷", "瀑布",
+		"代码", "编程", "算法", "数据库", "系统", "项目", "质量", "生命周期",
+		"迭代", "版本", "部署", "运维", "容器", "微服务", "接口", "模块",
+		"前端", "后端", "框架", "API", "SDK", "CI", "CD", "DevOps",
+		"Git", "Docker", "Kubernetes", "K8s", "Linux", "Windows",
+		"Java", "Python", "Go", "JavaScript", "TypeScript", "C++", "Rust",
+		"MySQL", "Redis", "MongoDB", "Neo4j", "Nginx", "Tomcat",
+		"需求分析", "系统设计", "编码", "调试", "重构", "优化",
+		"单元测试", "集成测试", "回归测试", "性能测试", "安全测试",
+		"黑盒", "白盒", "灰盒", "Scrum", "Kanban", "Sprint",
+		"瀑布模型", "增量", "原型", "UML", "ER图", "流程图",
+		"SDLC", "CMMI", "ISO", "ITIL", "REST", "GraphQL",
+	}
+	queryLower := strings.ToLower(query)
+	for _, kw := range seKeywords {
+		if strings.Contains(queryLower, strings.ToLower(kw)) {
+			return true
+		}
+	}
+	return false
+}
+
 // AnswerResponse 问答响应
 type AnswerResponse struct {
 	Answer     string           `json:"answer"`
@@ -188,13 +214,25 @@ func (s *AnswerService) SearchAndAnswerWithGraph(query string, history []ChatMes
 
 // StreamChunk 流式响应块
 type StreamChunk struct {
-	Type  string `json:"type"`  // "chunk" 或 "done"
-	Content string `json:"content"`
-	Confidence float64 `json:"confidence,omitempty"`
+	Type       string          `json:"type"`  // "chunk" 或 "done"
+	Content    string          `json:"content"`
+	Confidence float64         `json:"confidence,omitempty"`
+	Sources    []AnswerSource  `json:"sources,omitempty"`
+	Related    []KnowledgePoint `json:"related,omitempty"`
 }
 
 // SearchAndAnswerStream 流式 RAG 问答
 func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
+	// 0. 主题相关性检查：无关问题直接返回空结果
+	if !isSERelated(query) {
+		ch := make(chan StreamChunk, 10)
+		go func() {
+			defer close(ch)
+			ch <- StreamChunk{Type: "done", Confidence: 0}
+		}()
+		return ch, nil
+	}
+
 	// 1. 向量搜索（多检索一些，用于 Rerank）
 	searchTopK := topK * 2
 	searchResults, err := GetVectorService().Search(query, searchTopK)
@@ -232,8 +270,9 @@ func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessag
 		return nil, fmt.Errorf("LLM generation stream failed: %w", err)
 	}
 
-	// 7. 计算置信度
+	// 7. 计算置信度和来源
 	confidence := calculateConfidence(searchResults)
+	sources := buildSources(searchResults)
 
 	// 8. 创建输出 channel
 	ch := make(chan StreamChunk, 100)
@@ -243,11 +282,12 @@ func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessag
 
 		for chunk := range stream {
 			if chunk.Done {
-				// 流结束，发送完成事件
+				// 流结束，发送完成事件（附带 sources）
 				ch <- StreamChunk{
 					Type:       "done",
 					Content:    "",
 					Confidence: confidence,
+					Sources:    sources,
 				}
 			} else {
 				// 发送内容块
@@ -270,6 +310,39 @@ func (s *AnswerService) SearchAndAnswerStream(query string, history []ChatMessag
 
 // SearchAndAnswerWithGraphStream 流式知识图谱增强 RAG 问答
 func (s *AnswerService) SearchAndAnswerWithGraphStream(query string, history []ChatMessage, topK int) (<-chan StreamChunk, error) {
+	// 0. 主题相关性检查：无关问题跳过搜索，直接用 LLM 通用回答
+	if !isSERelated(query) {
+		log.Printf("Query not related to SE, using general LLM: %s", query)
+		historyStr := BuildConversationContext(history)
+		userPrompt := fmt.Sprintf("用户问题：%s\n\n%s", query, historyStr)
+		stream, err := s.ollamaClient.GenerateStream(userPrompt, FreeAnswerPrompt, &ai.GenerateOptions{
+			Temperature: 0.7,
+			TopP:        0.9,
+			NumPredict:  1024,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("LLM generation failed: %w", err)
+		}
+		ch := make(chan StreamChunk, 100)
+		go func() {
+			defer close(ch)
+			for chunk := range stream {
+				if chunk.Done {
+					ch <- StreamChunk{Type: "done", Confidence: 0}
+				} else {
+					content := chunk.Response
+					if content == "" {
+						content = chunk.Thinking
+					}
+					if content != "" {
+						ch <- StreamChunk{Type: "chunk", Content: content}
+					}
+				}
+			}
+		}()
+		return ch, nil
+	}
+
 	// 1. 向量搜索（多检索一些，用于 Rerank）
 	searchTopK := topK * 2
 	searchResults, err := GetVectorService().Search(query, searchTopK)
@@ -312,8 +385,18 @@ func (s *AnswerService) SearchAndAnswerWithGraphStream(query string, history []C
 		return nil, fmt.Errorf("LLM generation stream failed: %w", err)
 	}
 
-	// 8. 计算置信度
+	// 8. 计算置信度和来源
 	confidence := calculateConfidence(searchResults)
+	// 向量搜索为空但知识图谱有匹配 → 使用图谱置信度
+	if len(searchResults) == 0 && len(graphNodes) > 0 {
+		confidence = 0.75
+	}
+	sources := buildSources(searchResults)
+	related := buildRelatedPoints(graphNodes)
+	// Debug: 打印搜索结果的文档来源
+	for i, s := range sources {
+		log.Printf("DEBUG SOURCE[%d]: doc=%q score=%.2f", i, s.DocumentTitle, searchResults[i].Score)
+	}
 
 	// 9. 创建输出 channel
 	ch := make(chan StreamChunk, 100)
@@ -323,11 +406,13 @@ func (s *AnswerService) SearchAndAnswerWithGraphStream(query string, history []C
 
 		for chunk := range stream {
 			if chunk.Done {
-				// 流结束，发送完成事件
+				// 流结束，发送完成事件（附带 sources 和 related）
 				ch <- StreamChunk{
 					Type:       "done",
 					Content:    "",
 					Confidence: confidence,
+					Sources:    sources,
+					Related:    related,
 				}
 			} else {
 				// 发送内容块

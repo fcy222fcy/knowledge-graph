@@ -41,8 +41,8 @@
           <el-icon :size="24"><Edit /></el-icon>
         </div>
         <div class="stat-content">
-          <span class="stat-value">{{ stats.questionCount }}</span>
-          <span class="stat-label">题目总数</span>
+          <span class="stat-value">{{ stats.assignmentCount }}</span>
+          <span class="stat-label">作业总数</span>
         </div>
       </div>
     </div>
@@ -101,6 +101,7 @@ const stats = ref({
   questionCount: 0,
   knowledgeCount: 0,
   sessionCount: 0,
+  assignmentCount: 0,
 })
 
 const recentActivities = ref<Array<{
@@ -119,6 +120,7 @@ onMounted(async () => {
       questionCount: (data.question_count as number) || 0,
       knowledgeCount: (data.knowledge_count as number) || 0,
       sessionCount: (data.session_count as number) || 0,
+      assignmentCount: (data.assignment_count as number) || 0,
     }
 
     // 构建最近活动列表
@@ -134,8 +136,8 @@ onMounted(async () => {
         type: 'primary',
       },
       {
-        content: `题库共有 ${stats.value.questionCount} 道练习题`,
-        time: '题库建设',
+        content: `已发布 ${stats.value.assignmentCount} 个作业`,
+        time: '作业管理',
         type: 'warning',
       },
       {
