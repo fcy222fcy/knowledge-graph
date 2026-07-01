@@ -2,7 +2,10 @@
   <div class="knowledge-page">
     <div class="page-header">
       <h2>知识点管理</h2>
-      <el-button type="primary" :icon="Plus" @click="handleCreate">新增知识点</el-button>
+      <div class="header-actions">
+        <el-button type="primary" :icon="Setting" @click="buildVisible = true">构建图谱</el-button>
+        <el-button type="primary" :icon="Plus" @click="handleCreate">新增知识点</el-button>
+      </div>
     </div>
 
     <!-- 搜索栏 -->
@@ -79,19 +82,24 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 构建图谱对话框 -->
+    <BuildDialog v-model="buildVisible" :loading="buildLoading" @confirm="handleBuild" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, Search, Setting } from '@element-plus/icons-vue'
 import {
   getKnowledgePoints,
   createKnowledgePoint,
   updateKnowledgePoint,
   deleteKnowledgePoint,
+  buildGraph,
 } from '@/services/admin'
+import BuildDialog from './components/BuildDialog.vue'
 
 const loading = ref(false)
 const knowledgePoints = ref<Record<string, unknown>[]>([])
@@ -99,6 +107,9 @@ const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const keyword = ref('')
+
+const buildVisible = ref(false)
+const buildLoading = ref(false)
 
 const dialogVisible = ref(false)
 const isEdit = ref(false)
@@ -191,6 +202,20 @@ async function handleDelete(row: Record<string, unknown>) {
   }
 }
 
+async function handleBuild(documentIds: number[]) {
+  buildLoading.value = true
+  try {
+    await buildGraph(documentIds)
+    ElMessage.success('图谱构建成功')
+    buildVisible.value = false
+    fetchKnowledgePoints()
+  } catch (error) {
+    console.error('构建图谱失败:', error)
+  } finally {
+    buildLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchKnowledgePoints()
 })
@@ -199,6 +224,11 @@ onMounted(() => {
 <style scoped>
 .knowledge-page {
   width: 100%;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .filter-bar {

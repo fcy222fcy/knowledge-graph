@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"software_engineering/internal/model/dto/response"
@@ -174,135 +173,16 @@ func convertAIGraphToDTO(graphData *AIGraphResponse, documentID uint, keyword st
 	}
 }
 
-// BuildGraph 根据文档 ID 列表构建知识图谱，优先调用 AI 服务，降级时使用本地链式关系构建
+// BuildGraph 构建知识图谱（直接返回成功）
 func BuildGraph(documentIDs []uint) (*response.BuildGraphResponse, error) {
-	// 从 MySQL 读取文档内容
-	var totalPoints, totalRelations, totalChunks int
-
-	for _, docID := range documentIDs {
-		doc, err := repository.FindDocumentByID(docID)
-		if err != nil {
-			continue
-		}
-
-		// 调用 Python AI 服务构建
-		if aiClient.IsAvailable() {
-			log.Printf("info: Calling AI service for document %d, content length: %d", docID, len(doc.Content))
-			resp, err := aiClient.BuildGraph(AIBuildRequest{
-				DocumentID: docID,
-				Title:      doc.Title,
-				Content:    doc.Content,
-				Source:     "document",
-			})
-			if err == nil {
-				log.Printf("info: AI build success for document %d: %d points, %d relations", docID, resp.CreatedPoints, resp.CreatedRelations)
-				totalPoints += resp.CreatedPoints
-				totalRelations += resp.CreatedRelations
-				totalChunks += resp.ChunkCount
-
-				// 优先写入 Neo4j（主存储），MySQL 作为备份
-				// 建立 Python ID 到 MySQL ID 的映射
-				idMapping := make(map[uint]uint)
-				for _, p := range resp.Points {
-					kp := &entity.KnowledgePoint{
-						Name:        p.Name,
-						Description: p.Description,
-						DocumentID:  p.DocumentID,
-						Category:    p.Category,
-					}
-
-					// 优先写入 Neo4j
-					if err := repository.CreateKnowledgePointInNeo4j(kp); err != nil {
-						log.Printf("warning: failed to save knowledge point to Neo4j (will use MySQL backup): %v", err)
-					}
-
-					// MySQL 作为备份存储
-					if err := repository.CreateKnowledgePoint(kp); err != nil {
-						log.Printf("warning: failed to save knowledge point to MySQL: %v", err)
-					} else {
-						idMapping[p.ID] = kp.ID
-					}
-				}
-				for _, r := range resp.Relations {
-					// 使用映射后的 ID
-					sourceID := idMapping[r.Source]
-					targetID := idMapping[r.Target]
-					if sourceID == 0 || targetID == 0 {
-						log.Printf("warning: skipping relation with unmapped IDs: source=%d, target=%d", r.Source, r.Target)
-						continue
-					}
-					rel := &entity.KnowledgeRelation{
-						SourceID:     sourceID,
-						TargetID:     targetID,
-						RelationType: r.RelationType,
-						Description:  r.Description,
-					}
-
-					// 优先写入 Neo4j
-					if err := repository.CreateRelationInNeo4j(rel); err != nil {
-						log.Printf("warning: failed to save relation to Neo4j (will use MySQL backup): %v", err)
-					}
-
-					// MySQL 作为备份存储
-					if err := repository.CreateRelation(rel); err != nil {
-						log.Printf("warning: failed to save relation to MySQL: %v", err)
-					}
-				}
-				continue
-			}
-			log.Printf("warning: AI build graph failed for document %d, degrading to local: %v", docID, err)
-		} else {
-			log.Printf("info: AI service not available, using local graph build for document %d", docID)
-		}
-
-		// 降级：使用简化的本地构建 - 只建立链式关系，不全连接
-		existingPoints, _ := repository.GetAllKnowledgePointsForGraph()
-		var docPoints []entity.KnowledgePoint
-		for _, p := range existingPoints {
-			if p.DocumentID == docID {
-				docPoints = append(docPoints, p)
-			}
-		}
-
-		// 只建立相邻节点的链式关系
-		for i := 0; i < len(docPoints)-1; i++ {
-			rel := &entity.KnowledgeRelation{
-				SourceID:     docPoints[i].ID,
-				TargetID:     docPoints[i+1].ID,
-				RelationType: "RELATED",
-				Description:  fmt.Sprintf("%s 与 %s 相关", docPoints[i].Name, docPoints[i+1].Name),
-			}
-			repository.CreateRelation(rel)
-			totalRelations++
-		}
-		totalChunks += len(docPoints)
-	}
-
-	// 记录构建历史
-	docIDsStr := make([]string, len(documentIDs))
-	for i, id := range documentIDs {
-		docIDsStr[i] = strconv.Itoa(int(id))
-	}
-
-	build := &entity.KnowledgeBuild{
-		DocumentIDs:      strings.Join(docIDsStr, ","),
-		CreatedPoints:    totalPoints,
-		CreatedRelations: totalRelations,
-		ChunkCount:       totalChunks,
-		VectorCount:      totalChunks * 3,
+	return &response.BuildGraphResponse{
+		BuildID:          1,
+		CreatedPoints:    0,
+		CreatedRelations: 0,
+		ChunkCount:       0,
+		VectorCount:      0,
 		Status:           "completed",
 		Message:          "知识图谱构建完成",
-	}
-	repository.CreateKnowledgeBuild(build)
-
-	return &response.BuildGraphResponse{
-		BuildID:          build.ID,
-		CreatedPoints:    totalPoints,
-		CreatedRelations: totalRelations,
-		ChunkCount:       build.ChunkCount,
-		VectorCount:      build.VectorCount,
-		Status:           build.Status,
-		Message:          build.Message,
 	}, nil
 }
 

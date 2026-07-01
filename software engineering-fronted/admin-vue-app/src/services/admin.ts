@@ -94,6 +94,11 @@ export function getKnowledgeRelations(params?: { page?: number; size?: number })
   return request.get('/admin/knowledge/relations', { params })
 }
 
+// 构建知识图谱
+export function buildGraph(document_ids: number[]) {
+  return request.post('/graph/build', { document_ids })
+}
+
 // ========== 题目管理 ==========
 // 获取题目列表
 export function getQuestions(params?: { page?: number; size?: number; keyword?: string; type?: string }) {
